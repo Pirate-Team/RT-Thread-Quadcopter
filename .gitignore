@@ -1,3 +1,7 @@
+#folder
+Libraries/*
+
+
 # Object files
 *.o
 *.ko
