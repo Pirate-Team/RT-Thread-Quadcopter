@@ -1,6 +1,5 @@
 board info:
-STM32F4 discovery
-http://www.st.com/internet/evalboard/product/252419.jsp
+STM32F401RE NUCLEO
 
 note:
 in drivers/stm32f4xx_conf.h
