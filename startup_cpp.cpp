@@ -105,7 +105,7 @@ void rtthread_startup(void)
 
 	/* init idle thread */
 	rt_thread_idle_init();
-
+	
 	/* start scheduler */
 	rt_system_scheduler_start();
 
@@ -117,7 +117,7 @@ int main(void)
 {
 	/* disable interrupt first */
 	rt_hw_interrupt_disable();
-
+	
 	/* startup RT-Thread RTOS */
 	rtthread_startup();
 

@@ -24,7 +24,7 @@ public:
 	void setThrottle(uint8_t throttle1,uint8_t throttle2,uint8_t throttle3,uint8_t throttle4);
 	void getThrottle(MOTOR_ENUM motor,uint8_t& throttle);
 
-	static bool isStart;
+	static bool state;
 };
 
 

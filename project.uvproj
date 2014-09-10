@@ -127,7 +127,7 @@
             <RestoreMemoryDisplay>1</RestoreMemoryDisplay>
             <RestoreFunctions>1</RestoreFunctions>
             <RestoreToolbox>1</RestoreToolbox>
-            <LimitSpeedToRealTime>1</LimitSpeedToRealTime>
+            <LimitSpeedToRealTime>0</LimitSpeedToRealTime>
           </Simulator>
           <Target>
             <UseTarget>1</UseTarget>
@@ -444,6 +444,21 @@
               <FileType>8</FileType>
               <FilePath>.\Receiver.cpp</FilePath>
             </File>
+            <File>
+              <FileName>Sensor.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\Sensor.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>MPU6050.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\MPU6050.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>I2Cdev.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\I2Cdev.cpp</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -653,6 +668,11 @@
               <FileName>showmem.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\libcpu\arm\common\showmem.c</FilePath>
+            </File>
+            <File>
+              <FileName>core_cm4.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Libraries\CMSIS\Include\core_cm4.h</FilePath>
             </File>
           </Files>
         </Group>

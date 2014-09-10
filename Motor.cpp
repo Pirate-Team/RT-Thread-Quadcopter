@@ -9,7 +9,7 @@
 #define ARR              ((COUNTER_FREQ / PWM_FREQ) - 1)
 #define INIT_DUTYCYCLE	 ((uint8_t)80)	//初始化脉宽0.8ms
 
-bool Motor::isStart = false;	//静态成员变量初始化
+bool Motor::state = false;	//静态成员变量初始化
 
 Motor::Motor(){}
 
@@ -82,12 +82,12 @@ void Motor::init()
 /*----------------------------------------------
 	是否启动标志
 ----------------------------------------------*/
-	isStart = false;
+	state = false;
 }
 
 void Motor::start()
 {
-	isStart = true;
+	state = true;
 	TIM_SetCompare1(TIM4,INIT_DUTYCYCLE);
 	TIM_SetCompare2(TIM4,INIT_DUTYCYCLE);
 	TIM_SetCompare3(TIM4,INIT_DUTYCYCLE);
@@ -97,7 +97,7 @@ void Motor::start()
 
 void Motor::stop()
 {
-	isStart = false;
+	state = false;
 	TIM_SetCompare1(TIM4,INIT_DUTYCYCLE);
 	TIM_SetCompare2(TIM4,INIT_DUTYCYCLE);
 	TIM_SetCompare3(TIM4,INIT_DUTYCYCLE);

@@ -1,8 +1,18 @@
 #include "Led.h"
+#include "MPU6050.h"
+#include "I2Cdev.h"
 
 bool Led::state = false;
 
 Led::Led(void)
+{
+}
+
+Led::~Led(void)
+{
+}
+
+void Led::init(void)
 {
 	GPIO_InitTypeDef  GPIO_InitStructure;
 
@@ -15,11 +25,8 @@ Led::Led(void)
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
     GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
     GPIO_Init(GPIOA, &GPIO_InitStructure);
-	state = false;
-}
-
-Led::~Led(void)
-{
+	
+	off();
 }
 
 void Led::on(void)
@@ -50,11 +57,11 @@ bool Led::getState(void)
 void rt_thread_entry_led_test(void* parameter)
 {
 	Led led;
+	led.init();
 	while(1)
 	{
 		led.toggle();
-		SystemCoreClockUpdate();
-		rt_kprintf("%d\r\n",SystemCoreClock);
+		
 		rt_thread_delay(RT_TICK_PER_SECOND);
 	}
 }

@@ -12,6 +12,7 @@ class Led
 public:
 	Led(void);
 	~Led(void);
+	void init(void);
 	void on(void);
 	void off(void);
 	void toggle(void);
