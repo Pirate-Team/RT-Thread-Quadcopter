@@ -67,10 +67,10 @@
 #define RT_CONSOLEBUF_SIZE	128
 
 /* SECTION: finsh, a C-Express shell */
-#define RT_USING_FINSH
+//#define RT_USING_FINSH
 /* Using symbol table */
-#define FINSH_USING_SYMTAB
-#define FINSH_USING_DESCRIPTION
+//#define FINSH_USING_SYMTAB
+//#define FINSH_USING_DESCRIPTION
 
 /* SECTION: device filesystem */
 /* #define RT_USING_DFS */

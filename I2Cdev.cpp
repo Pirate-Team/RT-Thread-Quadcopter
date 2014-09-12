@@ -13,11 +13,11 @@
 #define SCL_read      GPIOB->IDR  & GPIO_Pin_8 /* GPIO_ReadInputDataBit(GPIOB , GPIO_Pin_10) */
 #define SDA_read      GPIOB->IDR  & GPIO_Pin_9 /* GPIO_ReadInputDataBit(GPIOB , GPIO_Pin_11) */
 
-#define TIME_OUT 100
+#define TIME_OUT 210
 
 void I2Cdev::delay(void)
 {
-    volatile uint8_t i = TIME_OUT;
+    volatile uint16_t i = TIME_OUT;
     while (i)
         i--;
 }
@@ -40,54 +40,56 @@ bool I2Cdev::start(void)
 
 void I2Cdev::stop(void)
 {
-    SCL_L;
-    delay();
-    SDA_L;
-    delay();
-    SCL_H;
-    delay();
-    SDA_H;
-    delay();
+	SCL_L;
+//	delay();
+	SDA_L;
+	delay();
+	SCL_H;
+//	delay();
+	SDA_H;
+	delay();
 }
 
 void I2Cdev::ack(void)
 {
-    SCL_L;
-    delay();
-    SDA_L;
-    delay();
-    SCL_H;
-    delay();
-    SCL_L;
-    delay();
+	SCL_L;
+//	delay();
+	SDA_L;
+	delay();
+	SCL_H;
+	delay();
+	SCL_L;
+	delay();
 }
 
 void I2Cdev::noAck(void)
 {
-    SCL_L;
-    delay();
-    SDA_H;
-    delay();
-    SCL_H;
-    delay();
-    SCL_L;
-    delay();
+	SCL_L;
+//	delay();
+	SDA_H;
+	delay();
+	SCL_H;
+	delay();
+	SCL_L;
+	delay();
 }
 
 bool I2Cdev::waitAck(void)
 {
-    SCL_L;
-    delay();
-    SDA_H;
-    delay();
-    SCL_H;
-    delay();
-    if (SDA_read) {
-        SCL_L;
-        return false;
-    }
-    SCL_L;
-    return true;
+	SCL_L;
+//	delay();
+	SDA_H;
+	delay();
+	SCL_H;
+	delay();
+	if (SDA_read)
+	{
+		SCL_L;
+		return false;
+	}
+	SCL_L;
+	delay();
+	return true;
 }
 //===================================================================================
 //===================================================================================
@@ -95,9 +97,10 @@ void I2Cdev::sendByte(uint8_t byte)
 {
 	rt_enter_critical();
     uint8_t i = 8;
-    while (i--) {
+    while (i--) 
+	{
         SCL_L;
-        delay();
+//		delay();
         if (byte & 0x80)
             SDA_H;
         else
@@ -108,29 +111,31 @@ void I2Cdev::sendByte(uint8_t byte)
         delay();
     }
     SCL_L;
+	delay();
 	rt_exit_critical();
 }
 
 uint8_t I2Cdev::receiveByte(void)
 {
 	rt_enter_critical();
-    uint8_t i = 8;
-    uint8_t byte = 0;
+	uint8_t i = 8;
+	uint8_t byte = 0;
 
-    SDA_H;
-    while (i--) {
-        byte <<= 1;
-        SCL_L;
-        delay();
-        SCL_H;
-        delay();
-        if (SDA_read) {
-            byte |= 0x01;
-        }
-    }
-    SCL_L;
+	SDA_H;
+	while (i--) 
+	{
+		byte <<= 1;
+		SCL_L;
+		delay();
+		SCL_H;
+		delay();
+		if (SDA_read) 
+			byte |= 0x01;
+	}
+	SCL_L;
+	delay();
 	rt_exit_critical();
-    return byte;
+	return byte;
 }
 //===================================================================================
 //===================================================================================

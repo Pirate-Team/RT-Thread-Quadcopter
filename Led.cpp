@@ -62,6 +62,6 @@ void rt_thread_entry_led_test(void* parameter)
 	{
 		led.toggle();
 		
-		rt_thread_delay(RT_TICK_PER_SECOND);
+		rt_thread_delay(RT_TICK_PER_SECOND/5);
 	}
 }
