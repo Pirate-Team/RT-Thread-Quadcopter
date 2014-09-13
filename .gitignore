@@ -1,6 +1,6 @@
 #folder
 Libraries/*
-
+build/*
 
 # Object files
 *.o
@@ -65,3 +65,5 @@ $RECYCLE.BIN/
 *.msi
 *.msm
 *.msp
+*.dep
+*.bin

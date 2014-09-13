@@ -3,12 +3,14 @@
 #include "arm_math.h"
 #include "rtthread.h"
 
+#define XC -390.228f
+#define YC 241.349f
+
+
 HMC5883L::HMC5883L(void)
 {
 	devAddr = HMC5883L_ADDRESS;
 	buffer = (uint8_t*)rt_malloc(6);
-	xOffSet = yOffSet = 0;
-	yGain = 1;
 }
 
 HMC5883L::~HMC5883L(void)
@@ -68,16 +70,15 @@ void HMC5883L::getHeadingCal(int16_t *x, int16_t *y, int16_t *z)
 	*y = (((int16_t)buffer[4]) << 8) | buffer[5];
 	*z = (((int16_t)buffer[2]) << 8) | buffer[3];
 	
-	*x -= xOffSet;
-	*y -= yOffSet;
-	*y *= yGain;
+	*x = ((float)*x - XC) * 100;
+	*y = ((float)*y - YC) * 100;
 }
 
 void HMC5883L::getHeadingCal(float *heading)
 {
 	int16_t x,y,z;
-	getHeadingCal(&x,&y,&z);
-	*heading = atan2((float)y, (float)x);
+	getHeadingRaw(&x,&y,&z);
+	*heading = atan2((float)y - YC, (float)x - XC);
     if(*heading < 0)
       *heading += 2 * PI;
 	*heading = *heading * 180/PI;
