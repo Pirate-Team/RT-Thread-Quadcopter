@@ -238,38 +238,6 @@
           <ExecCommand></ExecCommand>
           <Expression></Expression>
         </Bp>
-        <Bp>
-          <Number>2</Number>
-          <Type>0</Type>
-          <LineNumber>114</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>0</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>0</BreakIfRCount>
-          <Filename>F:\Users\Spacelan\Desktop\RTTHREAD\RT-Thread_1.2.0\bsp\RT-Thread-Quadcopter\application_cpp.cpp</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression></Expression>
-        </Bp>
-        <Bp>
-          <Number>3</Number>
-          <Type>0</Type>
-          <LineNumber>118</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>0</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>0</BreakIfRCount>
-          <Filename>F:\Users\Spacelan\Desktop\RTTHREAD\RT-Thread_1.2.0\bsp\RT-Thread-Quadcopter\application_cpp.cpp</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression></Expression>
-        </Bp>
       </Breakpoint>
       <WatchWindow1>
         <Ww>
@@ -389,10 +357,10 @@
       <FileType>8</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>33</ColumnNumber>
+      <ColumnNumber>5</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>25</TopLine>
-      <CurrentLine>48</CurrentLine>
+      <TopLine>99</TopLine>
+      <CurrentLine>108</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\application_cpp.cpp</PathWithFileName>
       <FilenameWithoutPath>application_cpp.cpp</FilenameWithoutPath>
@@ -407,7 +375,7 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>95</TopLine>
+      <TopLine>108</TopLine>
       <CurrentLine>117</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\startup_cpp.cpp</PathWithFileName>
@@ -421,10 +389,10 @@
       <FileType>8</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>8</ColumnNumber>
+      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>58</TopLine>
-      <CurrentLine>71</CurrentLine>
+      <TopLine>57</TopLine>
+      <CurrentLine>74</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\Led.cpp</PathWithFileName>
       <FilenameWithoutPath>Led.cpp</FilenameWithoutPath>
@@ -439,7 +407,7 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>69</TopLine>
+      <TopLine>68</TopLine>
       <CurrentLine>72</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\Motor.cpp</PathWithFileName>
@@ -485,10 +453,10 @@
       <FileType>8</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>65</ColumnNumber>
+      <ColumnNumber>25</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>85</TopLine>
-      <CurrentLine>94</CurrentLine>
+      <TopLine>203</TopLine>
+      <CurrentLine>219</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\MPU6050.cpp</PathWithFileName>
       <FilenameWithoutPath>MPU6050.cpp</FilenameWithoutPath>
@@ -503,7 +471,7 @@
       <Focus>0</Focus>
       <ColumnNumber>10</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>21</TopLine>
+      <TopLine>13</TopLine>
       <CurrentLine>27</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\I2Cdev.cpp</PathWithFileName>
@@ -517,10 +485,10 @@
       <FileType>8</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>25</ColumnNumber>
+      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>79</TopLine>
-      <CurrentLine>95</CurrentLine>
+      <TopLine>68</TopLine>
+      <CurrentLine>76</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\HMC5883L.cpp</PathWithFileName>
       <FilenameWithoutPath>HMC5883L.cpp</FilenameWithoutPath>
@@ -533,9 +501,9 @@
       <FileType>8</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>16</ColumnNumber>
+      <ColumnNumber>13</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>52</TopLine>
+      <TopLine>48</TopLine>
       <CurrentLine>58</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\MS5611.cpp</PathWithFileName>
@@ -549,10 +517,10 @@
       <FileType>8</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>3</ColumnNumber>
+      <ColumnNumber>57</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>20</TopLine>
-      <CurrentLine>26</CurrentLine>
+      <TopLine>19</TopLine>
+      <CurrentLine>25</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\MadgwickAHRS.cpp</PathWithFileName>
       <FilenameWithoutPath>MadgwickAHRS.cpp</FilenameWithoutPath>
@@ -573,9 +541,9 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>22</ColumnNumber>
+      <ColumnNumber>19</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>68</TopLine>
+      <TopLine>78</TopLine>
       <CurrentLine>79</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>drivers\board.c</PathWithFileName>
@@ -591,7 +559,7 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>230</TopLine>
+      <TopLine>229</TopLine>
       <CurrentLine>233</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>drivers\serial.c</PathWithFileName>
@@ -903,7 +871,7 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>180</TopLine>
+      <TopLine>179</TopLine>
       <CurrentLine>183</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\Libraries\CMSIS\Device\ST\STM32F4xx\Source\Templates\arm\startup_stm32f401xx.s</PathWithFileName>
@@ -1143,7 +1111,7 @@
       <Focus>0</Focus>
       <ColumnNumber>23</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>40</TopLine>
+      <TopLine>39</TopLine>
       <CurrentLine>41</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\libcpu\arm\cortex-m4\context_rvds.S</PathWithFileName>

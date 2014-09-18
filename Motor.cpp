@@ -92,7 +92,7 @@ void Motor::start()
 	TIM_SetCompare2(TIM4,INIT_DUTYCYCLE);
 	TIM_SetCompare3(TIM4,INIT_DUTYCYCLE);
 	TIM_SetCompare4(TIM4,INIT_DUTYCYCLE);
-	TIM_Cmd(TIM4,DISABLE);
+	TIM_Cmd(TIM4,ENABLE);
 }
 
 void Motor::stop()
@@ -102,7 +102,7 @@ void Motor::stop()
 	TIM_SetCompare2(TIM4,INIT_DUTYCYCLE);
 	TIM_SetCompare3(TIM4,INIT_DUTYCYCLE);
 	TIM_SetCompare4(TIM4,INIT_DUTYCYCLE);
-	TIM_Cmd(TIM4,ENABLE);
+	TIM_Cmd(TIM4,DISABLE);
 }
 /*----------------------------------------------
 	0<=throttle<=100---->100<=CRR<=200

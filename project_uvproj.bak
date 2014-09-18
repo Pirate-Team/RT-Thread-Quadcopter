@@ -469,11 +469,6 @@
               <FileType>8</FileType>
               <FilePath>.\MS5611.cpp</FilePath>
             </File>
-            <File>
-              <FileName>MadgwickAHRS.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>.\MadgwickAHRS.cpp</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>

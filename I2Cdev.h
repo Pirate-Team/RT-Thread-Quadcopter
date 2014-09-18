@@ -13,9 +13,9 @@ public:
 	static bool readByte(uint8_t devAddr,uint8_t regAddr,uint8_t *data);
 	static bool writeByte(uint8_t devAddr,uint8_t regAddr,uint8_t data);
 	
-	static void writeBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint8_t data);
+	static bool writeBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint8_t data);
 private:
-	static void delay(void);
+	static void I2C_delay(void);
 	static bool start(void);
 	static void stop(void);
 	static void ack(void);

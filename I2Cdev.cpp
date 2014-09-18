@@ -4,20 +4,20 @@
 	Slaver Address 7bit!!!
 -------------------------------------------*/
 
-#define SCL_H         GPIOB->BSRRL = GPIO_Pin_8 /* GPIO_SetBits(GPIOB , GPIO_Pin_10)   */
-#define SCL_L         GPIOB->BSRRH  = GPIO_Pin_8 /* GPIO_ResetBits(GPIOB , GPIO_Pin_10) */
+#define SCL_H         GPIOA->BSRRL = GPIO_Pin_0 /* GPIO_SetBits(GPIOB , GPIO_Pin_10)   */
+#define SCL_L         GPIOA->BSRRH  = GPIO_Pin_0 /* GPIO_ResetBits(GPIOB , GPIO_Pin_10) */
 
-#define SDA_H         GPIOB->BSRRL = GPIO_Pin_9 /* GPIO_SetBits(GPIOB , GPIO_Pin_11)   */
-#define SDA_L         GPIOB->BSRRH  = GPIO_Pin_9 /* GPIO_ResetBits(GPIOB , GPIO_Pin_11) */
+#define SDA_H         GPIOA->BSRRL = GPIO_Pin_1 /* GPIO_SetBits(GPIOB , GPIO_Pin_11)   */
+#define SDA_L         GPIOA->BSRRH  = GPIO_Pin_1 /* GPIO_ResetBits(GPIOB , GPIO_Pin_11) */
 
-#define SCL_read      GPIOB->IDR  & GPIO_Pin_8 /* GPIO_ReadInputDataBit(GPIOB , GPIO_Pin_10) */
-#define SDA_read      GPIOB->IDR  & GPIO_Pin_9 /* GPIO_ReadInputDataBit(GPIOB , GPIO_Pin_11) */
+#define SCL_read      GPIOA->IDR  & GPIO_Pin_0 /* GPIO_ReadInputDataBit(GPIOB , GPIO_Pin_10) */
+#define SDA_read      GPIOA->IDR  & GPIO_Pin_1 /* GPIO_ReadInputDataBit(GPIOB , GPIO_Pin_11) */
 
-#define TIME_OUT 210
+#define SCL_TIME_OUT 100
 
-void I2Cdev::delay(void)
+void I2Cdev::I2C_delay(void)
 {
-    volatile uint16_t i = TIME_OUT;
+    volatile uint16_t i = SCL_TIME_OUT;
     while (i)
         i--;
 }
@@ -26,116 +26,117 @@ bool I2Cdev::start(void)
 {
     SDA_H;
     SCL_H;
-    delay();
+    I2C_delay();
     if (!SDA_read)
         return false;
     SDA_L;
-    delay();
+    I2C_delay();
     if (SDA_read)
         return false;
     SDA_L;
-    delay();
+    I2C_delay();
     return true;
 }
 
 void I2Cdev::stop(void)
 {
-	SCL_L;
-//	delay();
-	SDA_L;
-	delay();
-	SCL_H;
-//	delay();
-	SDA_H;
-	delay();
+    SCL_L;
+    I2C_delay();
+    SDA_L;
+    I2C_delay();
+    SCL_H;
+    I2C_delay();
+    SDA_H;
+    I2C_delay();
 }
 
 void I2Cdev::ack(void)
 {
-	SCL_L;
-//	delay();
-	SDA_L;
-	delay();
-	SCL_H;
-	delay();
-	SCL_L;
-	delay();
+    SCL_L;
+    I2C_delay();
+    SDA_L;
+    I2C_delay();
+    SCL_H;
+    I2C_delay();
+    SCL_L;
+    I2C_delay();
 }
 
 void I2Cdev::noAck(void)
 {
-	SCL_L;
-//	delay();
-	SDA_H;
-	delay();
-	SCL_H;
-	delay();
-	SCL_L;
-	delay();
+    SCL_L;
+    I2C_delay();
+    SDA_H;
+    I2C_delay();
+    SCL_H;
+    I2C_delay();
+    SCL_L;
+    I2C_delay();
 }
 
 bool I2Cdev::waitAck(void)
 {
-	SCL_L;
-//	delay();
-	SDA_H;
-	delay();
-	SCL_H;
-	delay();
-	if (SDA_read)
-	{
-		SCL_L;
-		return false;
-	}
-	SCL_L;
-	delay();
-	return true;
+//	u8 n = 0;
+    SCL_L;
+    I2C_delay();
+    SDA_H;
+    I2C_delay();
+    SCL_H;
+    I2C_delay();
+    if (SDA_read) {
+        SCL_L;
+        return false;
+    }
+/*    while(n<50)
+    {
+    	if(!SDA_read)
+    	{
+    		SCL_L;
+    		return true;
+    	}
+    	n++;
+    }*/
+    SCL_L;
+    return true;
 }
 //===================================================================================
 //===================================================================================
 void I2Cdev::sendByte(uint8_t byte)
 {
-	rt_enter_critical();
     uint8_t i = 8;
-    while (i--) 
-	{
+    while (i--) {
         SCL_L;
-//		delay();
+        I2C_delay();
         if (byte & 0x80)
             SDA_H;
         else
             SDA_L;
         byte <<= 1;
-        delay();
+        I2C_delay();
         SCL_H;
-        delay();
+        I2C_delay();
     }
     SCL_L;
-	delay();
-	rt_exit_critical();
 }
 
 uint8_t I2Cdev::receiveByte(void)
 {
-	rt_enter_critical();
-	uint8_t i = 8;
-	uint8_t byte = 0;
+    uint8_t i = 8;
+    uint8_t byte = 0;
 
-	SDA_H;
-	while (i--) 
-	{
-		byte <<= 1;
-		SCL_L;
-		delay();
-		SCL_H;
-		delay();
-		if (SDA_read) 
-			byte |= 0x01;
-	}
-	SCL_L;
-	delay();
-	rt_exit_critical();
-	return byte;
+    SDA_H;
+    while (i--) {
+        byte <<= 1;
+        SCL_L;
+        I2C_delay();
+        SCL_H;
+        I2C_delay();
+        if (SDA_read) {
+            byte |= 0x01;
+        }
+    }
+    SCL_L;
+    return byte;
 }
 //===================================================================================
 //===================================================================================
@@ -143,40 +144,48 @@ void I2Cdev::init(void)
 {
 	GPIO_InitTypeDef  GPIO_InitStructure; 
 
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB,ENABLE);
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA,ENABLE);
 
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8 | GPIO_Pin_9;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT; 
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP; 
 
-	GPIO_Init(GPIOB, &GPIO_InitStructure);
+	GPIO_Init(GPIOA, &GPIO_InitStructure);
 }
 
 bool I2Cdev::writeBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_t* data)
 {
+	rt_enter_critical();
     int i;
     if (!start())
+	{
+		rt_exit_critical();
         return false;
+	}
     sendByte(devAddr << 1 | I2C_Direction_Transmitter);
     if (!waitAck()) {
         stop();
+		rt_exit_critical();
         return false;
     }
     sendByte(regAddr);
     if (!waitAck()) {
         stop();
+		rt_exit_critical();
         return false;
     }
     for (i = 0; i < length; i++) {
         sendByte(data[i]);
         if (!waitAck()) {
             stop();
+			rt_exit_critical();
             return false;
         }
     }
     stop();
+	rt_exit_critical();
     return true;
 }
 
@@ -187,22 +196,29 @@ bool I2Cdev::writeByte(uint8_t devAddr,uint8_t regAddr,uint8_t data)
 
 bool I2Cdev::readBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_t *data)
 {
+	rt_enter_critical();
     if (!start())
+	{
+		rt_exit_critical();
         return false;
+	}
     sendByte(devAddr << 1 | I2C_Direction_Transmitter);
     if (!waitAck()) {
         stop();
+		rt_exit_critical();
         return false;
     }
     sendByte(regAddr);
     if (!waitAck()) {
         stop();
+		rt_exit_critical();
         return false;
     }
     start();
     sendByte(devAddr << 1 | I2C_Direction_Receiver);
     if (!waitAck()) {
         stop();
+		rt_exit_critical();
         return false;
     }
     while (length) {
@@ -215,6 +231,7 @@ bool I2Cdev::readBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_t
         length--;
     }
     stop();
+	rt_exit_critical();
     return true;
 }
 
@@ -223,7 +240,7 @@ bool I2Cdev::readByte(uint8_t devAddr,uint8_t regAddr,uint8_t *data)
 	return readBytes(devAddr,regAddr,1,data);
 }
 
-void I2Cdev::writeBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint8_t data) {
+bool I2Cdev::writeBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint8_t data) {
     //      010 value to write
     // 76543210 bit numbers
     //    xxx   args: bitStart=4, length=3
@@ -232,13 +249,13 @@ void I2Cdev::writeBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8
     // 10100011 original & ~mask
     // 10101011 masked | value
     uint8_t b;
-    readByte(devAddr, regAddr, &b);
+    if(!readByte(devAddr, regAddr, &b)) return false;
 	uint8_t mask = ((1 << length) - 1) << (bitStart - length + 1);
 	data <<= (bitStart - length + 1); // shift data into correct position
 	data &= mask; // zero all non-important bits in data
 	b &= ~(mask); // zero all important bits in existing byte
 	b |= data; // combine data with existing byte
-	writeByte(devAddr, regAddr, b);
+	return writeByte(devAddr, regAddr, b);
 }
 
 /*

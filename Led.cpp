@@ -1,7 +1,5 @@
 #include "Led.h"
-#include "MPU6050.h"
-#include "I2Cdev.h"
-
+#include "rtthread.h"
 bool Led::state = false;
 
 Led::Led(void)
@@ -60,8 +58,17 @@ void rt_thread_entry_led_test(void* parameter)
 	led.init();
 	while(1)
 	{
+//		uint32_t pretick;
+//		volatile uint32_t i = 8400000;
+//		rt_enter_critical();
+//		pretick = rt_tick_get();
+//		while (i)
+//			i--;
+//		rt_kprintf("ticks = %d\r\n",rt_tick_get() - pretick);
+//		rt_exit_critical();
+		
 		led.toggle();
 		
-		rt_thread_delay(RT_TICK_PER_SECOND/5);
+		rt_thread_delay(500);
 	}
 }

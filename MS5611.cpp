@@ -2,8 +2,9 @@
 #include "rtthread.h"
 #include "I2Cdev.h"
 #include "arm_math.h"
+#include "string.h"
 
-#define DEBUG
+//#define DEBUG
 
 //在这个程序里读取校正数据有问题，用arduino读取的数据代替了
 #define C1 51270
@@ -19,18 +20,23 @@ MS5611::MS5611(void)
 {
 	devAddr = MS561101BA_SlaveAddress;
 	buffer = (uint8_t*)rt_malloc(3);
+	strcpy(name,MS5611_NAME);
 }
 
 MS5611::~MS5611(void)
 {
-	rt_free(buffer);
+	if(buffer != null)
+	{
+		rt_free(buffer);
+		buffer = null;
+	}
 }
 
-void MS5611::initialize(void)
+bool MS5611::initialize(void)
 {
-	reset();
+	if(!reset()) return false;
 	rt_thread_delay(RT_TICK_PER_SECOND/50);
-	readPROM();
+	if(!readPROM()) return false;
 	rt_thread_delay(RT_TICK_PER_SECOND/50);
 	C[0] = C1;
 	C[1] = C2;
@@ -39,6 +45,7 @@ void MS5611::initialize(void)
 	C[4] = C5;
 	C[5] = C6;
 	getTemperature();
+	return true;
 }
 
 bool MS5611::testConnection(void)
@@ -46,48 +53,62 @@ bool MS5611::testConnection(void)
 	return true;
 }
 
-void MS5611::reset(void)
+uint8_t MS5611::getData(void* data1,void* data2,void* data3,void* data4,void* data5,void* data6)
 {
-	I2Cdev::writeByte(devAddr,MS561101BA_RST,0);
+	if(!getAltitude((float*)data1)) return false;
+	return true;
+}
+
+bool MS5611::reset(void)
+{
+	return I2Cdev::writeByte(devAddr,MS561101BA_RST,0);
 }
 
 //从PROM读取出厂校准数据
-void MS5611::readPROM(void)
+bool MS5611::readPROM(void)
 {
 	uint8_t i;
 	for(i=0;i<6;i++)
 	{
-		I2Cdev::readBytes(devAddr,MS561101BA_PROM_RD + i * 2,2,buffer);
+		if(!I2Cdev::readBytes(devAddr,MS561101BA_PROM_RD + i * 2,2,buffer)) return false;
 		C[i] = (buffer[0] << 8) | buffer[1];
 #ifdef DEBUG
 		rt_kprintf("C%d = %d\r\n",i+1,C[i]);
 #endif
 	}
+	return true;
 }
 
 //读取数字温度
-float MS5611::getTemperature(void)
+bool MS5611::getTemperature(float* temp)
 {
 	uint32_t D2;
-	I2Cdev::writeByte(MS561101BA_SlaveAddress,MS561101BA_D2_OSR_4096,0);
+	if(!I2Cdev::writeByte(MS561101BA_SlaveAddress,MS561101BA_D2_OSR_4096,0)) return false;
 	rt_thread_delay(RT_TICK_PER_SECOND/50);
-	I2Cdev::readBytes(MS561101BA_SlaveAddress,0,3,buffer);
+	if(!I2Cdev::readBytes(MS561101BA_SlaveAddress,0,3,buffer)) return false;
 	D2 = (buffer[0] << 16) | (buffer[1] << 8) | buffer[2];
 	
 	dT =D2 - ((C[4]) << 8);
 	temperature = 2000 + (((int64_t)dT * (int64_t)C[5]) >> 23);	
 #ifdef DEBUG
 	rt_kprintf("D2 = %d\ttemperature = %d\r\n",D2,temperature);
-#endif	
-	return temperature / 100.0f;
+#endif
+	if(temp != null)
+		*temp = temperature / 100.0f;
+	return true;
 }
 
 //读取数字气压
-float MS5611::getPressure(void)
+bool MS5611::getPressure(float* press)
 {
+//	if(!I2Cdev::writeByte(MS561101BA_SlaveAddress,MS561101BA_D1_OSR_4096,0)) return false;
+//	rt_thread_delay(RT_TICK_PER_SECOND/50);	
+	if(!I2Cdev::readBytes(MS561101BA_SlaveAddress,0,3,buffer))
+	{
+		I2Cdev::writeByte(MS561101BA_SlaveAddress,MS561101BA_D1_OSR_4096,0);
+		return false;
+	}
 	I2Cdev::writeByte(MS561101BA_SlaveAddress,MS561101BA_D1_OSR_4096,0);
-	rt_thread_delay(RT_TICK_PER_SECOND/50);	
-	I2Cdev::readBytes(MS561101BA_SlaveAddress,0,3,buffer);
 	uint32_t D1 = (buffer[0] << 16) | (buffer[1] << 8) | buffer[2];
 	
 	int32_t off2,sens2,delt;
@@ -113,13 +134,17 @@ float MS5611::getPressure(void)
 	pressure = ((((int64_t)D1 * sens ) >> 21) - off) >> 15;
 #ifdef DEBUG
 	rt_kprintf("D1 = %d\tpressure = %d\r\n",D1,pressure);
-#endif	
-	return pressure / 100.0f;
+#endif
+	if(press != null)
+		*press = pressure / 100.0f;
+	return true;
 }
 
-float MS5611::getAttitude(void)
+bool MS5611::getAltitude(float* altitude)
 {
-	getPressure(); getTemperature();
+//	if(!getTemperature(&temp)) return false;
+	if(!getPressure()) return false ; 
 	//((pow((sea_press / press), 1/5.257) - 1.0) * (temp + 273.15)) / 0.0065  pressure/100   temperature/100
-	return ((pow((float)SEA_PRESS / (float)pressure * 100.0f, (float)1/5.257f) - 1.0f) * (temperature/100.0f + 273.15f)) / 0.0065f;
+	*altitude = ((pow((float)SEA_PRESS / (float)pressure * 100.0f, (float)1/5.257f) - 1.0f) * (temperature/100.0f + 273.15f)) / 0.0065f;
+	return true;
 }

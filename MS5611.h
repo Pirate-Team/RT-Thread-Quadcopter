@@ -3,8 +3,9 @@
 #include "stm32f4xx.h"
 #include "Sensor.h"
 
-#define  MS561101BA_SlaveAddress 0x77  //定义器件在IIC总线中的从地址
+#define MS5611_NAME "MS5611"
 
+#define  MS561101BA_SlaveAddress 0x77  //定义器件在IIC总线中的从地址
 #define  MS561101BA_D1 0x40 
 #define  MS561101BA_D2 0x50 
 #define  MS561101BA_RST 0x1E 
@@ -29,14 +30,18 @@ class MS5611:public Sensor
 {
 public:
 	MS5611();
-	~MS5611();
-	void initialize(void);
-	bool testConnection(void);
-	float getPressure(void);
-	float getTemperature(void);
-	void readPROM(void);
-	void reset();
-	float getAttitude(void);
+	virtual ~MS5611();
+
+	virtual bool initialize(void);
+	virtual bool testConnection(void);
+	virtual uint8_t getData(void* data1,void* data2 = null,void* data3 = null,void* data4 = null,void* data5 = null,void* data6 = null);
+
+	bool getPressure(float* press = null);
+	bool getTemperature(float* temp = null);
+	bool readPROM(void);
+	bool reset();
+	bool getAltitude(float* altitude);
+
 private:
 	uint16_t C[6];
 	int32_t dT,temperature,pressure;

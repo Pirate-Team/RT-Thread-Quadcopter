@@ -1,11 +1,6 @@
 #ifndef LED_H
 #define LED_H
-
-#include <stdio.h>
-
 #include "stm32f4xx.h"
-
-#include <rtthread.h>
 
 class Led
 {

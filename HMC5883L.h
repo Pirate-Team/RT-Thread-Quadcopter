@@ -4,6 +4,8 @@
 #include "stm32f4xx.h"
 #include "Sensor.h"
 
+#define HMC5883L_NAME "HMC5883L"
+
 #define HMC5883L_ADDRESS            0x1E // this device only has one address
 #define HMC5883L_DEFAULT_ADDRESS    0x1E
 
@@ -71,10 +73,11 @@ class HMC5883L:public Sensor
 {
 public:
 	HMC5883L(void);
-	~HMC5883L(void);
-	
-	void initialize(void);
-	bool testConnection(void);
+	virtual ~HMC5883L(void);
+
+	virtual bool initialize(void);
+	virtual bool testConnection(void);
+	virtual uint8_t getData(void* data1,void* data2 = null,void* data3 = null,void* data4 = null,void* data5 = null,void* data6 = null);
 
 	void getHeadingRaw(int16_t *x, int16_t *y, int16_t *z);
 	void getHeadingCal(int16_t *x, int16_t *y, int16_t *z);

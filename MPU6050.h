@@ -2,7 +2,8 @@
 #define MPU6050_h
 #include "stm32f4xx.h"
 #include "Sensor.h"
-#include "rtthread.h"
+
+#define MPU6050_NAME "MPU6050"
 
 #define MPU6050_DEFAULT_ADDRESS     0x68 // address pin low (GND), default for InvenSense evaluation board  7bit
 #define MPU6050_RA_XG_OFFS_TC       0x00 //[7] PWR_MODE, [6:1] XG_OFFS_TC, [0] OTP_BNK_VLD
@@ -361,10 +362,11 @@ class MPU6050:public Sensor
 public:
 	
 	MPU6050(void);
-	~MPU6050(void);
+	virtual ~MPU6050(void);
 
-	bool initialize(void);
-	bool testConnection(void);
+	virtual bool initialize(void);
+	virtual bool testConnection(void);
+	virtual uint8_t getData(void* data1,void* data2 = null,void* data3 = null,void* data4 = null,void* data5 = null,void* data6 = null);
 
 	// ACCEL_*OUT_* registers
 //	void getMotion9(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, int16_t* gy, int16_t* gz, int16_t* mx, int16_t* my, int16_t* mz);
