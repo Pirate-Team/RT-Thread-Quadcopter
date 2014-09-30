@@ -5,7 +5,7 @@
 class I2Cdev
 {
 public:
-	static void init(void);
+	static void initialize(void);
 	
 	static bool writeBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_t* data);
 	static bool readBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_t *data);

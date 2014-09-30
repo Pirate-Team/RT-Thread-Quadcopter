@@ -45,7 +45,7 @@ float& Quaternion::operator[](int8_t index)
 }
 void Quaternion::toEuler(float& pitch,float& roll, float& yaw)
 {
-	pitch = (float)asin(2 * w*y - 2 * z*x);
-    roll = (float)atan2(2 * w*x + 2 * y*z, 1 - 2 * x*x - 2 * y*y);
+	pitch = (float)atan2(2 * w*x + 2 * y*z, 1 - 2 * x*x - 2 * y*y);
+    roll = (float)asin(2 * w*y - 2 * z*x);
     yaw = (float)atan2(2 * w*z + 2 * x*y, 1 - 2 * y*y - 2 * z*z);
 }

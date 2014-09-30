@@ -205,6 +205,16 @@ void USART3_IRQHandler(void)
 #endif
 }
 
+
+
+void TIM3_IRQHandler(void)
+{
+	void MyTIM3_IRQHandler(void);
+	rt_interrupt_enter();
+	MyTIM3_IRQHandler();
+	rt_interrupt_leave();
+}
+
 /**
   * @}
   */

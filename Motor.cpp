@@ -1,13 +1,12 @@
 #include "Motor.h"
 /*-------------------------------------------------
-	使用TIM4，通道PB6,PB7,PB8,PB9
+	使用TIM1，通道PA8,9,10,11
 --------------------------------------------------*/
-
-#define COUNTER_FREQ 100000	//计数器频率，精确到10us
+#define COUNTER_FREQ 1000000	//计数器频率，精确到1us
 #define PWM_FREQ 50				//PWM频率，周期20ms
 #define PRESCALER        ((SystemCoreClock / COUNTER_FREQ) - 1) 
 #define ARR              ((COUNTER_FREQ / PWM_FREQ) - 1)
-#define INIT_DUTYCYCLE	 ((uint8_t)80)	//初始化脉宽0.8ms
+#define INIT_DUTYCYCLE	 ((uint8_t)900)	//初始化脉宽0.9ms
 
 bool Motor::state = false;	//静态成员变量初始化
 
@@ -22,22 +21,22 @@ void Motor::init()
 --------------------------------------------------*/
 	GPIO_InitTypeDef GPIO_InitStructure;
 
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1, ENABLE);
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
 
-	/* TIM4 CH1 (PB6), TIM4 CH2 (PB7), TIM4 CH3 (PB8) and TIM4 CH4 (PB9) */
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7 | GPIO_Pin_8 | GPIO_Pin_9;
+	/* TIM1 CH1 (PA8), TIM1 CH2 (PA9), TIM1 CH3 (PA10) and TIM1 CH4 (PA11) */
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_11;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP ;
-	GPIO_Init(GPIOB, &GPIO_InitStructure); 
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL ;
+	GPIO_Init(GPIOA, &GPIO_InitStructure); 
 
-	/* Connect TIM4 pins to AF2 */  
-	GPIO_PinAFConfig(GPIOB, GPIO_PinSource6, GPIO_AF_TIM4);
-	GPIO_PinAFConfig(GPIOB, GPIO_PinSource7, GPIO_AF_TIM4); 
-	GPIO_PinAFConfig(GPIOB, GPIO_PinSource8, GPIO_AF_TIM4);
-	GPIO_PinAFConfig(GPIOB, GPIO_PinSource9, GPIO_AF_TIM4); 
+	/* Connect TIM1 pins to AF */  
+	GPIO_PinAFConfig(GPIOA, GPIO_PinSource8, GPIO_AF_TIM1);
+	GPIO_PinAFConfig(GPIOA, GPIO_PinSource9, GPIO_AF_TIM1); 
+	GPIO_PinAFConfig(GPIOA, GPIO_PinSource10, GPIO_AF_TIM1);
+	GPIO_PinAFConfig(GPIOA, GPIO_PinSource11, GPIO_AF_TIM1); 
 	
 /*----------------------------------------------
 	定时器4输出4路PWM配置
@@ -52,33 +51,31 @@ void Motor::init()
 	TIM_TimeBaseStructure.TIM_Prescaler = (uint16_t)PRESCALER;
 	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
-	TIM_TimeBaseInit(TIM4, &TIM_TimeBaseStructure);
+	TIM_TimeBaseStructure.TIM_RepetitionCounter = 0;
+	TIM_TimeBaseInit(TIM1, &TIM_TimeBaseStructure);
 
 	/* PWM1 Mode configuration: Channel1 */
+	TIM_OCStructInit(&TIM_OCInitStructure);
 	TIM_OCInitStructure.TIM_OCMode      = TIM_OCMode_PWM1;
 	TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
 	TIM_OCInitStructure.TIM_Pulse       = INIT_DUTYCYCLE;
 	TIM_OCInitStructure.TIM_OCPolarity  = TIM_OCPolarity_High;
-	TIM_OC1Init(TIM4, &TIM_OCInitStructure);
-	TIM_OC1PreloadConfig(TIM4, TIM_OCPreload_Enable);
+	TIM_OCInitStructure.TIM_OCIdleState = TIM_OCIdleState_Set;
+	TIM_OC1Init(TIM1, &TIM_OCInitStructure);
+	TIM_OC1PreloadConfig(TIM1, TIM_OCPreload_Enable);
 
 	/* PWM1 Mode configuration: Channel2 */
-	TIM_OC2Init(TIM4, &TIM_OCInitStructure);
-	TIM_OC2PreloadConfig(TIM4, TIM_OCPreload_Enable);
-
+	TIM_OC2Init(TIM1, &TIM_OCInitStructure);
 	/* PWM1 Mode configuration: Channel3 */
-	TIM_OC3Init(TIM4, &TIM_OCInitStructure);
-	TIM_OC3PreloadConfig(TIM4, TIM_OCPreload_Enable);
-
+	TIM_OC3Init(TIM1, &TIM_OCInitStructure);
 	/* PWM1 Mode configuration: Channel4 */
-	TIM_OC4Init(TIM4, &TIM_OCInitStructure);
-	TIM_OC4PreloadConfig(TIM4, TIM_OCPreload_Enable);
+	TIM_OC4Init(TIM1, &TIM_OCInitStructure);
 
-	TIM_ARRPreloadConfig(TIM4, ENABLE);
+	TIM_ARRPreloadConfig(TIM1, ENABLE);
 
-	/* TIM4 disable counter */
-	TIM_Cmd(TIM4, DISABLE);
-
+	/* TIM1 disable counter */
+	TIM_Cmd(TIM1, DISABLE);
+	TIM_CtrlPWMOutputs(TIM1,ENABLE);
 /*----------------------------------------------
 	是否启动标志
 ----------------------------------------------*/
@@ -88,51 +85,41 @@ void Motor::init()
 void Motor::start()
 {
 	state = true;
-	TIM_SetCompare1(TIM4,INIT_DUTYCYCLE);
-	TIM_SetCompare2(TIM4,INIT_DUTYCYCLE);
-	TIM_SetCompare3(TIM4,INIT_DUTYCYCLE);
-	TIM_SetCompare4(TIM4,INIT_DUTYCYCLE);
-	TIM_Cmd(TIM4,ENABLE);
+	TIM_Cmd(TIM1,ENABLE);
 }
 
 void Motor::stop()
 {
 	state = false;
-	TIM_SetCompare1(TIM4,INIT_DUTYCYCLE);
-	TIM_SetCompare2(TIM4,INIT_DUTYCYCLE);
-	TIM_SetCompare3(TIM4,INIT_DUTYCYCLE);
-	TIM_SetCompare4(TIM4,INIT_DUTYCYCLE);
-	TIM_Cmd(TIM4,DISABLE);
+	TIM_Cmd(TIM1,DISABLE);
 }
 /*----------------------------------------------
-	0<=throttle<=100---->100<=CRR<=200
+	1000<=throttle<=2000
 ----------------------------------------------*/
-void Motor::setThrottle(MOTOR_ENUM motor,uint8_t throttle)
+void Motor::setThrottle(MOTOR_ENUM motor,uint16_t throttle)
 {
-	uint8_t crr = throttle + 100;
-	if(crr>200) crr = 200;
-	else if(crr<100) crr = 100;
-	
+	//限速1500
+	throttle = (throttle>1500)?(1500):((throttle<1000)?(1000):(throttle));
 	switch(motor)
 	{
 		case MOTOR1:
-			TIM_SetCompare1(TIM4,crr);
+			TIM_SetCompare1(TIM1,throttle);
 			break;
 		case MOTOR2:
-			TIM_SetCompare2(TIM4,crr);
+			TIM_SetCompare2(TIM1,throttle);
 			break;
 		case MOTOR3:
-			TIM_SetCompare3(TIM4,crr);
+			TIM_SetCompare3(TIM1,throttle);
 			break;
 		case MOTOR4:
-			TIM_SetCompare4(TIM4,crr);
+			TIM_SetCompare4(TIM1,throttle);
 			break;
 		default:
 			break;
 	}
 }
 
-void Motor::setThrottle(uint8_t throttle)
+void Motor::setThrottle(uint16_t throttle)
 {
 	setThrottle(MOTOR1,throttle);
 	setThrottle(MOTOR2,throttle);
@@ -140,7 +127,7 @@ void Motor::setThrottle(uint8_t throttle)
 	setThrottle(MOTOR4,throttle);
 }
 
-void Motor::setThrottle(uint8_t throttle1,uint8_t throttle2,uint8_t throttle3,uint8_t throttle4)
+void Motor::setThrottle(uint16_t throttle1,uint16_t throttle2,uint16_t throttle3,uint16_t throttle4)
 {
 	setThrottle(MOTOR1,throttle1);
 	setThrottle(MOTOR2,throttle2);
@@ -148,24 +135,23 @@ void Motor::setThrottle(uint8_t throttle1,uint8_t throttle2,uint8_t throttle3,ui
 	setThrottle(MOTOR4,throttle4);
 }
 
-void Motor::getThrottle(MOTOR_ENUM motor,uint8_t& throttle)
+void Motor::getThrottle(MOTOR_ENUM motor,uint16_t& throttle)
 {
 	switch(motor)
 	{
 		case MOTOR1:
-			throttle = (uint8_t)TIM_GetCapture1(TIM4);
+			throttle = (uint16_t)TIM_GetCapture1(TIM1);
 			break;
 		case MOTOR2:
-			throttle = (uint8_t)TIM_GetCapture2(TIM4);
+			throttle = (uint16_t)TIM_GetCapture2(TIM1);
 			break;
 		case MOTOR3:
-			throttle = (uint8_t)TIM_GetCapture3(TIM4);
+			throttle = (uint16_t)TIM_GetCapture3(TIM1);
 			break;
 		case MOTOR4:
-			throttle = (uint8_t)TIM_GetCapture4(TIM4);
+			throttle = (uint16_t)TIM_GetCapture4(TIM1);
 			break;
 		default:
 			break;
 	}
-	throttle -= 100;
 }

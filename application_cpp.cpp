@@ -2,150 +2,157 @@
 #include "stdio.h"
 #include "rtthread.h"
 #include "stm32f4xx.h"
-#include "MPU6050.h"
-#include "I2Cdev.h"
-#include "HMC5883L.h"
-#include "MS5611.h"
-#include "arm_math.h"
-#include "quadx.h"
-#include "serial.h"
-void rt_thread_entry_sensor_test(void* parameter)
-{
-	I2Cdev::init();
-	rt_thread_delay(200);
-	
-	MPU6050 accelgyro;
-	rt_kprintf("\r\nMPU6050 initialize: ");
-	rt_kprintf(accelgyro.initialize()?"success\r\n":"failure\r\n");
-	HMC5883L mag;
-	rt_kprintf("\r\nHMC5883 initialize: ");
-	rt_kprintf(mag.initialize()?"success\r\n":"failure\r\n");
-	MS5611 baro;
-	rt_kprintf("\r\nMS5611 initialize: ");
-	rt_kprintf(baro.initialize()?"success\r\n":"failure\r\n");
-	
-	accelgyro.setOffSet();
-	int16_t ax, ay, az;
-	int16_t gx, gy, gz, gzCal;
-	int16_t mx, my, mz;
-	float heading,preHeading,altitude;
-	char str[100];
-	uint32_t preTick;
-	while(1)
-	{	
-		preTick = rt_tick_get();
-		accelgyro.getMotion6Cal(&ax, &ay, &az, &gx, &gy, &gz);
-//		sprintf(str,"accel: %+f\t%+f\t%+f\tgyro: %+f\t%+f\t%+f\t%d\r\n",(float)ax/2048,(float)ay/2048,(float)az/2048,(float)gx/16.4f,(float)gy/16.4f,(float)gz/16.4f,rt_tick_get() - preTick);
-//		rt_kprintf("%s",str);
-		mag.getData(&mx,&my,&mz,&heading);
-		gzCal = (gz - (heading - preHeading)*100) / 2;
-		preHeading = heading;
-		sprintf(str,"%+d\t%+d\t%+f\r\n",gz,gzCal,heading);
-		rt_kprintf("%s",str);
-//		sprintf(str,"mag: %+d\t%+d\t%+d\theading: %+f\t%d\r\n",mx,my,mz,heading,rt_tick_get() - preTick);
-//		rt_kprintf("%s",str);
-//		baro.getAltitude(&altitude);
-//		sprintf(str,"altitude: %+f\t%d\r\n",altitude,rt_tick_get() - preTick);
-//		rt_kprintf("%s",str);
-		rt_thread_delay(RT_TICK_PER_SECOND/10);
-	}
-}
+#include "Quadx.h"
+#include "Communication.h"
+#include "cpu_usage.h"
 
-struct rx_msg
-{
-    rt_device_t dev;
-    rt_size_t   size;
-};
- 
-rt_mq_t rx_mq;
-static char uart_rx_buffer[64];
- 
-// ????????
-rt_err_t uart_input(rt_device_t dev, rt_size_t size)
-{
-    struct rx_msg msg;
-    msg.dev = dev;
-    msg.size = size;
-    rt_mq_send(rx_mq, &msg, sizeof(struct rx_msg));
-    return RT_EOK;
-}
- 
-// ??????
-void usr_echo_thread_entry(void* parameter)
-{
-    struct rx_msg msg;
-   
-    rt_device_t device;
-    rt_err_t result = RT_EOK;
-   
-        // ?RT???????1??
-    device = rt_device_find("uart2");
-    if (device != RT_NULL)
-    {
-//		rt_device_init();
-                           // ?????????????
-        rt_device_set_rx_indicate(device, uart_input);
-                           // ?????????
-        rt_device_open(device, RT_DEVICE_OFLAG_RDWR);
-    }
-   
-    while(1)
-    {
-        result = rt_mq_recv(rx_mq, &msg, sizeof(struct rx_msg), 100);
-        if (result == -RT_ETIMEOUT)
-        {
-            // timeout, do nothing
-        }
-       
-        if (result == RT_EOK)
-        {
-            rt_uint32_t rx_length;
-           
-            rx_length = (sizeof(uart_rx_buffer) - 1) > msg.size ?
-                msg.size : sizeof(uart_rx_buffer) - 1;
-           
-            rx_length = rt_device_read(msg.dev, 0, &uart_rx_buffer[0], rx_length);
-            uart_rx_buffer[rx_length] = '\0';
-            rt_device_write(msg.dev, 0, &uart_rx_buffer[0], rx_length);
-        }
-    }
+void rt_thread_entry_main(void* parameter)
+{	
+/*************************************
+	create thread
+*************************************/
+	/*led_thread*/
+	rt_thread_t led_thread = rt_thread_create("led",
+												rt_thread_entry_led_test,
+												RT_NULL,
+												1024,//max used = 140 
+												1,
+												10);
+	/*communication_thread*/
+	rt_thread_t communication_thread = rt_thread_create("communication",
+												rt_thread_entry_communication,
+												RT_NULL,
+												1024,
+												9,
+												10);
+	/*quadx_get_thread*/
+	rt_thread_t quadx_get_thread = rt_thread_create("quadx_get_attitude",
+												rt_thread_entry_quadx_get_attitude,
+												RT_NULL,
+												1024,
+												7,
+												10);
+	/*quadx_control_thread*/
+	rt_thread_t quadx_control_thread = rt_thread_create("quadx_control_attitude",
+												rt_thread_entry_quadx_control_attitude,
+												RT_NULL,
+												1024,
+												8,
+												10);
+
+/*************************************
+	start thread
+*************************************/										
+	if(led_thread != RT_NULL) rt_thread_startup(led_thread);
+	if(communication_thread != RT_NULL) rt_thread_startup(communication_thread);
+	if(quadx_get_thread != RT_NULL) rt_thread_startup(quadx_get_thread);
+	if(quadx_control_thread != RT_NULL) rt_thread_startup(quadx_control_thread);
+
+/*************************************
+	declare variables
+*************************************/	
+	bool sendAtt = true,sendThro = true,sendCoor = false;
+	char str[100];
+	uint8_t rxData[RX_DATA_SIZE] = {0},txData[TX_DATA_SIZE];
+	uint8_t major,minor;
+	
+	//让出cpu，队尾等待调度
+	rt_thread_delay(100);
+	
+/*************************************
+	main loop
+*************************************/
+	while(1)
+	{
+		//recv
+		if(rt_mq_recv(rxQ,rxData,RX_DATA_SIZE,0) == RT_EOK)
+		{
+			if(rxData[0]>=0xda&&rxData[0]<=0xdd)
+			{
+				PID[rxData[0] - 0xda].P = rxData[1] / 500.0f;
+				PID[rxData[0] - 0xda].I = rxData[2] / 500.0f;
+				PID[rxData[0] - 0xda].D = rxData[3] / 500.0f;
+			}
+			else if(rxData[0]==0xca)
+			{
+				//TODO: restart
+				NVIC_SystemReset();
+			}
+			else if(rxData[0]==0xcb)
+			{
+				if(rxData[1] == 0xf1)
+				{
+					rt_thread_resume(quadx_get_thread);
+					rt_thread_resume(quadx_control_thread);
+				}
+				else if(rxData[1] == 0xf0)
+				{
+					rt_thread_suspend(quadx_get_thread);
+					rt_thread_suspend(quadx_control_thread);
+				}
+			}
+			else if(rxData[0]==0xcc)
+			{
+				//TODO: track
+			}
+			else if(rxData[0]==0xcd)
+			{
+				if(rxData[1] == 0xf1) sendAtt = true;
+				else if(rxData[1] == 0xf0) sendAtt = false;
+				if(rxData[2] == 0xf1) sendThro = true;
+				else if(rxData[2] == 0xf0) sendThro = false;
+				if(rxData[3] == 0xf1) sendCoor = true;
+				else if(rxData[3] == 0xf0) sendCoor = false;
+			}
+			else
+			{
+				rt_kprintf("Unknown command!\r\n");
+			}
+		}
+		//send
+		if(sendAtt)
+		{
+			uint8_t i;
+			txData[0] = 0xea;
+			for(i=0;i<3;i++)
+				((int16_t*)(txData+1))[i] = att[i] * 1000;//弧度乘1000，有符号
+			((uint16_t*)(txData+1))[i] = att[i] * 100;//米乘100，无符号
+			rt_mq_send(txQ,txData,TX_DATA_SIZE);
+		}
+		if(sendThro)
+		{
+			uint8_t i;
+			txData[0] = 0xeb;
+			for(i=0;i<4;i++)
+				((uint16_t*)(txData+1))[i] = motorThro[i];//电机不乘，有符号
+			rt_mq_send(txQ,txData,TX_DATA_SIZE);
+		}
+		if(sendCoor)
+		{
+			//TODO: send coordinate
+		}
+		
+//		sprintf(str,"%+f\t%+f\t%+f\t%+f\r\n",att[PITCH],att[ROLL],att[YAW],att[THROTTLE]);
+//		sprintf(str,"%+d\t%+d\t%+d\t%+d\r\n",motorThro[0],motorThro[1],motorThro[2],motorThro[3]);
+//		cpu_usage_get(&major,&minor);
+//		sprintf(str,"major: %d\tminor: %d\r\n",major,minor);
+//		rt_kprintf("%s",str);
+		rt_thread_delay(50);
+	}
 }
 
 int  rt_application_init(void)
 {	
+	cpu_usage_init();
 	
-	rx_mq = rt_mq_create("mq",sizeof(struct rx_msg),100*sizeof(struct rx_msg),RT_IPC_FLAG_PRIO);
-	
-	rt_thread_t led_thread;
-	led_thread = rt_thread_create("led",
-									rt_thread_entry_led_test,
+	rt_thread_t main_thread;
+	main_thread = rt_thread_create("main",
+									rt_thread_entry_main,
 									RT_NULL,
-									1024,
-									1,
-									100);
-	if(led_thread != RT_NULL)
-		rt_thread_startup(led_thread);
-	
-	rt_thread_t usart_thread;
-	usart_thread = rt_thread_create("usart",
-									usr_echo_thread_entry,
-									RT_NULL,
-									1024,
-									1,
-									100);
-	if(usart_thread != RT_NULL)
-		rt_thread_startup(usart_thread);
-	
-//	rt_thread_t quadx_thread;
-//	quadx_thread = rt_thread_create("quadx",
-//									rt_thread_entry_quadx,
-//									RT_NULL,
-//									4096,
-//									10,
-//									100);
-//	if(quadx_thread != RT_NULL)
-//		rt_thread_startup(quadx_thread);
-	
-	
+									1024,//max used = 140
+									8,
+									10);
+	if(main_thread != RT_NULL)
+		rt_thread_startup(main_thread);
 	return 0;
 }

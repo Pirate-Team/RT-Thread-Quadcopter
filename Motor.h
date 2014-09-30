@@ -19,13 +19,12 @@ public:
 	void init();
 	void start();
 	void stop();
-	void setThrottle(MOTOR_ENUM motor,uint8_t throttle);
-	void setThrottle(uint8_t throttle);
-	void setThrottle(uint8_t throttle1,uint8_t throttle2,uint8_t throttle3,uint8_t throttle4);
-	void getThrottle(MOTOR_ENUM motor,uint8_t& throttle);
+	void setThrottle(MOTOR_ENUM motor,uint16_t throttle);
+	void setThrottle(uint16_t throttle);
+	void setThrottle(uint16_t throttle1,uint16_t throttle2,uint16_t throttle3,uint16_t throttle4);
+	void getThrottle(MOTOR_ENUM motor,uint16_t& throttle);
 
 	static bool state;
 };
-
 
 #endif

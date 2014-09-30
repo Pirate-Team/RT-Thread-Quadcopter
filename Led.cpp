@@ -57,18 +57,8 @@ void rt_thread_entry_led_test(void* parameter)
 	Led led;
 	led.init();
 	while(1)
-	{
-//		uint32_t pretick;
-//		volatile uint32_t i = 8400000;
-//		rt_enter_critical();
-//		pretick = rt_tick_get();
-//		while (i)
-//			i--;
-//		rt_kprintf("ticks = %d\r\n",rt_tick_get() - pretick);
-//		rt_exit_critical();
-		
-		led.toggle();
-		
+	{	
+		led.toggle();	
 		rt_thread_delay(500);
 	}
 }

@@ -44,8 +44,7 @@ bool MS5611::initialize(void)
 	C[3] = C4;
 	C[4] = C5;
 	C[5] = C6;
-	getTemperature();
-	return true;
+	return getTemperature();
 }
 
 bool MS5611::testConnection(void)

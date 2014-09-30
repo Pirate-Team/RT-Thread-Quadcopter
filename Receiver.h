@@ -8,17 +8,20 @@ enum RC_TYPE
 	ROLL,
 	YAW,
 	THROTTLE,
-	HOLD,
-	AUX,
+//	HOLD,
+//	AUX,
 	RC_NUM
 };
 
+extern uint16_t RCValue[RC_NUM];
+
 class Receiver
 {
-	Receiver(void);
-	~Receiver(void);
-	bool initialize(void);
-	void getRCValue(int16_t* value);
+public:
+	static bool initialize(void);
+	static void getRCValue(int16_t* value);
 };
 
+void rt_thread_entry_receiver_test(void* parameter);
+	
 #endif

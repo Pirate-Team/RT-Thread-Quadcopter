@@ -1,11 +1,14 @@
 #ifndef QUATX_H
 #define QUATX_H
 #include "stm32f4xx.h"
-
-void rt_thread_quadx_get_sensor_data(void* parameter);
-void rt_thread_quadx_send_data(void* parameter);
-void rt_thread_quadx_AHRS(void* parameter);
-void rt_thread_quadx_PID(void* parameter);
-void rt_thread_entry_quadx(void* parameter);
-
+struct pid_t
+{
+	float P,I,D;
+};
+void rt_thread_entry_quadx_get_attitude(void* parameter);
+void rt_thread_entry_quadx_control_attitude(void* parameter);
+extern struct pid_t PID[4];
+extern float PIDResult[4];
+extern float att[4];
+extern uint16_t motorThro[4];
 #endif
