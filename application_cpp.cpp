@@ -29,7 +29,7 @@ void rt_thread_entry_main(void* parameter)
 	rt_thread_t quadx_get_thread = rt_thread_create("quadx_get_attitude",
 												rt_thread_entry_quadx_get_attitude,
 												RT_NULL,
-												1024,
+												2048,
 												7,
 												10);
 	/*quadx_control_thread*/
@@ -80,6 +80,7 @@ void rt_thread_entry_main(void* parameter)
 			}
 			else if(rxData[0]==0xcb)
 			{
+				//四轴模式
 				if(rxData[1] == 0xf1)
 				{
 					rt_thread_resume(quadx_get_thread);
@@ -93,6 +94,7 @@ void rt_thread_entry_main(void* parameter)
 			}
 			else if(rxData[0]==0xcc)
 			{
+				//图像跟踪模式
 				//TODO: track
 			}
 			else if(rxData[0]==0xcd)
@@ -103,6 +105,11 @@ void rt_thread_entry_main(void* parameter)
 				else if(rxData[2] == 0xf0) sendThro = false;
 				if(rxData[3] == 0xf1) sendCoor = true;
 				else if(rxData[3] == 0xf0) sendCoor = false;
+			}
+			else if(rxData[0]==0xce)
+			{
+				//保持高度模式
+				holdAlt = true;
 			}
 			else
 			{

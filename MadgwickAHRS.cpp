@@ -28,7 +28,7 @@
 // Variable definitions
 
 volatile float beta = betaDef;								// 2 * proportional gain (Kp)
-volatile uint8_t sampleInterval = 0;
+volatile float sampleInterval = 0;
 volatile float q0 = 1.0f, q1 = 0.0f, q2 = 0.0f, q3 = 0.0f;	// quaternion of sensor frame relative to auxiliary frame
 Quaternion quat(1,0,0,0);
 
@@ -215,10 +215,10 @@ void MadgwickAHRSupdateIMU(float gx, float gy, float gz, float ax, float ay, flo
 	}
 
 	// Integrate rate of change of quaternion to yield quaternion
-	q0 += qDot1 * ((float)sampleInterval + 0.1f) / 1000.0f;//(1.0f / sampleFreq);
-	q1 += qDot2 * ((float)sampleInterval + 0.1f) / 1000.0f;//(1.0f / sampleFreq);
-	q2 += qDot3 * ((float)sampleInterval + 0.1f) / 1000.0f;//(1.0f / sampleFreq);
-	q3 += qDot4 * ((float)sampleInterval + 0.1f) / 1000.0f;//(1.0f / sampleFreq);
+	q0 += qDot1 * sampleInterval;//(1.0f / sampleFreq);
+	q1 += qDot2 * sampleInterval;//(1.0f / sampleFreq);
+	q2 += qDot3 * sampleInterval;//(1.0f / sampleFreq);
+	q3 += qDot4 * sampleInterval;//(1.0f / sampleFreq);
 
 	// Normalise quaternion
 //	recipNorm = invSqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);

@@ -11,4 +11,5 @@ extern struct pid_t PID[4];
 extern float PIDResult[4];
 extern float att[4];
 extern uint16_t motorThro[4];
+extern bool holdAlt;
 #endif
