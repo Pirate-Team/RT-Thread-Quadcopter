@@ -69,9 +69,9 @@ void rt_thread_entry_main(void* parameter)
 		{
 			if(rxData[0]>=0xda&&rxData[0]<=0xdd)
 			{
-				PID[rxData[0] - 0xda].P = rxData[1] / 2000.0f;//P[0,0.1],精度0.005
-				PID[rxData[0] - 0xda].I = rxData[2] / 10000.0f;//I[0,0.02],精度0.0001
-				PID[rxData[0] - 0xda].D = rxData[3] / 10000.0f;//D[0,0.02],精度0.0001
+				PID[rxData[0] - 0xda].P = rxData[1] / 10.0f;//P[0,20],精度0.01
+				PID[rxData[0] - 0xda].I = rxData[2] / 1000.0f;//I[0,0.2],精度0.001
+				PID[rxData[0] - 0xda].D = rxData[3];//D[0,200],精度1
 			}
 			else if(rxData[0]==0xca)
 			{
@@ -122,7 +122,7 @@ void rt_thread_entry_main(void* parameter)
 			uint8_t i;
 			txData[0] = 0xea;
 			for(i=0;i<3;i++)
-				((int16_t*)(txData+1))[i] = att[i] * 1000;//角度乘10，有符号
+				((int16_t*)(txData+1))[i] = att[i] * 10;//角度乘10，有符号
 			((uint16_t*)(txData+1))[i] = att[i] * 50;//米乘50，无符号
 			rt_mq_send(txQ,txData,TX_DATA_SIZE);
 		}

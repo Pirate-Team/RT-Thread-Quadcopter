@@ -153,7 +153,7 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 		/*control motor*/
 		{
 			//Í£»úÌõ¼þ
-			if(abs(att[PITCH])>70||abs(att[ROLL])>70||RCValue[THROTTLE]<1050)
+			if(abs(att[PITCH])>70||abs(att[ROLL])>70||RCValue[THROTTLE]<1060)
 			{
 				motorThro[0] = 1000;
 				motorThro[1] = 1000;
