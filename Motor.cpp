@@ -6,7 +6,7 @@
 #define PWM_FREQ 50				//PWM频率，周期20ms
 #define PRESCALER        ((SystemCoreClock / COUNTER_FREQ) - 1) 
 #define ARR              ((COUNTER_FREQ / PWM_FREQ) - 1)
-#define INIT_DUTYCYCLE	 ((uint8_t)900)	//初始化脉宽0.9ms
+#define INIT_DUTYCYCLE	 ((uint8_t)1000)	//初始化脉宽0.9ms
 
 bool Motor::state = false;	//静态成员变量初始化
 
@@ -99,7 +99,8 @@ void Motor::stop()
 void Motor::setThrottle(MOTOR_ENUM motor,uint16_t throttle)
 {
 	//限速1500
-	throttle = (throttle>1500)?(1500):((throttle<1000)?(1000):(throttle));
+#define LIMIT 2000
+	throttle = (throttle>LIMIT)?(LIMIT):((throttle<INIT_DUTYCYCLE)?(INIT_DUTYCYCLE):(throttle));
 	switch(motor)
 	{
 		case MOTOR1:

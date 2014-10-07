@@ -1,5 +1,8 @@
 #include "quaternion.h"
 #include "math.h"
+
+#define M_57_3 57.29577f
+
 Quaternion::Quaternion(void)
 {
 	w=1; x=0; y=0; z=0;
@@ -10,12 +13,12 @@ Quaternion::Quaternion(float _w,float _x,float _y,float _z)
 }
 Quaternion::Quaternion(float pitch,float roll,float yaw)
 {
-	float   sinpitch_2 = (float)sin(pitch / 2),
-			cospitch_2 = (float)cos(pitch / 2),
-			sinroll_2 = (float)sin(roll / 2),
-			cosroll_2 = (float)cos(roll / 2),
-			sinyaw_2 = (float)sin(yaw / 2),
-			cosyaw_2 = (float)cos(yaw / 2);
+	float   sinpitch_2 = (float)sin(pitch / 2 / M_57_3),
+			cospitch_2 = (float)cos(pitch / 2 / M_57_3),
+			sinroll_2 = (float)sin(roll / 2 / M_57_3),
+			cosroll_2 = (float)cos(roll / 2 / M_57_3),
+			sinyaw_2 = (float)sin(yaw / 2 / M_57_3),
+			cosyaw_2 = (float)cos(yaw / 2 / M_57_3);
 
     //pitch->y roll->x yaw->z
     w = cosroll_2*cospitch_2*cosyaw_2 + sinroll_2*sinpitch_2*sinyaw_2;
@@ -45,7 +48,7 @@ float& Quaternion::operator[](int8_t index)
 }
 void Quaternion::toEuler(float& pitch,float& roll, float& yaw)
 {
-	pitch = (float)atan2(2 * w*x + 2 * y*z, 1 - 2 * x*x - 2 * y*y);
-    roll = (float)asin(2 * w*y - 2 * z*x);
-    yaw = (float)atan2(2 * w*z + 2 * x*y, 1 - 2 * y*y - 2 * z*z);
+	pitch = (float)atan2(2 * w*x + 2 * y*z, 1 - 2 * x*x - 2 * y*y)*M_57_3;
+    roll = (float)asin(2 * w*y - 2 * z*x)*M_57_3;
+    yaw = (float)atan2(2 * w*z + 2 * x*y, 1 - 2 * y*y - 2 * z*z)*M_57_3;
 }

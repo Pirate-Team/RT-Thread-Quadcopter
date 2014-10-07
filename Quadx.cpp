@@ -12,8 +12,9 @@
 /*-----------------------------------
 	define
 -----------------------------------*/
-#define M_57_3 57.295779f
-#define GAIN 939.6507756f
+#define M_57_3 57.29577f
+#define GYRO_SCALE 32.8f
+#define BETWEEN(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 /*-----------------------------------
 	global
 -----------------------------------*/
@@ -53,13 +54,13 @@ void rt_thread_entry_quadx_get_attitude(void* parameter)
 		accelgyro.getMotion6Cal(&ax, &ay, &az, &gx, &gy, &gz);
 		if(((2*PI-abs(heading - preHeading))<0.01f)||(abs(heading - preHeading)<0.01f))
 			if(gz<20&&gz>-20) gz = 0;
-		if(gx<3&&gx>-3) gx = 0;
-		if(gy<3&&gy>-3) gy = 0;
-		if(state == 0 || state == 20 || state == 40)
+		if(gx<10&&gx>-10) gx /= 2.0f;
+		if(gy<10&&gy>-10) gy /= 2.0f;
+		if(state == 0 || state == 20)
 		{
 			preHeading = heading;
 			mag.getHeadingCal(&heading);
-			if(state == 0) state = 60;
+			if(state == 0) state = 40;
 		}
 		else if(state == 30)
 		{
@@ -77,9 +78,14 @@ void rt_thread_entry_quadx_get_attitude(void* parameter)
 		preTick = curTick;
 		curTick = rt_tick_get();
 		sampleInterval = (curTick - preTick) / 1000.0f + 0.0001f;
-//		rt_mutex_take(quatMutex,RT_WAITING_FOREVER);
-		MadgwickAHRSupdateIMU((float)gx/GAIN,(float)gy/GAIN,(float)gz/GAIN,(float)ax,(float)ay,(float)az);
-//		rt_mutex_release(quatMutex);
+		//姿态数据丢失
+		if(ax||ay||az)
+		{
+			MadgwickAHRSupdateIMU((float)gx/GYRO_SCALE,(float)gy/GYRO_SCALE,(float)gz/GYRO_SCALE,(float)ax,(float)ay,(float)az);
+			quat.toEuler(att[PITCH],att[ROLL],att[YAW]);
+		}
+		else
+			att[PITCH]=att[ROLL]=att[YAW]=0;
 		
 		rt_thread_delay(4);
 	}
@@ -95,47 +101,44 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 	
 	int16_t err[4],preErr[4] = {0},sumErr[4] = {0};
 	float alt = 0;
+	rt_thread_delay(100);
 	while(1)
 	{
-		if(ax||ay||az)
-			quat.toEuler(att[PITCH],att[ROLL],att[YAW]);
-		else
-			att[PITCH]=att[ROLL]=att[YAW]=0;
 		/*calculate PID*/
 		{
 			/*pitch&roll*/
-			//最多0.5rad == 28.647度
+			//最多50度
 			for(uint8_t i=0;i<2;i++)
 			{
-				err[i] = (RCValue[i] - 1500) - att[i] * 1000;
+				err[i] = (RCValue[i] - 1500)/10 - att[i];
 				PIDResult[i] = PID[i].P * err[i];
 				
-				if(err[i]<50&&err[i]>-50) 
-				{
-					sumErr[i] += err[i];
-					if(sumErr[i]>30000) sumErr[i] = 30000;
-					else if(sumErr[i]<-30000) sumErr[i] = -30000;
-				}
-				else sumErr[i] = 0;
+				//偏差小于5度积分
+				if(err[i]<5 && err[i]>-5 && (int32_t)err[i]*(int32_t)preErr[i]>=0)
+					sumErr[i] = BETWEEN(sumErr[i]+err[i],-1000,1000);
+				else 
+					sumErr[i] = 0;
 				PIDResult[i] += PID[i].I * sumErr[i];
 				
-				PIDResult[i] += PID[i].D * (err[i] -preErr[i]);
+				PIDResult[i] -= PID[i].D * (i==0?gx:gy) / GYRO_SCALE;
+				
 				preErr[i] = err[i];
 			}
+			
 			/*yaw*/
-			err[YAW] = (RCValue[YAW] - 1500) - (gz / GAIN) * 1000;
+			err[YAW] = (RCValue[YAW] - 1500)/10  - (gz / GYRO_SCALE);
 			PIDResult[YAW] = PID[YAW].P * err[YAW];
-			if(abs(gz / GAIN) < 0.02f)
-			{
-				sumErr[YAW] += err[YAW]; 
-				if(sumErr[YAW]>30000) sumErr[YAW] = 30000;
-				else if(sumErr[YAW]<-30000) sumErr[YAW] = -30000;
-			}
-			else sumErr[YAW] = 0;
+			
+			if(abs(gz / GYRO_SCALE)<2 && (int32_t)err[YAW]*(int32_t)preErr[YAW]>=0)
+				sumErr[YAW] = BETWEEN(sumErr[YAW] + err[YAW],-1000,1000); 
+			else 
+				sumErr[YAW] = 0;
 			PIDResult[YAW] += PID[YAW].I * sumErr[YAW];
 			
 			PIDResult[YAW] += PID[YAW].D * (err[YAW] -preErr[YAW]);
+			
 			preErr[YAW] = err[YAW];
+			
 			/*altitude*/
 			if(holdAlt)
 			{
@@ -149,10 +152,21 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 		}
 		/*control motor*/
 		{
-			motorThro[0] = RCValue[THROTTLE] + PIDResult[PITCH] + PIDResult[ROLL] + PIDResult[YAW] + PIDResult[THROTTLE];
-			motorThro[1] = RCValue[THROTTLE] + PIDResult[PITCH] - PIDResult[ROLL] - PIDResult[YAW] + PIDResult[THROTTLE];
-			motorThro[2] = RCValue[THROTTLE] - PIDResult[PITCH] - PIDResult[ROLL] + PIDResult[YAW] + PIDResult[THROTTLE];
-			motorThro[3] = RCValue[THROTTLE] - PIDResult[PITCH] + PIDResult[ROLL] - PIDResult[YAW] + PIDResult[THROTTLE];
+			//停机条件
+			if(abs(att[PITCH])>70||abs(att[ROLL])>70||RCValue[THROTTLE]<1050)
+			{
+				motorThro[0] = 1000;
+				motorThro[1] = 1000;
+				motorThro[2] = 1000;
+				motorThro[3] = 1000;
+			}
+			else
+			{
+				motorThro[0] = RCValue[THROTTLE] + PIDResult[PITCH] + PIDResult[ROLL] + PIDResult[YAW] + PIDResult[THROTTLE];
+				motorThro[1] = RCValue[THROTTLE] + PIDResult[PITCH] - PIDResult[ROLL] - PIDResult[YAW] + PIDResult[THROTTLE];
+				motorThro[2] = RCValue[THROTTLE] - PIDResult[PITCH] - PIDResult[ROLL] + PIDResult[YAW] + PIDResult[THROTTLE];
+				motorThro[3] = RCValue[THROTTLE] - PIDResult[PITCH] + PIDResult[ROLL] - PIDResult[YAW] + PIDResult[THROTTLE];
+			}
 			mo.setThrottle(motorThro[0],motorThro[1],motorThro[2],motorThro[3]);
 		}
 		rt_thread_delay(10);

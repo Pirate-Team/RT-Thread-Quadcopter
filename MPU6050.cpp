@@ -26,7 +26,7 @@ bool MPU6050::initialize(void)
 	if(!I2Cdev::writeByte(devAddr, MPU6050_RA_PWR_MGMT_1, 0x80)) return false;             //PWR_MGMT_1    -- DEVICE_RESET 1
 	rt_thread_delay(200);
 	if(!I2Cdev::writeByte(devAddr, MPU6050_RA_PWR_MGMT_1, 0x01)) return false;
-	if(!I2Cdev::writeByte(devAddr, MPU6050_RA_GYRO_CONFIG, 0x18)) return false;
+	if(!I2Cdev::writeByte(devAddr, MPU6050_RA_GYRO_CONFIG, 0x10)) return false;
     if(!I2Cdev::writeByte(devAddr, MPU6050_RA_ACCEL_CONFIG, 0x18)) return false;
     if(!I2Cdev::writeByte(devAddr, MPU6050_RA_CONFIG, 0x01)) return false; //µÕÕ®¬À≤®£¨g—” ±2ms
 	if(!I2Cdev::writeByte(devAddr, MPU6050_RA_SMPLRT_DIV, 0x00)) return false;

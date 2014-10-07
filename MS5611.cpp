@@ -92,7 +92,7 @@ bool MS5611::getTemperature(float* temp)
 	D2 = (buffer[0] << 16) | (buffer[1] << 8) | buffer[2];
 	
 	dT =D2 - ((C[4]) << 8);
-	temperature = (temperature + (2000 + (((int64_t)dT * (int64_t)C[5]) >> 23)) / 100.0f) / 2;	
+	temperature = (temperature + (2000 + (((int64_t)dT * (int64_t)C[5]) >> 23)) / 100.0f) / 2.0f;	
 #ifdef DEBUG
 	rt_kprintf("D2 = %d\ttemperature = %d\r\n",D2,temperature);
 #endif
@@ -130,7 +130,7 @@ bool MS5611::getPressure(float* press)
 		sens -= sens2;
 	}
 	
-	pressure = (pressure + (((((int64_t)D1 * sens ) >> 21) - off) >> 15) / 100.0f) / 2;
+	pressure = (pressure + (((((int64_t)D1 * sens ) >> 21) - off) >> 15) / 100.0f) / 2.0f;
 #ifdef DEBUG
 	rt_kprintf("D1 = %d\tpressure = %d\r\n",D1,pressure);
 #endif
@@ -144,7 +144,7 @@ bool MS5611::getAltitude(float* altitude)
 	float temp;
 	//((pow((sea_press / press), 1/5.257) - 1.0) * (temp + 273.15)) / 0.0065
 	temp = ((pow((float)SEA_PRESS / pressure, 1/5.257f) - 1.0f) * (temperature + 273.15f)) / 0.0065f;
-	temp = ((*altitude)*6.0f + temp*2.0f) / 8.0f;
+	temp = ((*altitude)*6 + temp*2) / 8.0f;
 	*altitude = temp;
 	return true;
 }

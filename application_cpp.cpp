@@ -29,7 +29,7 @@ void rt_thread_entry_main(void* parameter)
 	rt_thread_t quadx_get_thread = rt_thread_create("quadx_get_attitude",
 												rt_thread_entry_quadx_get_attitude,
 												RT_NULL,
-												2048,
+												1024,
 												7,
 												10);
 	/*quadx_control_thread*/
@@ -69,9 +69,9 @@ void rt_thread_entry_main(void* parameter)
 		{
 			if(rxData[0]>=0xda&&rxData[0]<=0xdd)
 			{
-				PID[rxData[0] - 0xda].P = rxData[1] / 500.0f;
-				PID[rxData[0] - 0xda].I = rxData[2] / 500.0f;
-				PID[rxData[0] - 0xda].D = rxData[3] / 500.0f;
+				PID[rxData[0] - 0xda].P = rxData[1] / 2000.0f;//P[0,0.1],精度0.005
+				PID[rxData[0] - 0xda].I = rxData[2] / 10000.0f;//I[0,0.02],精度0.0001
+				PID[rxData[0] - 0xda].D = rxData[3] / 10000.0f;//D[0,0.02],精度0.0001
 			}
 			else if(rxData[0]==0xca)
 			{
@@ -122,8 +122,8 @@ void rt_thread_entry_main(void* parameter)
 			uint8_t i;
 			txData[0] = 0xea;
 			for(i=0;i<3;i++)
-				((int16_t*)(txData+1))[i] = att[i] * 1000;//弧度乘1000，有符号
-			((uint16_t*)(txData+1))[i] = att[i] * 100;//米乘100，无符号
+				((int16_t*)(txData+1))[i] = att[i] * 1000;//角度乘10，有符号
+			((uint16_t*)(txData+1))[i] = att[i] * 50;//米乘50，无符号
 			rt_mq_send(txQ,txData,TX_DATA_SIZE);
 		}
 		if(sendThro)

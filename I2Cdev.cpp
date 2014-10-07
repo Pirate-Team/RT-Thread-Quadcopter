@@ -13,7 +13,7 @@
 #define SCL_read      GPIOA->IDR  & GPIO_Pin_6 /* GPIO_ReadInputDataBit(GPIOB , GPIO_Pin_10) */
 #define SDA_read      GPIOA->IDR  & GPIO_Pin_7 /* GPIO_ReadInputDataBit(GPIOB , GPIO_Pin_11) */
 
-#define SCL_TIME_OUT 25
+#define SCL_TIME_OUT 20
 
 void I2Cdev::I2C_delay(void)
 {
