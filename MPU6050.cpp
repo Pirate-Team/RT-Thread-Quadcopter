@@ -103,7 +103,7 @@ void MPU6050::getMotion6Cal(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, 
 	{
 		*ax = 0;
 		*ay = 0;
-		*az = 0;
+		*az = 2048;
 		*gx = 0;
 		*gy = 0;
 		*gz = 0;

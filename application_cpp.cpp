@@ -37,7 +37,7 @@ void rt_thread_entry_main(void* parameter)
 												rt_thread_entry_quadx_control_attitude,
 												RT_NULL,
 												1024,
-												8,
+												7,
 												10);
 
 /*************************************
@@ -69,9 +69,9 @@ void rt_thread_entry_main(void* parameter)
 		{
 			if(rxData[0]>=0xda&&rxData[0]<=0xdd)
 			{
-				PID[rxData[0] - 0xda].P = rxData[1] / 10.0f;//P[0,20],精度0.01
-				PID[rxData[0] - 0xda].I = rxData[2] / 1000.0f;//I[0,0.2],精度0.001
-				PID[rxData[0] - 0xda].D = rxData[3];//D[0,200],精度1
+				PID[rxData[0] - 0xda].P = rxData[1] / 10.0f;//P[0,20],精度0.1
+				PID[rxData[0] - 0xda].I = rxData[2] / 1000.0f;//I[0,0.250],精度0.001
+				PID[rxData[0] - 0xda].D = rxData[3] / 10.0f;//D[0,20],精度0.1
 			}
 			else if(rxData[0]==0xca)
 			{

@@ -52,7 +52,7 @@ void rt_thread_entry_quadx_get_attitude(void* parameter)
 	{
 		/*getSensorData*/
 		accelgyro.getMotion6Cal(&ax, &ay, &az, &gx, &gy, &gz);
-		if(((2*PI-abs(heading - preHeading))<0.01f)||(abs(heading - preHeading)<0.01f))
+		if(((2*PI-abs(heading - preHeading))<0.02f)||(abs(heading - preHeading)<0.02f))
 			if(gz<20&&gz>-20) gz = 0;
 		if(gx<10&&gx>-10) gx /= 2.0f;
 		if(gy<10&&gy>-10) gy /= 2.0f;
@@ -78,14 +78,9 @@ void rt_thread_entry_quadx_get_attitude(void* parameter)
 		preTick = curTick;
 		curTick = rt_tick_get();
 		sampleInterval = (curTick - preTick) / 1000.0f + 0.0001f;
-		//姿态数据丢失
-		if(ax||ay||az)
-		{
-			MadgwickAHRSupdateIMU((float)gx/GYRO_SCALE,(float)gy/GYRO_SCALE,(float)gz/GYRO_SCALE,(float)ax,(float)ay,(float)az);
-			quat.toEuler(att[PITCH],att[ROLL],att[YAW]);
-		}
-		else
-			att[PITCH]=att[ROLL]=att[YAW]=0;
+		//姿态数据
+		MadgwickAHRSupdateIMU((float)gx/GYRO_SCALE,(float)gy/GYRO_SCALE,(float)gz/GYRO_SCALE,(float)ax,(float)ay,(float)az);
+		quat.toEuler(att[PITCH],att[ROLL],att[YAW]);
 		
 		rt_thread_delay(4);
 	}
@@ -99,37 +94,39 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 	mo.init();
 	mo.start();
 	
-	int16_t err[4],preErr[4] = {0},sumErr[4] = {0};
+	float err[4],preErr[4] = {0},sumErr[4] = {0};
 	float alt = 0;
 	rt_thread_delay(100);
 	while(1)
 	{
 		/*calculate PID*/
 		{
+//			RCValue[THROTTLE] = 1500;
 			/*pitch&roll*/
-			//最多50度
+			//最多30度
 			for(uint8_t i=0;i<2;i++)
 			{
-				err[i] = (RCValue[i] - 1500)/10 - att[i];
+				err[i] = BETWEEN(RCValue[i] - 1500,-500,500)/16.0f - att[i];
 				PIDResult[i] = PID[i].P * err[i];
 				
 				//偏差小于5度积分
-				if(err[i]<5 && err[i]>-5 && (int32_t)err[i]*(int32_t)preErr[i]>=0)
+				if((err[i]<10) && (err[i]>-10) && (abs(err[i])>0.5f))
 					sumErr[i] = BETWEEN(sumErr[i]+err[i],-1000,1000);
-				else 
+				else
 					sumErr[i] = 0;
 				PIDResult[i] += PID[i].I * sumErr[i];
 				
-				PIDResult[i] -= PID[i].D * (i==0?gx:gy) / GYRO_SCALE;
+				PIDResult[i] -= PID[i].D * ((i==0?gx:gy) / GYRO_SCALE);
+				PIDResult[i] = BETWEEN(PIDResult[i],-150,150);
 				
 				preErr[i] = err[i];
 			}
 			
 			/*yaw*/
-			err[YAW] = (RCValue[YAW] - 1500)/10  - (gz / GYRO_SCALE);
+			err[YAW] = (RCValue[YAW] - 1500)/16.0f  - (gz / GYRO_SCALE);
 			PIDResult[YAW] = PID[YAW].P * err[YAW];
 			
-			if(abs(gz / GYRO_SCALE)<2 && (int32_t)err[YAW]*(int32_t)preErr[YAW]>=0)
+			if(abs(gz / GYRO_SCALE)<2 && err[YAW]*preErr[YAW]>0)
 				sumErr[YAW] = BETWEEN(sumErr[YAW] + err[YAW],-1000,1000); 
 			else 
 				sumErr[YAW] = 0;

@@ -10,8 +10,8 @@
 #define SDA_H         GPIOA->BSRRL = GPIO_Pin_7 /* GPIO_SetBits(GPIOB , GPIO_Pin_11)   */
 #define SDA_L         GPIOA->BSRRH  = GPIO_Pin_7 /* GPIO_ResetBits(GPIOB , GPIO_Pin_11) */
 
-#define SCL_read      GPIOA->IDR  & GPIO_Pin_6 /* GPIO_ReadInputDataBit(GPIOB , GPIO_Pin_10) */
-#define SDA_read      GPIOA->IDR  & GPIO_Pin_7 /* GPIO_ReadInputDataBit(GPIOB , GPIO_Pin_11) */
+#define SCL_read      /*GPIOA->IDR  & GPIO_Pin_6*/ GPIO_ReadInputDataBit(GPIOA , GPIO_Pin_6)
+#define SDA_read      /*GPIOA->IDR  & GPIO_Pin_7*/ GPIO_ReadInputDataBit(GPIOA , GPIO_Pin_7)
 
 #define SCL_TIME_OUT 20
 
@@ -77,27 +77,18 @@ void I2Cdev::noAck(void)
 bool I2Cdev::waitAck(void)
 {
 //	u8 n = 0;
-    SCL_L;
+//    SCL_L;
     I2C_delay();
     SDA_H;
     I2C_delay();
     SCL_H;
     I2C_delay();
-    if (SDA_read) {
+    if(!SDA_read) {
         SCL_L;
-        return false;
+        return true;
     }
-/*    while(n<50)
-    {
-    	if(!SDA_read)
-    	{
-    		SCL_L;
-    		return true;
-    	}
-    	n++;
-    }*/
     SCL_L;
-    return true;
+    return false;
 }
 //===================================================================================
 //===================================================================================
@@ -150,7 +141,7 @@ void I2Cdev::initialize(void)
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT; 
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP; 
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL; 
 
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
 }
