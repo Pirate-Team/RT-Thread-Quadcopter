@@ -42,11 +42,6 @@ public:
 	bool reset();
 	bool getAltitude(float* altitude);
 
-private:
-	uint16_t C[6];
-	int32_t dT;
-	float temperature,pressure;
-
 };
 
 

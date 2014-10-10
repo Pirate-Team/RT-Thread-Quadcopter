@@ -1,5 +1,8 @@
 #include "Led.h"
 #include "rtthread.h"
+
+uint16_t Led::interval = 500;
+
 bool Led::state = false;
 
 Led::Led(void)
@@ -10,7 +13,7 @@ Led::~Led(void)
 {
 }
 
-void Led::init(void)
+void Led::initialize(void)
 {
 	GPIO_InitTypeDef  GPIO_InitStructure;
 
@@ -55,10 +58,10 @@ bool Led::getState(void)
 void rt_thread_entry_led_test(void* parameter)
 {
 	Led led;
-	led.init();
+//	led.initialize();
 	while(1)
 	{	
 		led.toggle();	
-		rt_thread_delay(500);
+		rt_thread_delay(led.interval);
 	}
 }

@@ -14,17 +14,13 @@ enum MOTOR_ENUM
 class Motor
 {
 public:
-	Motor();
-	~Motor();
-	void init();
-	void start();
-	void stop();
-	void setThrottle(MOTOR_ENUM motor,uint16_t throttle);
-	void setThrottle(uint16_t throttle);
-	void setThrottle(uint16_t throttle1,uint16_t throttle2,uint16_t throttle3,uint16_t throttle4);
-	void getThrottle(MOTOR_ENUM motor,uint16_t& throttle);
-
-	static bool state;
+	static void initialize();
+	static void setValue(MOTOR_ENUM motor,uint16_t Value);
+	static void setValue(uint16_t Value);
+	static void setValue(uint16_t Value1,uint16_t Value2,uint16_t Value3,uint16_t Value4);
+	static void getValue(MOTOR_ENUM motor,uint16_t& Value);
 };
+
+extern uint16_t motorValue[MOTORALL];
 
 #endif

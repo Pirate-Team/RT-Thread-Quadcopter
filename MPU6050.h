@@ -392,12 +392,7 @@ public:
 //	uint16_t getExternalSensorWord(int position);
 //	uint32_t getExternalSensorDWord(int position);
 
-	void setOffSet(void);
-	
-private:
-	int16_t accXOffSet,accYOffSet,accZOffSet;
-	int16_t gyroXOffSet,gyroYOffSet,gyroZOffSet;
-	int16_t accXAve, accYAve, accZAve, gyroXAve, gyroYAve, gyroZAve;
+	void setOffset(void);
 };
 
 #endif

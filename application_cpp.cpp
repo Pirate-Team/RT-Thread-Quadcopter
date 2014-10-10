@@ -5,9 +5,36 @@
 #include "Quadx.h"
 #include "Communication.h"
 #include "cpu_usage.h"
+#include "MPU6050.h"
+#include "HMC5883L.h"
+#include "MS5611.h"
+#include "Receiver.h"
+#include "Motor.h"
+#include "I2Cdev.h"
+
+struct ctrl_t
+{
+	bool att,thro,coor;
+	bool alt,track,quadx;
+};
+struct ctrl_t ctrl = {0};
+
+void hardware_init(void);
 
 void rt_thread_entry_main(void* parameter)
-{	
+{
+/*************************************
+	declare variables
+*************************************/	
+	ctrl.quadx = ctrl.att = ctrl.thro = true; ctrl.coor = ctrl.alt = ctrl.track = false;
+	uint8_t rxData[RX_DATA_SIZE] = {0},txData[TX_DATA_SIZE];
+	uint8_t major,minor;
+
+/*************************************
+	hardware init
+*************************************/
+	hardware_init();
+	
 /*************************************
 	create thread
 *************************************/
@@ -42,19 +69,11 @@ void rt_thread_entry_main(void* parameter)
 
 /*************************************
 	start thread
-*************************************/										
+*************************************/			
 	if(led_thread != RT_NULL) rt_thread_startup(led_thread);
 	if(communication_thread != RT_NULL) rt_thread_startup(communication_thread);
 	if(quadx_get_thread != RT_NULL) rt_thread_startup(quadx_get_thread);
 	if(quadx_control_thread != RT_NULL) rt_thread_startup(quadx_control_thread);
-
-/*************************************
-	declare variables
-*************************************/	
-	bool sendAtt = true,sendThro = true,sendCoor = false;
-	char str[100];
-	uint8_t rxData[RX_DATA_SIZE] = {0},txData[TX_DATA_SIZE];
-	uint8_t major,minor;
 	
 	//让出cpu，队尾等待调度
 	rt_thread_delay(100);
@@ -81,35 +100,49 @@ void rt_thread_entry_main(void* parameter)
 			else if(rxData[0]==0xcb)
 			{
 				//四轴模式
-				if(rxData[1] == 0xf1)
-				{
-					rt_thread_resume(quadx_get_thread);
-					rt_thread_resume(quadx_control_thread);
-				}
-				else if(rxData[1] == 0xf0)
-				{
-					rt_thread_suspend(quadx_get_thread);
-					rt_thread_suspend(quadx_control_thread);
-				}
+				if(rxData[1] == 0xf1) ctrl.quadx = true;
+				else if(rxData[1] == 0xf0) ctrl.quadx = false;
 			}
 			else if(rxData[0]==0xcc)
 			{
 				//图像跟踪模式
-				//TODO: track
+				if(rxData[1] == 0xf1) ctrl.track = true;
+				else if(rxData[1] == 0xf0) ctrl.track = false;
 			}
 			else if(rxData[0]==0xcd)
 			{
-				if(rxData[1] == 0xf1) sendAtt = true;
-				else if(rxData[1] == 0xf0) sendAtt = false;
-				if(rxData[2] == 0xf1) sendThro = true;
-				else if(rxData[2] == 0xf0) sendThro = false;
-				if(rxData[3] == 0xf1) sendCoor = true;
-				else if(rxData[3] == 0xf0) sendCoor = false;
+				if(rxData[1] == 0xf1) ctrl.att = true;
+				else if(rxData[1] == 0xf0) ctrl.att = false;
+				if(rxData[2] == 0xf1) ctrl.thro = true;
+				else if(rxData[2] == 0xf0) ctrl.thro = false;
+				if(rxData[3] == 0xf1) ctrl.coor = true;
+				else if(rxData[3] == 0xf0) ctrl.coor = false;
 			}
 			else if(rxData[0]==0xce)
 			{
 				//保持高度模式
-				holdAlt = true;
+				if(rxData[1] == 0xf1) ctrl.alt = true;
+				else if(rxData[1] == 0xf0) ctrl.alt = false;
+			}
+			else if(rxData[0]==0xcf)
+			{
+				if(!ctrl.quadx)
+				{
+					Led::interval = 100;
+					if(rxData[1] == 0xf1)
+					{
+						MPU6050 *accelgyro = new MPU6050();
+						accelgyro->setOffset();
+						delete accelgyro;
+					}
+					else if(rxData[1] == 0xf0)
+					{
+						HMC5883L *mag = new HMC5883L();
+						mag->setOffset();
+						delete mag;
+					}
+					Led::interval = 500;
+				}
 			}
 			else
 			{
@@ -117,7 +150,7 @@ void rt_thread_entry_main(void* parameter)
 			}
 		}
 		//send
-		if(sendAtt)
+		if(ctrl.att)
 		{
 			uint8_t i;
 			txData[0] = 0xea;
@@ -126,21 +159,22 @@ void rt_thread_entry_main(void* parameter)
 			((uint16_t*)(txData+1))[i] = att[i] * 50;//米乘50，无符号
 			rt_mq_send(txQ,txData,TX_DATA_SIZE);
 		}
-		if(sendThro)
+		if(ctrl.thro)
 		{
 			uint8_t i;
 			txData[0] = 0xeb;
 			for(i=0;i<4;i++)
-				((uint16_t*)(txData+1))[i] = motorThro[i];//电机不乘，有符号
+				((uint16_t*)(txData+1))[i] = motorValue[i];//电机不乘，有符号
 			rt_mq_send(txQ,txData,TX_DATA_SIZE);
 		}
-		if(sendCoor)
+		if(ctrl.coor)
 		{
 			//TODO: send coordinate
 		}
 		
+//		char str[100];
 //		sprintf(str,"%+f\t%+f\t%+f\t%+f\r\n",att[PITCH],att[ROLL],att[YAW],att[THROTTLE]);
-//		sprintf(str,"%+d\t%+d\t%+d\t%+d\r\n",motorThro[0],motorThro[1],motorThro[2],motorThro[3]);
+//		sprintf(str,"%+d\t%+d\t%+d\t%+d\r\n",motorValue[0],motorValue[1],motorValue[2],motorValue[3]);
 //		cpu_usage_get(&major,&minor);
 //		sprintf(str,"major: %d\tminor: %d\r\n",major,minor);
 //		rt_kprintf("%s",str);
@@ -148,10 +182,38 @@ void rt_thread_entry_main(void* parameter)
 	}
 }
 
+void hardware_init(void)
+{	
+	Receiver::initialize();
+	I2Cdev::initialize();
+	Motor::initialize();
+	
+	Led *led = new Led();
+	led->initialize();
+	led->off();
+	delete led;
+	
+	rt_thread_delay(500);
+	
+	MPU6050 *accgyro = new MPU6050();
+	accgyro->initialize();
+	accgyro->setOffset();
+	delete accgyro;
+	
+	HMC5883L *mag = new HMC5883L();
+	mag->initialize();
+//	mag->setOffset();
+	delete mag;
+	
+	MS5611 *baro = new MS5611();
+	baro->initialize();
+	delete baro;
+}
+
 int  rt_application_init(void)
 {	
 	cpu_usage_init();
-	
+
 	rt_thread_t main_thread;
 	main_thread = rt_thread_create("main",
 									rt_thread_entry_main,

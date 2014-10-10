@@ -3,13 +3,14 @@
 #include "rtthread.h"
 #include "string.h"
 
+int16_t accXOffset = 0,accYOffset = 0,accZOffset = 0;
+int16_t gyroXOffset = 0,gyroYOffset = 0,gyroZOffset = 0;
+
 MPU6050::MPU6050()
 {
 	devAddr = (uint8_t)MPU6050_DEFAULT_ADDRESS;
 	buffer = (uint8_t*)rt_malloc(14);
 	strcpy(name,MPU6050_NAME);
-	accXOffSet = accYOffSet = accZOffSet = gyroXOffSet = gyroYOffSet = gyroZOffSet = 0;
-	accXAve = accYAve = accZAve = gyroXAve = gyroYAve = gyroZAve = 0;
 }
 
 MPU6050::~MPU6050()
@@ -92,12 +93,12 @@ void MPU6050::getMotion6Cal(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, 
 	
     if(I2Cdev::readBytes(devAddr, MPU6050_RA_ACCEL_XOUT_H, 14, buffer))
 	{
-		*ax = ((((int16_t)buffer[0]) << 8) | buffer[1]) - accXOffSet;
-		*ay = ((((int16_t)buffer[2]) << 8) | buffer[3]) - accYOffSet;
-		*az = ((((int16_t)buffer[4]) << 8) | buffer[5]) - accZOffSet;
-		*gx = ((((int16_t)buffer[8]) << 8) | buffer[9]) - gyroXOffSet;
-		*gy = ((((int16_t)buffer[10]) << 8) | buffer[11]) - gyroYOffSet;
-		*gz = ((((int16_t)buffer[12]) << 8) | buffer[13]) - gyroZOffSet;
+		*ax = ((((int16_t)buffer[0]) << 8) | buffer[1]) - accXOffset;
+		*ay = ((((int16_t)buffer[2]) << 8) | buffer[3]) - accYOffset;
+		*az = ((((int16_t)buffer[4]) << 8) | buffer[5]) - accZOffset;
+		*gx = ((((int16_t)buffer[8]) << 8) | buffer[9]) - gyroXOffset;
+		*gy = ((((int16_t)buffer[10]) << 8) | buffer[11]) - gyroYOffset;
+		*gz = ((((int16_t)buffer[12]) << 8) | buffer[13]) - gyroZOffset;
 	}
 	else
 	{
@@ -150,9 +151,9 @@ void MPU6050::getAccelerationRaw(int16_t* x, int16_t* y, int16_t* z)
 void MPU6050::getAccelerationCal(int16_t* ax, int16_t* ay, int16_t* az)
 {
     I2Cdev::readBytes(devAddr, MPU6050_RA_ACCEL_XOUT_H, 6, buffer);
-    *ax = ((((int16_t)buffer[0]) << 8) | buffer[1]) - accXOffSet;
-    *ay = ((((int16_t)buffer[2]) << 8) | buffer[3]) - accYOffSet;
-    *az = ((((int16_t)buffer[4]) << 8) | buffer[5]) - accZOffSet;
+    *ax = ((((int16_t)buffer[0]) << 8) | buffer[1]) - accXOffset;
+    *ay = ((((int16_t)buffer[2]) << 8) | buffer[3]) - accYOffset;
+    *az = ((((int16_t)buffer[4]) << 8) | buffer[5]) - accZOffset;
 	
 //	accXAve = (*ax + accXAve) >> 1;
 //	accYAve = (*ay + accYAve) >> 1;
@@ -198,9 +199,9 @@ void MPU6050::getRotationRaw(int16_t* x, int16_t* y, int16_t* z)
 void MPU6050::getRotationCal(int16_t* gx, int16_t* gy, int16_t* gz)
 {
     I2Cdev::readBytes(devAddr, MPU6050_RA_GYRO_XOUT_H, 6, buffer);
-    *gx = ((((int16_t)buffer[0]) << 8) | buffer[1]) - gyroXOffSet;
-    *gy = ((((int16_t)buffer[2]) << 8) | buffer[3]) - gyroYOffSet;
-    *gz = ((((int16_t)buffer[4]) << 8) | buffer[5]) - gyroZOffSet;
+    *gx = ((((int16_t)buffer[0]) << 8) | buffer[1]) - gyroXOffset;
+    *gy = ((((int16_t)buffer[2]) << 8) | buffer[3]) - gyroYOffset;
+    *gz = ((((int16_t)buffer[4]) << 8) | buffer[5]) - gyroZOffset;
 	
 //	gyroXAve = (*gx + gyroXAve) >> 1;
 //	gyroYAve = (*gy + gyroYAve) >> 1;
@@ -215,12 +216,11 @@ void MPU6050::getRotationCal(int16_t* gx, int16_t* gy, int16_t* gz)
 //int16_t MPU6050::getRotationY();
 //int16_t MPU6050::getRotationZ();
 
-
-void MPU6050::setOffSet(void)
+void MPU6050::setOffset(void)
 {
 	int16_t ax, ay, az;//, axa = 0, aya = 0, aza = 0;
 	int16_t gx, gy, gz;//, gxa = 0, gya = 0, gza = 0;
-//	rt_kprintf("\r\nMPU6050 is calculating offset...\r\n");
+//	rt_kprintf("\r\nMPU6050 is calculating Offset...\r\n");
 	for(uint8_t i=0;i<255;i++)
 	{	
 		getAccelerationRaw(&ax,&ay,&az);
@@ -228,17 +228,17 @@ void MPU6050::setOffSet(void)
 //		axa = (axa + ax) / 2; aya = (aya + ay) / 2; aza = (aza + az) / 2;
 //		gxa = (gxa + gx) / 2; gya = (gya + gy) / 2; gza = (gza + gz) / 2;
 		
-		accXOffSet = (accXOffSet + ax) >> 1;
-		accYOffSet = (accYOffSet + ay) >> 1;
-		accZOffSet = (accZOffSet + az) >> 1;
+		accXOffset = (accXOffset + ax) >> 1;
+		accYOffset = (accYOffset + ay) >> 1;
+		accZOffset = (accZOffset + az) >> 1;
 		
-		gyroXOffSet = (gyroXOffSet + gx) >> 1;
-		gyroYOffSet = (gyroYOffSet + gy) >> 1;
-		gyroZOffSet = (gyroZOffSet + gz) >> 1;
+		gyroXOffset = (gyroXOffset + gx) >> 1;
+		gyroYOffset = (gyroYOffset + gy) >> 1;
+		gyroZOffset = (gyroZOffset + gz) >> 1;
 		
 		rt_thread_delay(1);
 	}
-	accZOffSet -= 2048;
-//	rt_kprintf("\r\naccelOffSet: %+d, %+d, %+d; gyroOffSet: %+d, %+d, %+d\r\n",accXOffSet,accYOffSet,accZOffSet,gyroXOffSet,gyroYOffSet,gyroZOffSet);
+	accZOffset -= 2048;
+//	rt_kprintf("\r\naccelOffset: %+d, %+d, %+d; gyroOffset: %+d, %+d, %+d\r\n",accXOffset,accYOffset,accZOffset,gyroXOffset,gyroYOffset,gyroZOffset);
 //	rt_kprintf("accelraw:    %+d, %+d, %+d; gyroraw:    %+d, %+d, %+d\r\n",axa,aya,aza,gxa,gya,gza);
 }

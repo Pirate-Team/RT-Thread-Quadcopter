@@ -4,8 +4,10 @@
 #include "string.h"
 #include "rtthread.h"
 
-#define XC -390.228f
-#define YC 241.349f
+#define M_57_3 57.29577f
+int16_t xOffset = -390;
+int16_t yOffset = 241;
+int16_t zOffset = 0;
 
 HMC5883L::HMC5883L(void)
 {
@@ -82,16 +84,40 @@ void HMC5883L::getHeadingCal(int16_t *x, int16_t *y, int16_t *z)
 	*y = (((int16_t)buffer[4]) << 8) | buffer[5];
 	*z = (((int16_t)buffer[2]) << 8) | buffer[3];
 	
-	*x -= XC;
-	*y -= YC;
+	*x -= xOffset;
+	*y -= yOffset;
 }
 
 void HMC5883L::getHeadingCal(float *heading)
 {
 	int16_t x,y,z;
 	getHeadingRaw(&x,&y,&z);
-	*heading = atan2((float)y - YC, (float)x - XC);
+	*heading = atan2((float)y - yOffset, (float)x - xOffset);
     if(*heading < 0)
       *heading += 2 * PI;
-//	*heading = *heading * 180/PI;
+	*heading = *heading * M_57_3;
+}
+
+void HMC5883L::setOffset(void)
+{
+	uint32_t tick = rt_tick_get() + 10000; //10s
+	int16_t data[3],min[3],max[3];
+	for(uint8_t i=0;i<3;i++)
+	{
+		min[i] = 10000;
+		max[i] = -10000;
+	}
+	while(tick>rt_tick_get())
+	{
+		getHeadingRaw(&data[0],&data[1],&data[2]);
+		for(uint8_t i=0;i<3;i++)
+		{
+			if(data[i]<min[i]) min[i] = data[i];
+			if(data[i]>max[i]) max[i] = data[i];
+		}
+		rt_thread_delay(10);
+	}
+	xOffset = (min[0] + max[0]) / 2;
+	yOffset = (min[1] + max[1]) / 2;
+	zOffset = (min[2] + max[2]) / 2;
 }

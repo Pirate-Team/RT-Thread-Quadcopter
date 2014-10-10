@@ -6,15 +6,11 @@
 #define PWM_FREQ 50				//PWM频率，周期20ms
 #define PRESCALER        ((SystemCoreClock / COUNTER_FREQ) - 1) 
 #define ARR              ((COUNTER_FREQ / PWM_FREQ) - 1)
-#define INIT_DUTYCYCLE	 ((uint8_t)1000)	//初始化脉宽0.9ms
+#define INIT_DUTYCYCLE	 ((uint16_t)1000)	//初始化脉宽0.9ms
 
-bool Motor::state = false;	//静态成员变量初始化
+uint16_t motorValue[MOTORALL] = {INIT_DUTYCYCLE};
 
-Motor::Motor(){}
-
-Motor::~Motor(){}
-
-void Motor::init()
+void Motor::initialize()
 {
 /*-------------------------------------------------
 	GPIO配置，时钟，端口，使能，复用，
@@ -74,83 +70,68 @@ void Motor::init()
 	TIM_ARRPreloadConfig(TIM1, ENABLE);
 
 	/* TIM1 disable counter */
-	TIM_Cmd(TIM1, DISABLE);
+	TIM_Cmd(TIM1, ENABLE);
 	TIM_CtrlPWMOutputs(TIM1,ENABLE);
-/*----------------------------------------------
-	是否启动标志
-----------------------------------------------*/
-	state = false;
 }
 
-void Motor::start()
-{
-	state = true;
-	TIM_Cmd(TIM1,ENABLE);
-}
-
-void Motor::stop()
-{
-	state = false;
-	TIM_Cmd(TIM1,DISABLE);
-}
 /*----------------------------------------------
-	1000<=throttle<=2000
+	1000<=Value<=2000
 ----------------------------------------------*/
-void Motor::setThrottle(MOTOR_ENUM motor,uint16_t throttle)
+void Motor::setValue(MOTOR_ENUM motor,uint16_t Value)
 {
-	//限速1500
-#define LIMIT 2000
-	throttle = (throttle>LIMIT)?(LIMIT):((throttle<INIT_DUTYCYCLE)?(INIT_DUTYCYCLE):(throttle));
+	//限速1800
+#define LIMIT 1800
+	Value = (Value>LIMIT)?(LIMIT):((Value<INIT_DUTYCYCLE)?(INIT_DUTYCYCLE):(Value));
 	switch(motor)
 	{
 		case MOTOR1:
-			TIM_SetCompare1(TIM1,throttle);
+			TIM_SetCompare1(TIM1,Value);
 			break;
 		case MOTOR2:
-			TIM_SetCompare2(TIM1,throttle);
+			TIM_SetCompare2(TIM1,Value);
 			break;
 		case MOTOR3:
-			TIM_SetCompare3(TIM1,throttle);
+			TIM_SetCompare3(TIM1,Value);
 			break;
 		case MOTOR4:
-			TIM_SetCompare4(TIM1,throttle);
+			TIM_SetCompare4(TIM1,Value);
 			break;
 		default:
 			break;
 	}
 }
 
-void Motor::setThrottle(uint16_t throttle)
+void Motor::setValue(uint16_t Value)
 {
-	setThrottle(MOTOR1,throttle);
-	setThrottle(MOTOR2,throttle);
-	setThrottle(MOTOR3,throttle);
-	setThrottle(MOTOR4,throttle);
+	setValue(MOTOR1,Value);
+	setValue(MOTOR2,Value);
+	setValue(MOTOR3,Value);
+	setValue(MOTOR4,Value);
 }
 
-void Motor::setThrottle(uint16_t throttle1,uint16_t throttle2,uint16_t throttle3,uint16_t throttle4)
+void Motor::setValue(uint16_t Value1,uint16_t Value2,uint16_t Value3,uint16_t Value4)
 {
-	setThrottle(MOTOR1,throttle1);
-	setThrottle(MOTOR2,throttle2);
-	setThrottle(MOTOR3,throttle3);
-	setThrottle(MOTOR4,throttle4);
+	setValue(MOTOR1,Value1);
+	setValue(MOTOR2,Value2);
+	setValue(MOTOR3,Value3);
+	setValue(MOTOR4,Value4);
 }
 
-void Motor::getThrottle(MOTOR_ENUM motor,uint16_t& throttle)
+void Motor::getValue(MOTOR_ENUM motor,uint16_t& Value)
 {
 	switch(motor)
 	{
 		case MOTOR1:
-			throttle = (uint16_t)TIM_GetCapture1(TIM1);
+			Value = (uint16_t)TIM_GetCapture1(TIM1);
 			break;
 		case MOTOR2:
-			throttle = (uint16_t)TIM_GetCapture2(TIM1);
+			Value = (uint16_t)TIM_GetCapture2(TIM1);
 			break;
 		case MOTOR3:
-			throttle = (uint16_t)TIM_GetCapture3(TIM1);
+			Value = (uint16_t)TIM_GetCapture3(TIM1);
 			break;
 		case MOTOR4:
-			throttle = (uint16_t)TIM_GetCapture4(TIM1);
+			Value = (uint16_t)TIM_GetCapture4(TIM1);
 			break;
 		default:
 			break;

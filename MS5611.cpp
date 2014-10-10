@@ -16,6 +16,10 @@
 
 #define SEA_PRESS 1013.25
 
+uint16_t C[6];
+int32_t dT;
+float temperature,pressure;
+
 MS5611::MS5611(void)
 {
 	devAddr = MS561101BA_SlaveAddress;
