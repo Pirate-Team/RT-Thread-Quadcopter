@@ -42,14 +42,14 @@ void rt_thread_entry_main(void* parameter)
 	rt_thread_t led_thread = rt_thread_create("led",
 												rt_thread_entry_led_test,
 												RT_NULL,
-												1024,//max used = 140 
+												512,//max used = 140 
 												1,
 												10);
 	/*communication_thread*/
 	rt_thread_t communication_thread = rt_thread_create("communication",
 												rt_thread_entry_communication,
 												RT_NULL,
-												1024,
+												512,
 												9,
 												10);
 	/*quadx_get_thread*/
@@ -106,8 +106,8 @@ void rt_thread_entry_main(void* parameter)
 			else if(rxData[0]==0xcc)
 			{
 				//图像跟踪模式
-				if(rxData[1] == 0xf1) ctrl.track = true;
-				else if(rxData[1] == 0xf0) ctrl.track = false;
+				if(rxData[1] == 0xf1) ctrl.alt = true;
+				else if(rxData[1] == 0xf0) ctrl.alt = false;
 			}
 			else if(rxData[0]==0xcd)
 			{
@@ -164,7 +164,7 @@ void rt_thread_entry_main(void* parameter)
 			uint8_t i;
 			txData[0] = 0xeb;
 			for(i=0;i<4;i++)
-				((uint16_t*)(txData+1))[i] = motorValue[i];//电机不乘，有符号
+				((uint16_t*)(txData+1))[i] = motorValue[i];//电机不乘，无符号
 			rt_mq_send(txQ,txData,TX_DATA_SIZE);
 		}
 		if(ctrl.coor)
@@ -183,17 +183,15 @@ void rt_thread_entry_main(void* parameter)
 }
 
 void hardware_init(void)
-{	
+{
+	Led *led = new Led();
+	led->initialize();
+	led->on();
+	rt_thread_delay(2000);
+		
 	Receiver::initialize();
 	I2Cdev::initialize();
 	Motor::initialize();
-	
-	Led *led = new Led();
-	led->initialize();
-	led->off();
-	delete led;
-	
-	rt_thread_delay(500);
 	
 	MPU6050 *accgyro = new MPU6050();
 	accgyro->initialize();
@@ -202,23 +200,24 @@ void hardware_init(void)
 	
 	HMC5883L *mag = new HMC5883L();
 	mag->initialize();
-//	mag->setOffset();
 	delete mag;
 	
 	MS5611 *baro = new MS5611();
 	baro->initialize();
 	delete baro;
+	
+	led->off();
+	delete led;
 }
 
 int  rt_application_init(void)
 {	
 	cpu_usage_init();
-
 	rt_thread_t main_thread;
 	main_thread = rt_thread_create("main",
 									rt_thread_entry_main,
 									RT_NULL,
-									1024,//max used = 140
+									512,//max used = 140
 									8,
 									10);
 	if(main_thread != RT_NULL)

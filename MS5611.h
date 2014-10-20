@@ -3,6 +3,8 @@
 #include "stm32f4xx.h"
 #include "Sensor.h"
 
+#define SEA_PRESS 1013.25f
+
 #define MS5611_NAME "MS5611"
 
 #define  MS561101BA_SlaveAddress 0x77  //定义器件在IIC总线中的从地址
@@ -41,7 +43,6 @@ public:
 	bool readPROM(void);
 	bool reset();
 	bool getAltitude(float* altitude);
-
 };
 
 

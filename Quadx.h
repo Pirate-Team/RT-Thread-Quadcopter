@@ -8,8 +8,8 @@ struct pid_t
 
 struct sensor_data_t
 {
-	int16_t ax,ay,az,gx,gy,gz;
-	float heading,altitude;
+	int16_t ax,ay,az,gx,gy,gz,mx,my,mz;
+	float temperature,pressure;
 };
 
 void rt_thread_entry_quadx_get_attitude(void* parameter);

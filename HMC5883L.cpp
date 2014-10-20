@@ -5,9 +5,10 @@
 #include "rtthread.h"
 
 #define M_57_3 57.29577f
-int16_t xOffset = -390;
-int16_t yOffset = 241;
-int16_t zOffset = 0;
+int16_t xOffset = -162;
+int16_t yOffset = 94;
+int16_t zOffset = -26;
+float xGain = 0,yGain = 0,zGain = 0;
 
 HMC5883L::HMC5883L(void)
 {
@@ -30,14 +31,14 @@ bool HMC5883L::initialize(void)
     // write CONFIG_A register
     if(!I2Cdev::writeByte(devAddr, HMC5883L_RA_CONFIG_A,
         (HMC5883L_AVERAGING_8 << (HMC5883L_CRA_AVERAGE_BIT - HMC5883L_CRA_AVERAGE_LENGTH + 1)) |
-        (HMC5883L_RATE_75     << (HMC5883L_CRA_RATE_BIT - HMC5883L_CRA_RATE_LENGTH + 1)) |
+        (HMC5883L_RATE_15     << (HMC5883L_CRA_RATE_BIT - HMC5883L_CRA_RATE_LENGTH + 1)) |
         (HMC5883L_BIAS_NORMAL << (HMC5883L_CRA_BIAS_BIT - HMC5883L_CRA_BIAS_LENGTH + 1)))) return false;
 
     // write CONFIG_B register
-	if(!I2Cdev::writeByte(devAddr, HMC5883L_RA_CONFIG_B, HMC5883L_GAIN_1090 << (HMC5883L_CRB_GAIN_BIT - HMC5883L_CRB_GAIN_LENGTH + 1))) return false;
+	if(!I2Cdev::writeByte(devAddr, HMC5883L_RA_CONFIG_B, HMC5883L_GAIN_440 << (HMC5883L_CRB_GAIN_BIT - HMC5883L_CRB_GAIN_LENGTH + 1))) return false;
     
     // write MODE register
-    return I2Cdev::writeByte(devAddr, HMC5883L_RA_MODE, HMC5883L_MODE_SINGLE << (HMC5883L_MODEREG_BIT - HMC5883L_MODEREG_LENGTH + 1));
+    return I2Cdev::writeByte(devAddr, HMC5883L_RA_MODE, HMC5883L_MODE_CONTINUOUS << (HMC5883L_MODEREG_BIT - HMC5883L_MODEREG_LENGTH + 1));
 }
 
 bool HMC5883L::testConnection(void) 
@@ -70,7 +71,7 @@ uint8_t HMC5883L::getData(void* data1,void* data2,void* data3,void* data4,void* 
 void HMC5883L::getHeadingRaw(int16_t *x, int16_t *y, int16_t *z) 
 {
 	I2Cdev::readBytes(devAddr, HMC5883L_RA_DATAX_H, 6, buffer);
-	I2Cdev::writeByte(devAddr, HMC5883L_RA_MODE, HMC5883L_MODE_SINGLE << (HMC5883L_MODEREG_BIT - HMC5883L_MODEREG_LENGTH + 1));
+//	I2Cdev::writeByte(devAddr, HMC5883L_RA_MODE, HMC5883L_MODE_SINGLE << (HMC5883L_MODEREG_BIT - HMC5883L_MODEREG_LENGTH + 1));
 	*x = (((int16_t)buffer[0]) << 8) | buffer[1];
 	*y = (((int16_t)buffer[4]) << 8) | buffer[5];
 	*z = (((int16_t)buffer[2]) << 8) | buffer[3];
@@ -78,34 +79,47 @@ void HMC5883L::getHeadingRaw(int16_t *x, int16_t *y, int16_t *z)
 
 void HMC5883L::getHeadingCal(int16_t *x, int16_t *y, int16_t *z)
 {
-	I2Cdev::readBytes(devAddr, HMC5883L_RA_DATAX_H, 6, buffer);
-	I2Cdev::writeByte(devAddr, HMC5883L_RA_MODE, HMC5883L_MODE_SINGLE << (HMC5883L_MODEREG_BIT - HMC5883L_MODEREG_LENGTH + 1));
-	*x = (((int16_t)buffer[0]) << 8) | buffer[1];
-	*y = (((int16_t)buffer[4]) << 8) | buffer[5];
-	*z = (((int16_t)buffer[2]) << 8) | buffer[3];
+	static int16_t avgX = 0,avgY = 0,avgZ = 0;
 	
-	*x -= xOffset;
-	*y -= yOffset;
+	I2Cdev::readBytes(devAddr, HMC5883L_RA_DATAX_H, 6, buffer);
+//	I2Cdev::writeByte(devAddr, HMC5883L_RA_MODE, HMC5883L_MODE_SINGLE << (HMC5883L_MODEREG_BIT - HMC5883L_MODEREG_LENGTH + 1));
+	*x = ((((int16_t)buffer[0]) << 8) | buffer[1]) - xOffset;
+	*y = ((((int16_t)buffer[4]) << 8) | buffer[5]) - yOffset;
+	*z = ((((int16_t)buffer[2]) << 8) | buffer[3]) - zOffset;
+	
+	if(avgX == 0 && avgY == 0) 
+	{
+		avgX = *x;
+		avgY = *y;
+		avgZ = *z;
+	}
+	avgX = (((int32_t)*x)*3 + (int32_t)avgX*5) >> 3;
+	avgY = (((int32_t)*y)*3 + (int32_t)avgY*5) >> 3;
+	avgZ = (((int32_t)*z)*3 + (int32_t)avgZ*5) >> 3;
+	
+	*x = avgX;
+	*y = avgY;
+	*z = avgZ;
 }
 
 void HMC5883L::getHeadingCal(float *heading)
 {
 	int16_t x,y,z;
-	getHeadingRaw(&x,&y,&z);
-	*heading = atan2((float)y - yOffset, (float)x - xOffset);
+	getHeadingCal(&x,&y,&z);
+	*heading = atan2((float)y, (float)x);
     if(*heading < 0)
       *heading += 2 * PI;
 	*heading = *heading * M_57_3;
 }
 
 void HMC5883L::setOffset(void)
-{
-	uint32_t tick = rt_tick_get() + 10000; //10s
+{	
+	uint32_t tick = rt_tick_get() + 15000; //15s
 	int16_t data[3],min[3],max[3];
 	for(uint8_t i=0;i<3;i++)
 	{
-		min[i] = 10000;
-		max[i] = -10000;
+		min[i] = 30000;
+		max[i] = -30000;
 	}
 	while(tick>rt_tick_get())
 	{

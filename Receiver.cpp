@@ -122,7 +122,7 @@ void Receiver::getRCValue(int16_t* value)
 extern "C" void MyTIM3_IRQHandler(void);
 void MyTIM3_IRQHandler(void)
 {
-#define VALUE_THRE (15)
+#define VALUE_THRE (25)
 	//update
 	if(TIM_GetITStatus(TIM3,TIM_IT_Update) == SET)
 	{
@@ -146,28 +146,29 @@ void MyTIM3_IRQHandler(void)
 	if(TIM_GetITStatus(TIM3,TIM_IT_CC1) == SET)
 	{
 		TIM_ClearITPendingBit(TIM3,TIM_IT_CC1);
-		if(GPIOC->IDR  & GPIO_Pin_6)
+		if((GPIOC->IDR  & GPIO_Pin_6) != 0)
 		{
-			preCCR[PITCH] = TIM_GetCapture1(TIM3);
+			preCCR[THROTTLE] = TIM_GetCapture1(TIM3);
 		}
 		else
 		{
-			CCR[PITCH] = TIM_GetCapture1(TIM3);
-			if(CCR[PITCH] > preCCR[PITCH])
-				RCValue[PITCH] = (CCR[PITCH] - preCCR[PITCH]) - 12;
+			CCR[THROTTLE] = TIM_GetCapture1(TIM3);
+			if(CCR[THROTTLE] > preCCR[THROTTLE])
+				RCValue[THROTTLE] = (CCR[THROTTLE] - preCCR[THROTTLE]);
 			else
-				RCValue[PITCH] = (ARR + CCR[PITCH] - preCCR[PITCH]) - 12;
-			if(RCValue[PITCH]>2000) RCValue[PITCH] = 2000;
-			else if(RCValue[PITCH]<1000) RCValue[PITCH] = 1000;
-			else if(RCValue[PITCH]>1500-VALUE_THRE&&RCValue[PITCH]<1500+VALUE_THRE) RCValue[PITCH] = 1500;
-			RCFlag[PITCH] = 0;
+				RCValue[THROTTLE] = (ARR + CCR[THROTTLE] - preCCR[THROTTLE]);
+			if(RCValue[THROTTLE]>2000) RCValue[THROTTLE] = 2000;
+			else if(RCValue[THROTTLE]<1000) RCValue[THROTTLE] = 1000;
+			else if(RCValue[THROTTLE]>1000+VALUE_THRE) RCValue[THROTTLE] -= VALUE_THRE;
+			else RCValue[THROTTLE] = 1000;
+			RCFlag[THROTTLE] = 0;
 		}
 	}
 	//channel 2
 	if(TIM_GetITStatus(TIM3,TIM_IT_CC2) == SET)
 	{
 		TIM_ClearITPendingBit(TIM3,TIM_IT_CC2);
-		if(GPIOC->IDR  & GPIO_Pin_7)
+		if((GPIOC->IDR  & GPIO_Pin_7) != 0)
 		{
 			preCCR[ROLL] = TIM_GetCapture2(TIM3);
 		}
@@ -175,12 +176,14 @@ void MyTIM3_IRQHandler(void)
 		{
 			CCR[ROLL] = TIM_GetCapture2(TIM3);
 			if(CCR[ROLL] > preCCR[ROLL])
-				RCValue[ROLL] = (CCR[ROLL] - preCCR[ROLL] - 18);
+				RCValue[ROLL] = (CCR[ROLL] - preCCR[ROLL] - 20);
 			else
-				RCValue[ROLL] = (ARR + CCR[ROLL] - preCCR[ROLL]) - 18;
+				RCValue[ROLL] = (ARR + CCR[ROLL] - preCCR[ROLL]) - 20;
 			if(RCValue[ROLL]>2000) RCValue[ROLL] = 2000;
 			else if(RCValue[ROLL]<1000) RCValue[ROLL] = 1000;
-			else if(RCValue[ROLL]>1500-VALUE_THRE&&RCValue[ROLL]<1500+VALUE_THRE) RCValue[ROLL] = 1500;
+			else if(RCValue[ROLL]>1500+VALUE_THRE) RCValue[ROLL] -=VALUE_THRE;
+			else if(RCValue[ROLL]<1500-VALUE_THRE) RCValue[ROLL] +=VALUE_THRE;
+			else RCValue[ROLL] = 1500;
 			RCFlag[ROLL] = 0;
 		}
 	}
@@ -188,41 +191,46 @@ void MyTIM3_IRQHandler(void)
 	if(TIM_GetITStatus(TIM3,TIM_IT_CC3) == SET)
 	{
 		TIM_ClearITPendingBit(TIM3,TIM_IT_CC3);
-		if(GPIOC->IDR  & GPIO_Pin_8)
+		if((GPIOC->IDR  & GPIO_Pin_8) != 0)
 		{
-			preCCR[YAW] = TIM_GetCapture3(TIM3);
+			preCCR[PITCH] = TIM_GetCapture3(TIM3);
 		}
 		else
 		{
-			CCR[YAW] = TIM_GetCapture3(TIM3);
-			if(CCR[YAW] > preCCR[YAW])
-				RCValue[YAW] = (CCR[YAW] - preCCR[YAW]) - 25;
+			CCR[PITCH] = TIM_GetCapture3(TIM3);
+			if(CCR[PITCH] > preCCR[PITCH])
+				RCValue[PITCH] = (CCR[PITCH] - preCCR[PITCH]) - 20;
 			else
-				RCValue[YAW] = (ARR + CCR[YAW] - preCCR[YAW]) - 25;
-			if(RCValue[YAW]>2000) RCValue[YAW] = 2000;
-			else if(RCValue[YAW]<1000) RCValue[YAW] = 1000;
-			else if(RCValue[YAW]>1500-VALUE_THRE*2&&RCValue[YAW]<1500+VALUE_THRE*2) RCValue[YAW] = 1500;
-			RCFlag[YAW] = 0;
+				RCValue[PITCH] = (ARR + CCR[PITCH] - preCCR[PITCH]) - 20;
+			if(RCValue[PITCH]>2000) RCValue[PITCH] = 2000;
+			else if(RCValue[PITCH]<1000) RCValue[PITCH] = 1000;
+			else if(RCValue[PITCH]>1500+VALUE_THRE) RCValue[PITCH] -=VALUE_THRE;
+			else if(RCValue[PITCH]<1500-VALUE_THRE) RCValue[PITCH] +=VALUE_THRE;
+			else RCValue[PITCH] = 1500;
+			RCFlag[PITCH] = 0;
 		}
 	}
 	//channel 4
 	if(TIM_GetITStatus(TIM3,TIM_IT_CC4) == SET)
 	{
 		TIM_ClearITPendingBit(TIM3,TIM_IT_CC4);
-		if(GPIOC->IDR  & GPIO_Pin_9)
+		if((GPIOC->IDR  & GPIO_Pin_9) != 0)
 		{
-			preCCR[THROTTLE] = TIM_GetCapture4(TIM3);
+			preCCR[YAW] = TIM_GetCapture4(TIM3);
 		}
 		else
 		{
-			CCR[THROTTLE] = TIM_GetCapture4(TIM3);
-			if(CCR[THROTTLE] > preCCR[THROTTLE])
-				RCValue[THROTTLE] = (CCR[THROTTLE] - preCCR[THROTTLE]);
+			CCR[YAW] = TIM_GetCapture4(TIM3);
+			if(CCR[YAW] > preCCR[YAW])
+				RCValue[YAW] = (CCR[YAW] - preCCR[YAW]) - 0;
 			else
-				RCValue[THROTTLE] = (ARR + CCR[THROTTLE] - preCCR[THROTTLE]);
-			if(RCValue[THROTTLE]>2000) RCValue[THROTTLE] = 2000;
-			else if(RCValue[THROTTLE]<1000) RCValue[THROTTLE] = 1000;
-			RCFlag[THROTTLE] = 0;
+				RCValue[YAW] = (ARR + CCR[YAW] - preCCR[YAW]) - 0;
+			if(RCValue[YAW]>2000) RCValue[YAW] = 2000;
+			else if(RCValue[YAW]<1000) RCValue[YAW] = 1000;
+			else if(RCValue[YAW]>1500+VALUE_THRE*2) RCValue[YAW] -=VALUE_THRE*2;
+			else if(RCValue[YAW]<1500-VALUE_THRE*2) RCValue[YAW] +=VALUE_THRE*2;
+			else RCValue[YAW] = 1500;
+			RCFlag[YAW] = 0;
 		}
 	}
 }

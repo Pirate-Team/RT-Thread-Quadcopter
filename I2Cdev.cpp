@@ -4,14 +4,14 @@
 	Slaver Address 7bit!!!
 -------------------------------------------*/
 
-#define SCL_H         GPIOA->BSRRL = GPIO_Pin_6 /* GPIO_SetBits(GPIOB , GPIO_Pin_10)   */
-#define SCL_L         GPIOA->BSRRH  = GPIO_Pin_6 /* GPIO_ResetBits(GPIOB , GPIO_Pin_10) */
+#define SCL_H         GPIOB->BSRRL = GPIO_Pin_4 /* GPIO_SetBits(GPIOB , GPIO_Pin_10)   */
+#define SCL_L         GPIOB->BSRRH  = GPIO_Pin_4 /* GPIO_ResetBits(GPIOB , GPIO_Pin_10) */
 
-#define SDA_H         GPIOA->BSRRL = GPIO_Pin_7 /* GPIO_SetBits(GPIOB , GPIO_Pin_11)   */
-#define SDA_L         GPIOA->BSRRH  = GPIO_Pin_7 /* GPIO_ResetBits(GPIOB , GPIO_Pin_11) */
+#define SDA_H         GPIOB->BSRRL = GPIO_Pin_5 /* GPIO_SetBits(GPIOB , GPIO_Pin_11)   */
+#define SDA_L         GPIOB->BSRRH  = GPIO_Pin_5 /* GPIO_ResetBits(GPIOB , GPIO_Pin_11) */
 
-#define SCL_read      /*GPIOA->IDR  & GPIO_Pin_6*/ GPIO_ReadInputDataBit(GPIOA , GPIO_Pin_6)
-#define SDA_read      /*GPIOA->IDR  & GPIO_Pin_7*/ GPIO_ReadInputDataBit(GPIOA , GPIO_Pin_7)
+#define SCL_read      /*GPIOA->IDR  & GPIO_Pin_6*/ GPIO_ReadInputDataBit(GPIOB , GPIO_Pin_4)
+#define SDA_read      /*GPIOA->IDR  & GPIO_Pin_7*/ GPIO_ReadInputDataBit(GPIOB , GPIO_Pin_5)
 
 #define SCL_TIME_OUT 20
 
@@ -135,15 +135,15 @@ void I2Cdev::initialize(void)
 {
 	GPIO_InitTypeDef  GPIO_InitStructure; 
 
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA,ENABLE);
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB,ENABLE);
 
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4 | GPIO_Pin_5;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT; 
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL; 
 
-	GPIO_Init(GPIOA, &GPIO_InitStructure);
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
 }
 
 bool I2Cdev::writeBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_t* data)

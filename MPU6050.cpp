@@ -29,7 +29,7 @@ bool MPU6050::initialize(void)
 	if(!I2Cdev::writeByte(devAddr, MPU6050_RA_PWR_MGMT_1, 0x01)) return false;
 	if(!I2Cdev::writeByte(devAddr, MPU6050_RA_GYRO_CONFIG, 0x10)) return false;
     if(!I2Cdev::writeByte(devAddr, MPU6050_RA_ACCEL_CONFIG, 0x18)) return false;
-    if(!I2Cdev::writeByte(devAddr, MPU6050_RA_CONFIG, 0x01)) return false; //µÕÕ®¬À≤®£¨g—” ±2ms
+    if(!I2Cdev::writeByte(devAddr, MPU6050_RA_CONFIG, 0x03)) return false; //µÕÕ®¬À≤®£¨g—” ±4.8ms
 	if(!I2Cdev::writeByte(devAddr, MPU6050_RA_SMPLRT_DIV, 0x00)) return false;
 	if(!I2Cdev::writeByte(devAddr, MPU6050_RA_USER_CTRL, 0x00)) return false;
 	if(!I2Cdev::writeByte(devAddr, MPU6050_RA_INT_PIN_CFG, 0xB2)) return false;	
@@ -61,6 +61,15 @@ bool MPU6050::initialize(void)
 //	I2Cdev::writeByte(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV0_ADDR, 0x80|MAG_ADDRESS);//I2C_SLV0_ADDR -- I2C_SLV4_RW=1 (read operation) ; I2C_SLV4_ADDR=MAG_ADDRESS
 //	I2Cdev::writeByte(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV0_REG, MAG_DATA_REGISTER);//I2C_SLV0_REG  -- 6 data bytes of MAG are stored in 6 registers. First register address is MAG_DATA_REGISTER
 //	I2Cdev::writeByte(MPU6050_ADDRESS, MPU6050_RA_I2C_SLV0_CTRL, 0x86);             //I2C_SLV0_CTRL -- I2C_SLV0_EN=1 ; I2C_SLV0_BYTE_SW=0 ; I2C_SLV0_REG_DIS=0 ; I2C_SLV0_GRP=0 ; I2C_SLV0_LEN=3 (3x2 bytes)
+
+	int16_t ax, ay, az;
+	int16_t gx, gy, gz;
+	for(uint8_t i=0;i<20;i++)
+	{
+		getAccelerationRaw(&ax,&ay,&az);
+		getRotationRaw(&gx,&gy,&gz);
+		rt_thread_delay(1);
+	}
 	return true;
 }
 
@@ -89,7 +98,7 @@ uint8_t MPU6050::getData(void* data1,void* data2,void* data3,void* data4,void* d
 
 void MPU6050::getMotion6Cal(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, int16_t* gy, int16_t* gz)
 {
-//	static int16_t accXAve = 0, accYAve = 0, accZAve = 0, gyroXAve = 0, gyroYAve = 0, gyroZAve = 0;
+	static int16_t accXAve = 0, accYAve = 0, accZAve = 0;
 	
     if(I2Cdev::readBytes(devAddr, MPU6050_RA_ACCEL_XOUT_H, 14, buffer))
 	{
@@ -99,6 +108,20 @@ void MPU6050::getMotion6Cal(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, 
 		*gx = ((((int16_t)buffer[8]) << 8) | buffer[9]) - gyroXOffset;
 		*gy = ((((int16_t)buffer[10]) << 8) | buffer[11]) - gyroYOffset;
 		*gz = ((((int16_t)buffer[12]) << 8) | buffer[13]) - gyroZOffset;
+		
+		
+		if(accXAve == 0 && accZAve == 0)
+		{
+			accXAve = *ax;
+			accYAve = *ay;
+			accZAve = *az;
+		}
+		accXAve = (((int32_t)*ax)*3 + (int32_t)accXAve*5) >> 3;
+		accYAve = (((int32_t)*ay)*3 + (int32_t)accYAve*5) >> 3;
+		accZAve = (((int32_t)*az)*3 + (int32_t)accZAve*5) >> 3;
+		*ax = accXAve;
+		*ay = accYAve;
+		*az = accZAve;
 	}
 	else
 	{

@@ -14,11 +14,9 @@
 #define C5 32431
 #define C6 27811
 
-#define SEA_PRESS 1013.25
-
-uint16_t C[6];
-int32_t dT;
-float temperature,pressure;
+static uint16_t C[6];
+static int32_t dT;
+static float temperature,pressure;
 
 MS5611::MS5611(void)
 {
@@ -48,9 +46,16 @@ bool MS5611::initialize(void)
 	C[4] = C5;
 	C[5] = C6;
 	
-	temperature = 20;
-	pressure = 1000;
-	
+	getPressure();
+	rt_thread_delay(10);
+	getTemperature();
+	rt_thread_delay(10);
+	getPressure();
+	rt_thread_delay(10);
+	getTemperature();
+	rt_thread_delay(10);
+	getPressure();
+
 	return true;
 }
 
@@ -88,12 +93,15 @@ bool MS5611::readPROM(void)
 //读取数字温度
 bool MS5611::getTemperature(float* temp)
 {
-	uint32_t D2;
+	uint32_t D2Temp;
+	static uint32_t D2 = 0;
 	if(!I2Cdev::readBytes(MS561101BA_SlaveAddress,0,3,buffer)) return false;
 	//气压准备！
 	I2Cdev::writeByte(MS561101BA_SlaveAddress,MS561101BA_D1_OSR_4096,0);
 	
-	D2 = (buffer[0] << 16) | (buffer[1] << 8) | buffer[2];
+	D2Temp = (buffer[0] << 16) | (buffer[1] << 8) | buffer[2];
+	if(D2 == 0) D2 = D2Temp;
+	D2 = (D2 + D2Temp) >>1;
 	
 	dT =D2 - ((C[4]) << 8);
 	temperature = (temperature + (2000 + (((int64_t)dT * (int64_t)C[5]) >> 23)) / 100.0f) / 2.0f;	
@@ -108,11 +116,16 @@ bool MS5611::getTemperature(float* temp)
 //读取数字气压
 bool MS5611::getPressure(float* press)
 {
+	static uint32_t D1 = 0;
+	uint32_t D1Temp;
+	
 	if(!I2Cdev::readBytes(MS561101BA_SlaveAddress,0,3,buffer)) return false;
 	//温度准备！
 	I2Cdev::writeByte(MS561101BA_SlaveAddress,MS561101BA_D2_OSR_4096,0);
 	
-	uint32_t D1 = (buffer[0] << 16) | (buffer[1] << 8) | buffer[2];
+	D1Temp = (buffer[0] << 16) | (buffer[1] << 8) | buffer[2];
+	if(D1 == 0) D1 = D1Temp;
+	D1 = (D1 + D1Temp) >> 1;
 	
 	int32_t off2,sens2,delt;
 	int64_t off=((int64_t)C[1]<<16)+(((int64_t)C[3]*dT)>>7);
@@ -145,10 +158,13 @@ bool MS5611::getPressure(float* press)
 
 bool MS5611::getAltitude(float* altitude)
 {
-	float temp;
 	//((pow((sea_press / press), 1/5.257) - 1.0) * (temp + 273.15)) / 0.0065
-	temp = ((pow((float)SEA_PRESS / pressure, 1/5.257f) - 1.0f) * (temperature + 273.15f)) / 0.0065f;
-	temp = ((*altitude)*6 + temp*2) / 8.0f;
-	*altitude = temp;
-	return true;
+	if(pressure>0)
+	{
+		float temp = ((pow((float)SEA_PRESS / pressure, 1/5.257f) - 1.0f) * (temperature + 273.15f)) / 0.0065f;
+		//*altitude = ((*altitude)*5.0f + temp*3.0f) / 8.0f;
+		*altitude = temp;
+		return true;
+	}
+	return false;
 }

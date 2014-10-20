@@ -11,10 +11,7 @@ public:
 	void on(void);
 	void off(void);
 	void toggle(void);
-	bool getState(void);
 	static uint16_t interval;
-private:
-	static bool state;
 };
 
 void rt_thread_entry_led_test(void* parameter);
