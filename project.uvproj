@@ -414,6 +414,26 @@
               <FileType>1</FileType>
               <FilePath>applications\startup.c</FilePath>
             </File>
+            <File>
+              <FileName>EasyTracer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\EasyTracer.c</FilePath>
+            </File>
+            <File>
+              <FileName>ov_7725.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\ov_7725.c</FilePath>
+            </File>
+            <File>
+              <FileName>Sccb.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Sccb.c</FilePath>
+            </File>
+            <File>
+              <FileName>Trace.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Trace.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

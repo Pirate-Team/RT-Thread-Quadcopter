@@ -414,6 +414,26 @@
               <FileType>1</FileType>
               <FilePath>applications\startup.c</FilePath>
             </File>
+            <File>
+              <FileName>Cammer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Cammer.c</FilePath>
+            </File>
+            <File>
+              <FileName>EasyTracer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\EasyTracer.c</FilePath>
+            </File>
+            <File>
+              <FileName>ov_7725.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\ov_7725.c</FilePath>
+            </File>
+            <File>
+              <FileName>Sccb.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Sccb.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -488,6 +508,11 @@
               <FileName>Communication.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>.\Communication.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>cpu_usage.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\cpu_usage.cpp</FilePath>
             </File>
           </Files>
         </Group>

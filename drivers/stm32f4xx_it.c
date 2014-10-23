@@ -25,7 +25,8 @@
 #include "stm32f4xx.h"
 #include <rtthread.h>
 #include "board.h"
-
+#include "ov_7725.h"
+extern uint8_t Ov7725_vsync;
 /** @addtogroup STM32F4_Discovery_Peripheral_Examples
   * @{
   */
@@ -215,6 +216,29 @@ void TIM3_IRQHandler(void)
 	rt_interrupt_leave();
 }
 
+void EXTI2_IRQHandler(void)
+{
+	rt_interrupt_enter();
+    if ( EXTI_GetITStatus(EXTI_Line2) != RESET ) 	//??EXTI_Line0??????????????NVIC 
+    {
+		if( Ov7725_vsync == 0 )
+		{
+			FIFO_WRST_L(); 	                      //???FIFO?(??from???)????
+			FIFO_WE_H();	                        //???FIFO???
+				
+			FIFO_WE_H();                          //?FIFO???
+			FIFO_WRST_H();                        //???FIFO?(??from???)????
+			Ov7725_vsync = 1;	
+		}
+		else if( Ov7725_vsync == 1 )
+		{
+			FIFO_WE_L();            				//???FIFO???
+			Ov7725_vsync = 2;
+		} 
+        EXTI_ClearITPendingBit(EXTI_Line2);		    //??EXTI_Line0???????        
+    }    
+	rt_interrupt_leave();
+}
 /**
   * @}
   */

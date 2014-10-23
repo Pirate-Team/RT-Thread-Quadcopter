@@ -12,12 +12,30 @@
 #include "Motor.h"
 #include "I2Cdev.h"
 
+struct param_t
+{
+	struct pid_t PID[4];
+	int16_t accXOffset,accYOffset,accZOffset;
+	int16_t gyroXOffset,gyroYOffset,gyroZOffset;
+	int16_t magXOffset,magYOffset,magZOffset;
+};
+
+
+
+
 struct ctrl_t
 {
 	bool att,thro,coor;
-	bool alt,track,quadx;
+	bool alt,trace,quadx;
 };
 struct ctrl_t ctrl = {0};
+
+extern "C" 
+{
+	extern int16_t targetX,targetY;
+	void rt_thread_entry_trace(void* parameter);
+	uint8_t ov_7725_init(void);
+}
 
 void hardware_init(void);
 
@@ -26,7 +44,7 @@ void rt_thread_entry_main(void* parameter)
 /*************************************
 	declare variables
 *************************************/	
-	ctrl.quadx = ctrl.att = ctrl.thro = true; ctrl.coor = ctrl.alt = ctrl.track = false;
+	ctrl.quadx = ctrl.att = ctrl.thro = true; ctrl.alt = ctrl.coor = ctrl.trace = false;
 	uint8_t rxData[RX_DATA_SIZE] = {0},txData[TX_DATA_SIZE];
 	uint8_t major,minor;
 
@@ -66,6 +84,14 @@ void rt_thread_entry_main(void* parameter)
 												1024,
 												7,
 												10);
+												
+	/*track_thread*/
+	rt_thread_t trace_thread = rt_thread_create("trace",
+												rt_thread_entry_trace,
+												RT_NULL,
+												1024,
+												10,
+												500);
 
 /*************************************
 	start thread
@@ -74,10 +100,10 @@ void rt_thread_entry_main(void* parameter)
 	if(communication_thread != RT_NULL) rt_thread_startup(communication_thread);
 	if(quadx_get_thread != RT_NULL) rt_thread_startup(quadx_get_thread);
 	if(quadx_control_thread != RT_NULL) rt_thread_startup(quadx_control_thread);
+//	if(trace_thread != RT_NULL) rt_thread_startup(trace_thread);
 	
 	//让出cpu，队尾等待调度
 	rt_thread_delay(100);
-	
 /*************************************
 	main loop
 *************************************/
@@ -169,7 +195,10 @@ void rt_thread_entry_main(void* parameter)
 		}
 		if(ctrl.coor)
 		{
-			//TODO: send coordinate
+			txData[0] = 0xec;
+			((int16_t*)(txData+1))[0] = targetX;
+			((int16_t*)(txData+1))[1] = targetY;
+			rt_mq_send(txQ,txData,TX_DATA_SIZE);
 		}
 		
 //		char str[100];
@@ -194,20 +223,28 @@ void hardware_init(void)
 	Motor::initialize();
 	
 	MPU6050 *accgyro = new MPU6050();
-	accgyro->initialize();
-	accgyro->setOffset();
+	while(!accgyro->initialize()) ;
 	delete accgyro;
 	
 	HMC5883L *mag = new HMC5883L();
-	mag->initialize();
+	while(!mag->initialize());
 	delete mag;
 	
 	MS5611 *baro = new MS5611();
-	baro->initialize();
+	while(!baro->initialize());
 	delete baro;
 	
-	led->off();
-	delete led;
+//	while(!ov_7725_init());
+}
+
+void param_init(void)
+{
+	
+}
+
+void param_save(void)
+{
+	
 }
 
 int  rt_application_init(void)

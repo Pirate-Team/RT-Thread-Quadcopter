@@ -28,7 +28,7 @@ struct pid_t PID[4] = {0};
 
 struct ctrl_t
 {
-	bool att,thro,coor,alt,track,quadx;
+	bool att,thro,coor,alt,trace,quadx;
 };
 extern struct ctrl_t ctrl;
 /*-----------------------------------
@@ -45,35 +45,12 @@ void rt_thread_entry_quadx_get_attitude(void* parameter)
 	rt_thread_delay(100);
 	baro.getPressure();
 	
-//	Led::interval = 100;
-//	mag.setOffset();
-//	Led::interval = 500;
-	
 	uint8_t state = 0;
 	uint32_t preTick = 0,curTick = 0;
 	while(1)
 	{
 		/*getSensorData*/
 		accelgyro.getMotion6Cal(&sensorData.ax, &sensorData.ay, &sensorData.az, &sensorData.gx, &sensorData.gy, &sensorData.gz);
-		//gz粗暴高通滤波
-//#define HEADING_DELTA (1)
-//#define GZ_THRE (300)
-//		if(((360-abs(sensorData.heading - preHeading))<HEADING_DELTA)||(abs(sensorData.heading - preHeading)<HEADING_DELTA))
-//		{
-//			if(sensorData.gz<GZ_THRE&&sensorData.gz>-GZ_THRE)
-//			{
-//				sensorData.gz = 0;	
-//				//rt_kprintf("%+d<----mag---->\r\n",sensorData.gz);
-//			}
-//			//else rt_kprintf("%+d<mag>\r\n",sensorData.gz);
-//		}
-//		else if(sensorData.gz<30&&sensorData.gz>-30) 
-//		{
-//			sensorData.gz = 0;
-//			//rt_kprintf("%+d<>\r\n",sensorData.gz);
-//		}
-//		//else rt_kprintf("%+d\r\n",sensorData.gz);
-
 		if(state == 0 || state == 20)
 		{
 			mag.getHeadingCal(&sensorData.mx,&sensorData.my,&sensorData.mz);
@@ -99,6 +76,7 @@ void rt_thread_entry_quadx_get_attitude(void* parameter)
 		sampleInterval = (curTick - preTick) / 1000.0f + 0.0001f;
 		//姿态数据
 		MadgwickAHRSupdate((float)sensorData.gx/GYRO_SCALE,(float)sensorData.gy/GYRO_SCALE,(float)sensorData.gz/GYRO_SCALE,(float)sensorData.ax,(float)sensorData.ay,(float)sensorData.az,(float)sensorData.mx,(float)sensorData.my,(float)sensorData.mz);
+		//MadgwickAHRSupdateIMU((float)sensorData.gx/GYRO_SCALE,(float)sensorData.gy/GYRO_SCALE,(float)sensorData.gz/GYRO_SCALE,(float)sensorData.ax,(float)sensorData.ay,(float)sensorData.az);
 		quat.toEuler(att[PITCH],att[ROLL],att[YAW]);
 		
 		if(ctrl.quadx == false) rt_thread_delay(100); 
@@ -117,6 +95,7 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 	float heading = 0;
 	float alt = 0;
 	float vel = 0;
+	uint16_t throttle = 0;
 	int16_t RC[3] = {0};
 	
 	rt_thread_delay(100);
@@ -124,7 +103,6 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 	{
 		/*calculate PID*/
 		{
-//			RCValue[THROTTLE] = 1500;
 			/*pitch&roll*/
 			//最多30度
 			for(uint8_t i=0;i<2;i++)
@@ -146,7 +124,7 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 			}
 			
 			/*yaw*/
-			if(RCValue[YAW] == 1500)
+			if(RCValue[YAW] == 1500 && RCValue[THROTTLE]>1400)
 			{
 				float err = att[YAW] - heading;
 				if(err>180) err -= 360;
@@ -178,15 +156,19 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 				static uint8_t state = 0;
 				if(state == 0)
 				{
-					if(alt == 0) alt = att[THROTTLE];
+					if(alt == 0) 
+					{
+						alt = att[THROTTLE];
+						throttle = RCValue[THROTTLE];
+					}
 					
-					if(RCValue[THROTTLE]<1350) alt -= 0.005f;
-					else if(RCValue[THROTTLE]>1650) alt += 0.005f;
+					if((RCValue[THROTTLE]<throttle-100)||(RCValue[THROTTLE]>throttle+100)) 
+						alt -= (RCValue[THROTTLE]-throttle)/50000.0f;
 					
-					err[THROTTLE].cur = alt - att[THROTTLE];
+					err[THROTTLE].cur = (alt - att[THROTTLE]) * 100;
 					PID[THROTTLE].result = PID[THROTTLE].P * err[THROTTLE].cur;
 					
-					err[THROTTLE].sum = BETWEEN(err[THROTTLE].sum + err[THROTTLE].cur*10,-1000,1000);
+					err[THROTTLE].sum = BETWEEN(err[THROTTLE].sum + err[THROTTLE].cur,-5000,5000);
 					PID[THROTTLE].result += PID[THROTTLE].I * err[THROTTLE].sum;
 					
 					vel += (sensorData.az - 2048) / ACCEL_SCALE * 0.5f;
@@ -199,9 +181,9 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 //					//sprintf(str,"gx=%+d\tgy=%+d\tgz=%+d\tax=%+d\tay=%+d\taz=%+d\r\n",sensorData.gx,sensorData.gy,sensorData.gz,sensorData.ax,sensorData.ay,sensorData.az);
 //					rt_kprintf(str);
 					
-					PID[THROTTLE].result -= PID[THROTTLE].D * vel;
+					PID[THROTTLE].result -= PID[THROTTLE].D * vel * 100;
 					
-					PID[THROTTLE].result = BETWEEN(PID[THROTTLE].result,-50,+50);
+					PID[THROTTLE].result = BETWEEN(PID[THROTTLE].result,-100,+100);
 					
 					state = 5;
 				}
@@ -212,6 +194,7 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 				alt = 0;
 				PID[THROTTLE].result = 0;
 				err[THROTTLE].sum = 0;
+				throttle = RCValue[THROTTLE];
 			}
 		}
 		/*control motor*/
@@ -226,10 +209,10 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 			}
 			else
 			{
-				motorValue[0] = RCValue[THROTTLE] + PID[PITCH].result + PID[ROLL].result + PID[YAW].result + PID[THROTTLE].result;
-				motorValue[1] = RCValue[THROTTLE] + PID[PITCH].result - PID[ROLL].result - PID[YAW].result + PID[THROTTLE].result;
-				motorValue[2] = RCValue[THROTTLE] - PID[PITCH].result - PID[ROLL].result + PID[YAW].result + PID[THROTTLE].result;
-				motorValue[3] = RCValue[THROTTLE] - PID[PITCH].result + PID[ROLL].result - PID[YAW].result + PID[THROTTLE].result;
+				motorValue[0] = throttle + PID[PITCH].result + PID[ROLL].result + PID[YAW].result + PID[THROTTLE].result;
+				motorValue[1] = throttle + PID[PITCH].result - PID[ROLL].result - PID[YAW].result + PID[THROTTLE].result;
+				motorValue[2] = throttle - PID[PITCH].result - PID[ROLL].result + PID[YAW].result + PID[THROTTLE].result;
+				motorValue[3] = throttle - PID[PITCH].result + PID[ROLL].result - PID[YAW].result + PID[THROTTLE].result;
 			}
 			Motor::setValue(motorValue[0],motorValue[1],motorValue[2],motorValue[3]);
 		}

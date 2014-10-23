@@ -5,9 +5,9 @@
 #include "rtthread.h"
 
 #define M_57_3 57.29577f
-int16_t xOffset = -162;
-int16_t yOffset = 94;
-int16_t zOffset = -26;
+int16_t magXOffset = -162;
+int16_t magYOffset = 94;
+int16_t magZOffset = -26;
 float xGain = 0,yGain = 0,zGain = 0;
 
 HMC5883L::HMC5883L(void)
@@ -83,9 +83,9 @@ void HMC5883L::getHeadingCal(int16_t *x, int16_t *y, int16_t *z)
 	
 	I2Cdev::readBytes(devAddr, HMC5883L_RA_DATAX_H, 6, buffer);
 //	I2Cdev::writeByte(devAddr, HMC5883L_RA_MODE, HMC5883L_MODE_SINGLE << (HMC5883L_MODEREG_BIT - HMC5883L_MODEREG_LENGTH + 1));
-	*x = ((((int16_t)buffer[0]) << 8) | buffer[1]) - xOffset;
-	*y = ((((int16_t)buffer[4]) << 8) | buffer[5]) - yOffset;
-	*z = ((((int16_t)buffer[2]) << 8) | buffer[3]) - zOffset;
+	*x = ((((int16_t)buffer[0]) << 8) | buffer[1]) - magXOffset;
+	*y = ((((int16_t)buffer[4]) << 8) | buffer[5]) - magYOffset;
+	*z = ((((int16_t)buffer[2]) << 8) | buffer[3]) - magZOffset;
 	
 	if(avgX == 0 && avgY == 0) 
 	{
@@ -131,7 +131,7 @@ void HMC5883L::setOffset(void)
 		}
 		rt_thread_delay(10);
 	}
-	xOffset = (min[0] + max[0]) / 2;
-	yOffset = (min[1] + max[1]) / 2;
-	zOffset = (min[2] + max[2]) / 2;
+	magXOffset = (min[0] + max[0]) / 2;
+	magYOffset = (min[1] + max[1]) / 2;
+	magZOffset = (min[2] + max[2]) / 2;
 }

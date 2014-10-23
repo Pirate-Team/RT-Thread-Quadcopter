@@ -3,8 +3,8 @@
 #include "rtthread.h"
 #include "string.h"
 
-int16_t accXOffset = 0,accYOffset = 0,accZOffset = 0;
-int16_t gyroXOffset = 0,gyroYOffset = 0,gyroZOffset = 0;
+int16_t accXOffset = 0x002d,accYOffset = 0x000f,accZOffset = 0xff76;
+int16_t gyroXOffset = 0xffd2,gyroYOffset = 0xfff1,gyroZOffset = 0xffc4;
 
 MPU6050::MPU6050()
 {
