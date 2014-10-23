@@ -116,9 +116,9 @@ void MPU6050::getMotion6Cal(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, 
 			accYAve = *ay;
 			accZAve = *az;
 		}
-		accXAve = (((int32_t)*ax)*3 + (int32_t)accXAve*5) >> 3;
-		accYAve = (((int32_t)*ay)*3 + (int32_t)accYAve*5) >> 3;
-		accZAve = (((int32_t)*az)*3 + (int32_t)accZAve*5) >> 3;
+		accXAve = (((int32_t)*ax) + (int32_t)accXAve) >> 1;
+		accYAve = (((int32_t)*ay) + (int32_t)accYAve) >> 1;
+		accZAve = (((int32_t)*az) + (int32_t)accZAve) >> 1;
 		*ax = accXAve;
 		*ay = accYAve;
 		*az = accZAve;

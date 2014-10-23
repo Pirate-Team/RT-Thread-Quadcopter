@@ -101,6 +101,7 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 	rt_thread_delay(100);
 	while(1)
 	{
+//		RCValue[THROTTLE] = 1100;
 		/*calculate PID*/
 		{
 			/*pitch&roll*/
@@ -159,6 +160,10 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 					if(alt == 0) 
 					{
 						alt = att[THROTTLE];
+						vel = 0;
+						PID[THROTTLE].result = 0;
+						err[THROTTLE].sum = 0;
+						err[THROTTLE].pre = att[THROTTLE];
 						throttle = RCValue[THROTTLE];
 					}
 					
@@ -171,10 +176,10 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 					err[THROTTLE].sum = BETWEEN(err[THROTTLE].sum + err[THROTTLE].cur,-5000,5000);
 					PID[THROTTLE].result += PID[THROTTLE].I * err[THROTTLE].sum;
 					
-					vel += (sensorData.az - 2048) / ACCEL_SCALE * 0.5f;
-					float baroVel = (att[THROTTLE] - err[THROTTLE].pre) * 5;
+					vel += (sensorData.az - 2048) / ACCEL_SCALE * 0.05f;
+					float baroVel = (att[THROTTLE] - err[THROTTLE].pre) * 20;
 					err[THROTTLE].pre = att[THROTTLE];
-					vel = vel * 0.98f + baroVel * 0.02f;
+					vel = vel * 0.9f + baroVel * 0.1f;
 					
 //					char str[100];
 //					sprintf(str,"vel = %+f\tbaro = %+f\r\n",vel,baroVel);
@@ -192,8 +197,6 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 			else 
 			{
 				alt = 0;
-				PID[THROTTLE].result = 0;
-				err[THROTTLE].sum = 0;
 				throttle = RCValue[THROTTLE];
 			}
 		}
