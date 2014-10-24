@@ -114,7 +114,7 @@ void HMC5883L::getHeadingCal(float *heading)
 
 void HMC5883L::setOffset(void)
 {	
-	uint32_t tick = rt_tick_get() + 15000; //15s
+	uint32_t tick = rt_tick_get() + 3000; //15s
 	int16_t data[3],min[3],max[3];
 	for(uint8_t i=0;i<3;i++)
 	{
@@ -129,7 +129,7 @@ void HMC5883L::setOffset(void)
 			if(data[i]<min[i]) min[i] = data[i];
 			if(data[i]>max[i]) max[i] = data[i];
 		}
-		rt_thread_delay(10);
+		rt_thread_delay(2);
 	}
 	magXOffset = (min[0] + max[0]) / 2;
 	magYOffset = (min[1] + max[1]) / 2;

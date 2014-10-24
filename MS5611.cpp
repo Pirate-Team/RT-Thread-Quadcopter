@@ -37,7 +37,7 @@ MS5611::~MS5611(void)
 bool MS5611::initialize(void)
 {
 	if(!reset()) return false;
-	rt_thread_delay(100);
+	rt_thread_delay(20);
 	if(!readPROM()) return false;
 	C[0] = C1;
 	C[1] = C2;
@@ -47,13 +47,13 @@ bool MS5611::initialize(void)
 	C[5] = C6;
 	
 	getPressure();
-	rt_thread_delay(10);
+	rt_thread_delay(2);
 	getTemperature();
-	rt_thread_delay(10);
+	rt_thread_delay(2);
 	getPressure();
-	rt_thread_delay(10);
+	rt_thread_delay(2);
 	getTemperature();
-	rt_thread_delay(10);
+	rt_thread_delay(2);
 	getPressure();
 
 	return true;

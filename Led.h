@@ -5,15 +5,17 @@
 class Led
 {
 public:
-	Led(void);
+	Led(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin);
 	~Led(void);
 	void initialize(void);
 	void on(void);
 	void off(void);
 	void toggle(void);
-	static uint16_t interval;
+	uint16_t interval;
+	GPIO_TypeDef* GPIO;
+	uint16_t Pin;
 };
 
-void rt_thread_entry_led_test(void* parameter);
+void rt_thread_entry_led(void* parameter);
 
 #endif

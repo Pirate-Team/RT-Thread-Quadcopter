@@ -8,7 +8,7 @@ enum RC_TYPE
 	ROLL,
 	YAW,
 	THROTTLE,
-//	HOLD,
+	HOLD,
 //	AUX,
 	RC_NUM
 };

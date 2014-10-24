@@ -216,6 +216,14 @@ void TIM3_IRQHandler(void)
 	rt_interrupt_leave();
 }
 
+void TIM4_IRQHandler(void)
+{
+	void MyTIM4_IRQHandler(void);
+	rt_interrupt_enter();
+	MyTIM4_IRQHandler();
+	rt_interrupt_leave();
+}
+
 void EXTI2_IRQHandler(void)
 {
 	rt_interrupt_enter();

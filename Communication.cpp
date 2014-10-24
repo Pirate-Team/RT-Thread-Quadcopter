@@ -116,6 +116,6 @@ void rt_thread_entry_communication(void* parameter)
 		{
 			com.sendData();
 		}
-		rt_thread_delay(25);
+		rt_thread_delay(5);
 	}
 }

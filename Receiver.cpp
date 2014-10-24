@@ -26,8 +26,8 @@ bool Receiver::initialize(void)
 --------------------------------------------------*/
 	GPIO_InitTypeDef GPIO_InitStructure;
 
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3 | RCC_APB1Periph_TIM4, ENABLE);
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_GPIOB, ENABLE);
 
 	/* TIM3 CH1 (PC6), TIM3 CH2 (PC7) , TIM3 CH3 (PC8), TIM3 CH4 (PC9) */
 	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_6 | GPIO_Pin_7 | GPIO_Pin_8 | GPIO_Pin_9;
@@ -35,14 +35,25 @@ bool Receiver::initialize(void)
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN ;
-	GPIO_Init(GPIOC, &GPIO_InitStructure); 
+	GPIO_Init(GPIOC, &GPIO_InitStructure);
+	/* TIM4 CH1 (PB6)*/
+	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_6;
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
+	
+	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_6;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL ;
+	GPIO_Init(GPIOA, &GPIO_InitStructure);
 
 	/* Connect TIM3 pins to AF */  
 	GPIO_PinAFConfig(GPIOC, GPIO_PinSource6, GPIO_AF_TIM3);
 	GPIO_PinAFConfig(GPIOC, GPIO_PinSource7, GPIO_AF_TIM3);
 	GPIO_PinAFConfig(GPIOC, GPIO_PinSource8, GPIO_AF_TIM3);
 	GPIO_PinAFConfig(GPIOC, GPIO_PinSource9, GPIO_AF_TIM3);
-	
+	/* Connect TIM4 pins to AF */
+	GPIO_PinAFConfig(GPIOB, GPIO_PinSource6, GPIO_AF_TIM4);
 	
 /*----------------------------------------------
 	NVIC
@@ -53,6 +64,9 @@ bool Receiver::initialize(void)
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure); 
+	/* Enable the TIM4 global Interrupt */
+	NVIC_InitStructure.NVIC_IRQChannel = TIM4_IRQn;
 	NVIC_Init(&NVIC_InitStructure); 
 
 /*----------------------------------------------
@@ -108,7 +122,31 @@ bool Receiver::initialize(void)
 	TIM_ClearITPendingBit(TIM3,TIM_IT_Update|TIM_IT_CC1|TIM_IT_CC2|TIM_IT_CC3|TIM_IT_CC4);
 	TIM_ITConfig(TIM3,TIM_IT_Update|TIM_IT_CC1|TIM_IT_CC2|TIM_IT_CC3|TIM_IT_CC4,ENABLE);
 	TIM_Cmd(TIM3,ENABLE);
+/*----------------------------------------------
+	TIM4
+----------------------------------------------*/
+	RCC_TIMCLKPresConfig(RCC_TIMPrescActivated);
+
+	/* Time base configuration */
+	TIM_TimeBaseStructure.TIM_Period = (uint16_t)ARR;
+	TIM_TimeBaseStructure.TIM_Prescaler = (uint16_t)PRESCALER;
+	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
+	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
+	TIM_TimeBaseInit(TIM4, &TIM_TimeBaseStructure);
+	TIM_ARRPreloadConfig(TIM4, ENABLE);
 	
+	TIM_ITConfig(TIM4,TIM_IT_CC1,DISABLE);
+	/* PWM1 Mode configuration: Channel1 */
+	TIM_ICInitStructure.TIM_Channel = TIM_Channel_1;
+	TIM_ICInitStructure.TIM_ICPrescaler = TIM_ICPSC_DIV1;
+	TIM_ICInitStructure.TIM_ICPolarity = TIM_ICPolarity_BothEdge;
+	TIM_ICInitStructure.TIM_ICFilter = 0x00;
+	TIM_ICInitStructure.TIM_ICSelection = TIM_ICSelection_DirectTI;
+	TIM_ICInit(TIM4,&TIM_ICInitStructure);
+	
+	TIM_ClearITPendingBit(TIM4,TIM_IT_Update|TIM_IT_CC1);
+	TIM_ITConfig(TIM4,TIM_IT_Update|TIM_IT_CC1,ENABLE);
+	TIM_Cmd(TIM4,ENABLE);
 	return true;
 }
 
@@ -234,6 +272,37 @@ void MyTIM3_IRQHandler(void)
 		}
 	}
 }
+extern "C" void MyTIM4_IRQHandler(void);
+void MyTIM4_IRQHandler(void)
+{
+	//update
+	if(TIM_GetITStatus(TIM4,TIM_IT_Update) == SET)
+	{
+		TIM_ClearITPendingBit(TIM4,TIM_IT_Update);
+		if(RCFlag[HOLD] == 2)
+			RCValue[HOLD] = 1100;
+		else
+			RCFlag[HOLD]++;
+	}
+	//channel 1
+	if(TIM_GetITStatus(TIM4,TIM_IT_CC1) == SET)
+	{
+		TIM_ClearITPendingBit(TIM4,TIM_IT_CC1);
+		if((GPIOB->IDR  & GPIO_Pin_6) != 0)
+		{
+			preCCR[HOLD] = TIM_GetCapture1(TIM4);
+		}
+		else
+		{
+			CCR[HOLD] = TIM_GetCapture1(TIM4);
+			if(CCR[HOLD] > preCCR[HOLD])
+				RCValue[HOLD] = (CCR[HOLD] - preCCR[HOLD]);
+			else
+				RCValue[HOLD] = (ARR + CCR[HOLD] - preCCR[HOLD]);
+			RCFlag[HOLD] = 0;
+		}
+	}
+}
 
 void rt_thread_entry_receiver_test(void* parameter)
 {
@@ -241,7 +310,7 @@ void rt_thread_entry_receiver_test(void* parameter)
 	
 	while(1)
 	{
-		rt_thread_delay(200);
+		rt_thread_delay(40);
 		rt_kprintf("%d\t%d\t%d\t%d\r\n",RCValue[PITCH],RCValue[ROLL],RCValue[YAW],RCValue[THROTTLE]);
 	}
 }

@@ -25,7 +25,7 @@ MPU6050::~MPU6050()
 bool MPU6050::initialize(void)
 {
 	if(!I2Cdev::writeByte(devAddr, MPU6050_RA_PWR_MGMT_1, 0x80)) return false;             //PWR_MGMT_1    -- DEVICE_RESET 1
-	rt_thread_delay(200);
+	rt_thread_delay(40);
 	if(!I2Cdev::writeByte(devAddr, MPU6050_RA_PWR_MGMT_1, 0x01)) return false;
 	if(!I2Cdev::writeByte(devAddr, MPU6050_RA_GYRO_CONFIG, 0x10)) return false;
     if(!I2Cdev::writeByte(devAddr, MPU6050_RA_ACCEL_CONFIG, 0x18)) return false;
@@ -37,7 +37,7 @@ bool MPU6050::initialize(void)
 /*
 	
 	I2Cdev::writeByte(devAddr, MPU6050_RA_PWR_MGMT_1, 0x80);             //PWR_MGMT_1    -- DEVICE_RESET 1
-	rt_thread_delay(5);
+	rt_thread_delay(1);
 	I2Cdev::writeByte(devAddr, MPU6050_RA_PWR_MGMT_1, 0x03);             //PWR_MGMT_1    -- SLEEP 0; CYCLE 0; TEMP_DIS 0; CLKSEL 3 (PLL with Z Gyro reference)
 	I2Cdev::writeByte(devAddr, MPU6050_RA_CONFIG, 0x00); 				//CONFIG        -- EXT_SYNC_SET 0 (disable input pin for data sync) ; default DLPF_CFG = 0 => ACC bandwidth = 260Hz  GYRO bandwidth = 256Hz)
 	I2Cdev::writeByte(devAddr, MPU6050_RA_GYRO_CONFIG, 0x18);             //GYRO_CONFIG   -- FS_SEL = 3: Full scale set to 2000 deg/sec  0x18
@@ -244,7 +244,7 @@ void MPU6050::setOffset(void)
 	int16_t ax, ay, az;//, axa = 0, aya = 0, aza = 0;
 	int16_t gx, gy, gz;//, gxa = 0, gya = 0, gza = 0;
 //	rt_kprintf("\r\nMPU6050 is calculating Offset...\r\n");
-	for(uint8_t i=0;i<255;i++)
+	for(uint8_t i=0;i<100;i++)
 	{	
 		getAccelerationRaw(&ax,&ay,&az);
 		getRotationRaw(&gx,&gy,&gz);

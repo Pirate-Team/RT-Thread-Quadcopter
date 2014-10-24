@@ -40,9 +40,9 @@ void rt_thread_entry_quadx_get_attitude(void* parameter)
 	accelgyro.getMotion6Cal(&sensorData.ax, &sensorData.ay, &sensorData.az, &sensorData.gx, &sensorData.gy, &sensorData.gz);
 	HMC5883L mag;
 	MS5611 baro;
-	rt_thread_delay(100);
+	rt_thread_delay(20);
 	baro.getTemperature();
-	rt_thread_delay(100);
+	rt_thread_delay(20);
 	baro.getPressure();
 	
 	uint8_t state = 0;
@@ -73,14 +73,14 @@ void rt_thread_entry_quadx_get_attitude(void* parameter)
 		/*calculate attitude*/
 		preTick = curTick;
 		curTick = rt_tick_get();
-		sampleInterval = (curTick - preTick) / 1000.0f + 0.0001f;
+		sampleInterval = (curTick - preTick) / 200.0f + (SysTick->LOAD - SysTick->VAL) / 10500.0f;
 		//×ËÌ¬Êý¾Ý
 		MadgwickAHRSupdate((float)sensorData.gx/GYRO_SCALE,(float)sensorData.gy/GYRO_SCALE,(float)sensorData.gz/GYRO_SCALE,(float)sensorData.ax,(float)sensorData.ay,(float)sensorData.az,(float)sensorData.mx,(float)sensorData.my,(float)sensorData.mz);
 		//MadgwickAHRSupdateIMU((float)sensorData.gx/GYRO_SCALE,(float)sensorData.gy/GYRO_SCALE,(float)sensorData.gz/GYRO_SCALE,(float)sensorData.ax,(float)sensorData.ay,(float)sensorData.az);
 		quat.toEuler(att[PITCH],att[ROLL],att[YAW]);
 		
-		if(ctrl.quadx == false) rt_thread_delay(100); 
-		rt_thread_delay(4);
+		if(ctrl.quadx == false) rt_thread_delay(20); 
+		rt_thread_delay(1);
 	}
 }
 
@@ -98,7 +98,7 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 	uint16_t throttle = 0;
 	int16_t RC[3] = {0};
 	
-	rt_thread_delay(100);
+	rt_thread_delay(20);
 	while(1)
 	{
 //		RCValue[THROTTLE] = 1100;
@@ -219,8 +219,8 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 			}
 			Motor::setValue(motorValue[0],motorValue[1],motorValue[2],motorValue[3]);
 		}
-		if(ctrl.quadx == false) rt_thread_delay(100);
-		rt_thread_delay(10);
+		if(ctrl.quadx == false) rt_thread_delay(20);
+		rt_thread_delay(2);
 	}
 }
 
