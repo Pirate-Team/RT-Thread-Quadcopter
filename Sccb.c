@@ -11,15 +11,18 @@
  ********************************************************************/
 void SCCB_GPIO_Config(void)
 {
-  GPIO_InitTypeDef  GPIO_InitStructure; 
-  /* SCL(PA14)、SDA(PA15)管脚配置 */
-  RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_GPIOA, ENABLE);
+	GPIO_InitTypeDef  GPIO_InitStructure; 
+	/* SCL(PB7)、SDA(PA15)管脚配置 */
+	RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_GPIOA|RCC_AHB1Periph_GPIOB, ENABLE);
 
-  GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_14 | GPIO_Pin_15;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT; 
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;						//推挽输出	
-  GPIO_Init(GPIOA, &GPIO_InitStructure);
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_15;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT; 
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;						//推挽输出	
+	GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7;
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
 }
 
 /********************************************************************
@@ -31,11 +34,11 @@ void SCCB_GPIO_Config(void)
  ********************************************************************/
 void SCCB_delay(void)
 {	
-	uint16_t i = 400; //TODO:减小
-	while(i) 
-	{ 
-		i--; 
-	} 
+   uint16_t i = 400; 
+   while(i) 
+   { 
+     i--; 
+   } 
 }
 
 /********************************************************************

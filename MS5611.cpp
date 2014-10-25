@@ -6,7 +6,6 @@
 
 //#define DEBUG
 
-//在这个程序里读取校正数据有问题，用arduino读取的数据代替了
 #define C1 51270
 #define C2 51755
 #define C3 31295
@@ -15,8 +14,8 @@
 #define C6 27811
 
 static uint16_t C[6];
-static int32_t dT;
-static float temperature,pressure;
+static int64_t dT;
+static float temperature,pressure,sea_press = SEA_PRESS;
 
 MS5611::MS5611(void)
 {
@@ -37,23 +36,23 @@ MS5611::~MS5611(void)
 bool MS5611::initialize(void)
 {
 	if(!reset()) return false;
-	rt_thread_delay(20);
+	rt_thread_delay(200);
 	if(!readPROM()) return false;
-	C[0] = C1;
+	C[0] = C1-100;
 	C[1] = C2;
-	C[2] = C3;
+	C[2] = C3-100;
 	C[3] = C4;
 	C[4] = C5;
 	C[5] = C6;
 	
 	getPressure();
-	rt_thread_delay(2);
+	rt_thread_delay(25);
 	getTemperature();
-	rt_thread_delay(2);
+	rt_thread_delay(25);
 	getPressure();
-	rt_thread_delay(2);
+	rt_thread_delay(25);
 	getTemperature();
-	rt_thread_delay(2);
+	rt_thread_delay(25);
 	getPressure();
 
 	return true;
@@ -75,7 +74,6 @@ bool MS5611::reset(void)
 	return I2Cdev::writeByte(devAddr,MS561101BA_RST,0);
 }
 
-//从PROM读取出厂校准数据
 bool MS5611::readPROM(void)
 {
 	uint8_t i;
@@ -90,13 +88,12 @@ bool MS5611::readPROM(void)
 	return true;
 }
 
-//读取数字温度
 bool MS5611::getTemperature(float* temp)
 {
 	uint32_t D2Temp;
 	static uint32_t D2 = 0;
 	if(!I2Cdev::readBytes(MS561101BA_SlaveAddress,0,3,buffer)) return false;
-	//气压准备！
+	
 	I2Cdev::writeByte(MS561101BA_SlaveAddress,MS561101BA_D1_OSR_4096,0);
 	
 	D2Temp = (buffer[0] << 16) | (buffer[1] << 8) | buffer[2];
@@ -104,7 +101,7 @@ bool MS5611::getTemperature(float* temp)
 	D2 = (D2 + D2Temp) >>1;
 	
 	dT =D2 - ((C[4]) << 8);
-	temperature = (temperature + (2000 + (((int64_t)dT * (int64_t)C[5]) >> 23)) / 100.0f) / 2.0f;	
+	temperature = (2000 + (((int64_t)dT * (int64_t)C[5]) >> 23)) / 100.0f;	
 #ifdef DEBUG
 	rt_kprintf("D2 = %d\ttemperature = %d\r\n",D2,temperature);
 #endif
@@ -113,14 +110,13 @@ bool MS5611::getTemperature(float* temp)
 	return true;
 }
 
-//读取数字气压
 bool MS5611::getPressure(float* press)
 {
 	static uint32_t D1 = 0;
 	uint32_t D1Temp;
 	
 	if(!I2Cdev::readBytes(MS561101BA_SlaveAddress,0,3,buffer)) return false;
-	//温度准备！
+
 	I2Cdev::writeByte(MS561101BA_SlaveAddress,MS561101BA_D2_OSR_4096,0);
 	
 	D1Temp = (buffer[0] << 16) | (buffer[1] << 8) | buffer[2];
@@ -130,15 +126,14 @@ bool MS5611::getPressure(float* press)
 	int32_t off2,sens2,delt;
 	int64_t off=((int64_t)C[1]<<16)+(((int64_t)C[3]*dT)>>7);
 	int64_t sens=((int64_t)C[0]<<15)+(((int64_t)C[2]*dT)>>8);
-	
-	//温度补偿
-	if (temperature < 2000) { // temperature lower than 20st.C 
-		delt = temperature-2000;
+
+	if (temperature * 100 < 2000) { // temperature lower than 20st.C 
+		delt = temperature * 100-2000;
 		delt  = 5*delt*delt;
 		off2  = delt>>1;
 		sens2 = delt>>2;
-		if (temperature < -1500) { // temperature lower than -15st.C
-			delt  = temperature+1500;
+		if (temperature * 100 < -1500) { // temperature lower than -15st.C
+			delt  = temperature * 100+1500;
 			delt  = delt*delt;
 			off2  += 7 * delt;
 			sens2 += (11 * delt)>>1;
@@ -147,7 +142,20 @@ bool MS5611::getPressure(float* press)
 		sens -= sens2;
 	}
 	
-	pressure = (pressure + (((((int64_t)D1 * sens ) >> 21) - off) >> 15) / 100.0f) / 2.0f;
+	#define BARO_TAB_SIZE 21
+    static int32_t baroHistTab[BARO_TAB_SIZE] = {0};
+    static uint8_t baroHistIdx = 0;
+	static uint32_t pressureSum = 0;
+  
+    uint8_t indexplus1 = (baroHistIdx + 1);
+    if (indexplus1 == BARO_TAB_SIZE) indexplus1 = 0;
+    baroHistTab[baroHistIdx] = ((((int64_t)D1 * sens ) >> 21) - off) >> 15;
+    pressureSum += baroHistTab[baroHistIdx];
+    pressureSum -= baroHistTab[indexplus1];
+    baroHistIdx = indexplus1;
+
+	pressure = pressureSum / 2000.0f;
+	
 #ifdef DEBUG
 	rt_kprintf("D1 = %d\tpressure = %d\r\n",D1,pressure);
 #endif
@@ -158,13 +166,17 @@ bool MS5611::getPressure(float* press)
 
 bool MS5611::getAltitude(float* altitude)
 {
-	//((pow((sea_press / press), 1/5.257) - 1.0) * (temp + 273.15)) / 0.0065
 	if(pressure>0)
 	{
-		float temp = ((pow((float)SEA_PRESS / pressure, 1/5.257f) - 1.0f) * (temperature + 273.15f)) / 0.0065f;
-		//*altitude = ((*altitude)*5.0f + temp*3.0f) / 8.0f;
-		*altitude = temp;
+		float temp = ((pow(sea_press / pressure, 1/5.257f) - 1.0f) * (temperature + 273.15f)) / 0.0065f;
+		*altitude = ((*altitude)*5.0f + temp*3.0f) / 8.0f;
 		return true;
 	}
 	return false;
+}
+	
+void MS5611::setGround(void)
+{
+	if(pressure == 0) return;
+	sea_press = pressure;
 }

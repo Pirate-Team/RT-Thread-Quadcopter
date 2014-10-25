@@ -62,7 +62,7 @@ void rt_thread_entry_led(void* parameter)
 		else if(tick>led1Tick)
 		{
 			led1.toggle();
-			led1Tick = tick + led1.interval / 5;
+			led1Tick = tick + led1.interval / 2;
 		}
 		//led2
 		if(led2.interval == 0xff)
@@ -72,7 +72,7 @@ void rt_thread_entry_led(void* parameter)
 		else if(tick>led2Tick)
 		{
 			led2.toggle();
-			led2Tick = tick + led2.interval / 5;
+			led2Tick = tick + led2.interval / 2;
 		}
 		//led3
 		if(led3.interval == 0xff)
@@ -82,9 +82,9 @@ void rt_thread_entry_led(void* parameter)
 		else if(tick>led3Tick)
 		{
 			led3.toggle();
-			led3Tick = tick + led3.interval / 5;
+			led3Tick = tick + led3.interval / 2;
 		}
-		rt_thread_delay(20);
+		rt_thread_delay(50);
 	}
 }
 

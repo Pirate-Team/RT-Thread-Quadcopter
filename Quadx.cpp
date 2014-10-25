@@ -22,6 +22,10 @@
 -----------------------------------*/
 float att[4] = {0};
 
+MPU6050 accelgyro;
+HMC5883L mag;
+MS5611 baro;
+
 struct sensor_data_t sensorData = {0};
 
 struct pid_t PID[4] = {0};
@@ -36,51 +40,39 @@ extern struct ctrl_t ctrl;
 -----------------------------------*/
 void rt_thread_entry_quadx_get_attitude(void* parameter)
 {
-	MPU6050 accelgyro;
-	accelgyro.getMotion6Cal(&sensorData.ax, &sensorData.ay, &sensorData.az, &sensorData.gx, &sensorData.gy, &sensorData.gz);
-	HMC5883L mag;
-	MS5611 baro;
-	rt_thread_delay(20);
-	baro.getTemperature();
-	rt_thread_delay(20);
-	baro.getPressure();
-	
 	uint8_t state = 0;
 	uint32_t preTick = 0,curTick = 0;
+	curTick = rt_tick_get();
 	while(1)
 	{
 		/*getSensorData*/
 		accelgyro.getMotion6Cal(&sensorData.ax, &sensorData.ay, &sensorData.az, &sensorData.gx, &sensorData.gy, &sensorData.gz);
-		if(state == 0 || state == 20)
+		if(state == 0)
 		{
 			mag.getHeadingCal(&sensorData.mx,&sensorData.my,&sensorData.mz);
-			if(state == 0) state = 40;
-//			char str[50];
-//			sprintf(str,"heading=%+f\r\n",sensorData.heading);
-//			rt_kprintf(str);
+			if(state == 0) state = 10;
 		}
-		else if(state == 30)
+		else if(state == 8)
 		{
-			baro.getTemperature(&sensorData.temperature);
+			baro.getTemperature();
+			baro.getAltitude(&att[THROTTLE]);
 		}
-		else if(state == 10)
+		else if(state == 2)
 		{
-			baro.getPressure(&sensorData.pressure);
-			att[THROTTLE] += ((pow((float)SEA_PRESS / sensorData.pressure, 1/5.257f) - 1.0f) * (sensorData.temperature + 273.15f)) / 0.0065f;
-			att[THROTTLE] /= 2;
+			baro.getPressure();	
+			baro.getAltitude(&att[THROTTLE]);
 		}
 		state--;
 		/*calculate attitude*/
 		preTick = curTick;
 		curTick = rt_tick_get();
-		sampleInterval = (curTick - preTick) / 200.0f + (SysTick->LOAD - SysTick->VAL) / 10500.0f;
+		sampleInterval = (curTick - preTick) / 500.0f;
 		//姿态数据
 		MadgwickAHRSupdate((float)sensorData.gx/GYRO_SCALE,(float)sensorData.gy/GYRO_SCALE,(float)sensorData.gz/GYRO_SCALE,(float)sensorData.ax,(float)sensorData.ay,(float)sensorData.az,(float)sensorData.mx,(float)sensorData.my,(float)sensorData.mz);
 		//MadgwickAHRSupdateIMU((float)sensorData.gx/GYRO_SCALE,(float)sensorData.gy/GYRO_SCALE,(float)sensorData.gz/GYRO_SCALE,(float)sensorData.ax,(float)sensorData.ay,(float)sensorData.az);
-		quat.toEuler(att[PITCH],att[ROLL],att[YAW]);
 		
-		if(ctrl.quadx == false) rt_thread_delay(20); 
-		rt_thread_delay(1);
+		if(ctrl.quadx == false) rt_thread_delay(50); 
+		rt_thread_delay(2);
 	}
 }
 
@@ -97,11 +89,14 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 	float vel = 0;
 	uint16_t throttle = 0;
 	int16_t RC[3] = {0};
+	int16_t accZ = 0;
 	
-	rt_thread_delay(20);
+	rt_thread_delay(50);
 	while(1)
 	{
 //		RCValue[THROTTLE] = 1100;
+		quat.toEuler(att[PITCH],att[ROLL],att[YAW]);
+		
 		/*calculate PID*/
 		{
 			/*pitch&roll*/
@@ -152,6 +147,8 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 			err[YAW].pre = err[YAW].cur;
 			
 			/*altitude*/
+			if(RCValue[HOLD]>1500) ctrl.alt = true;
+			else ctrl.alt = false;
 			if(ctrl.alt)
 			{
 				static uint8_t state = 0;
@@ -161,24 +158,32 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 					{
 						alt = att[THROTTLE];
 						vel = 0;
-						PID[THROTTLE].result = 0;
 						err[THROTTLE].sum = 0;
 						err[THROTTLE].pre = att[THROTTLE];
 						throttle = RCValue[THROTTLE];
 					}
 					
 					if((RCValue[THROTTLE]<throttle-100)||(RCValue[THROTTLE]>throttle+100)) 
-						alt -= (RCValue[THROTTLE]-throttle)/50000.0f;
+						alt += (RCValue[THROTTLE]-throttle)/50000.0f;
 					
 					err[THROTTLE].cur = (alt - att[THROTTLE]) * 100;
+					//死区
+					if(err[THROTTLE].cur>20) err[THROTTLE].cur -= 20;
+					else if(err[THROTTLE].cur<-20) err[THROTTLE].cur += 20;
+					else err[THROTTLE].cur = 0;
+					
 					PID[THROTTLE].result = PID[THROTTLE].P * err[THROTTLE].cur;
 					
-					err[THROTTLE].sum = BETWEEN(err[THROTTLE].sum + err[THROTTLE].cur,-5000,5000);
+					err[THROTTLE].sum = BETWEEN(err[THROTTLE].sum + err[THROTTLE].cur,-500,500);
 					PID[THROTTLE].result += PID[THROTTLE].I * err[THROTTLE].sum;
 					
-					vel += (sensorData.az - 2048) / ACCEL_SCALE * 0.05f;
-					float baroVel = (att[THROTTLE] - err[THROTTLE].pre) * 20;
+					vel += (sensorData.az - accZ) / ACCEL_SCALE * 5;//0.05*100
+					float baroVel = (att[THROTTLE] - err[THROTTLE].pre) * 2000;//20*100
+					//死区
+					if(baroVel>-20&&baroVel<20) baroVel = 0;
+					
 					err[THROTTLE].pre = att[THROTTLE];
+					
 					vel = vel * 0.9f + baroVel * 0.1f;
 					
 //					char str[100];
@@ -186,7 +191,7 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 //					//sprintf(str,"gx=%+d\tgy=%+d\tgz=%+d\tax=%+d\tay=%+d\taz=%+d\r\n",sensorData.gx,sensorData.gy,sensorData.gz,sensorData.ax,sensorData.ay,sensorData.az);
 //					rt_kprintf(str);
 					
-					PID[THROTTLE].result -= PID[THROTTLE].D * vel * 100;
+					PID[THROTTLE].result -= PID[THROTTLE].D * vel;
 					
 					PID[THROTTLE].result = BETWEEN(PID[THROTTLE].result,-100,+100);
 					
@@ -197,7 +202,9 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 			else 
 			{
 				alt = 0;
+				PID[THROTTLE].result = 0;
 				throttle = RCValue[THROTTLE];
+				if(RCValue[THROTTLE]<1060) accZ = (accZ + sensorData.az) >> 1;
 			}
 		}
 		/*control motor*/
@@ -219,8 +226,8 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 			}
 			Motor::setValue(motorValue[0],motorValue[1],motorValue[2],motorValue[3]);
 		}
-		if(ctrl.quadx == false) rt_thread_delay(20);
-		rt_thread_delay(2);
+		if(ctrl.quadx == false) rt_thread_delay(50);
+		rt_thread_delay(5);
 	}
 }
 

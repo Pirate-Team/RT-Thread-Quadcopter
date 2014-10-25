@@ -310,7 +310,7 @@ void rt_thread_entry_receiver_test(void* parameter)
 	
 	while(1)
 	{
-		rt_thread_delay(40);
+		rt_thread_delay(100);
 		rt_kprintf("%d\t%d\t%d\t%d\r\n",RCValue[PITCH],RCValue[ROLL],RCValue[YAW],RCValue[THROTTLE]);
 	}
 }

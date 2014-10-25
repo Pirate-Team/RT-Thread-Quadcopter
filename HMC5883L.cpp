@@ -5,10 +5,9 @@
 #include "rtthread.h"
 
 #define M_57_3 57.29577f
-int16_t magXOffset = -162;
-int16_t magYOffset = 94;
-int16_t magZOffset = -26;
-float xGain = 0,yGain = 0,zGain = 0;
+int16_t magXOffset = -158;
+int16_t magYOffset = 93;
+int16_t magZOffset = -28;
 
 HMC5883L::HMC5883L(void)
 {
@@ -31,7 +30,7 @@ bool HMC5883L::initialize(void)
     // write CONFIG_A register
     if(!I2Cdev::writeByte(devAddr, HMC5883L_RA_CONFIG_A,
         (HMC5883L_AVERAGING_8 << (HMC5883L_CRA_AVERAGE_BIT - HMC5883L_CRA_AVERAGE_LENGTH + 1)) |
-        (HMC5883L_RATE_15     << (HMC5883L_CRA_RATE_BIT - HMC5883L_CRA_RATE_LENGTH + 1)) |
+        (HMC5883L_RATE_30     << (HMC5883L_CRA_RATE_BIT - HMC5883L_CRA_RATE_LENGTH + 1)) |
         (HMC5883L_BIAS_NORMAL << (HMC5883L_CRA_BIAS_BIT - HMC5883L_CRA_BIAS_LENGTH + 1)))) return false;
 
     // write CONFIG_B register
@@ -113,8 +112,9 @@ void HMC5883L::getHeadingCal(float *heading)
 }
 
 void HMC5883L::setOffset(void)
-{	
-	uint32_t tick = rt_tick_get() + 3000; //15s
+{
+#define CALI_TIME_S 20
+	uint32_t tick = rt_tick_get() + CALI_TIME_S * 500;
 	int16_t data[3],min[3],max[3];
 	for(uint8_t i=0;i<3;i++)
 	{
@@ -129,7 +129,7 @@ void HMC5883L::setOffset(void)
 			if(data[i]<min[i]) min[i] = data[i];
 			if(data[i]>max[i]) max[i] = data[i];
 		}
-		rt_thread_delay(2);
+		rt_thread_delay(10);
 	}
 	magXOffset = (min[0] + max[0]) / 2;
 	magYOffset = (min[1] + max[1]) / 2;

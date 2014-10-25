@@ -6,11 +6,11 @@
 #define SCL_H         GPIO_SetBits(GPIOA , GPIO_Pin_15)
 #define SCL_L         GPIO_ResetBits(GPIOA , GPIO_Pin_15) 
    
-#define SDA_H         GPIO_SetBits(GPIOA , GPIO_Pin_14) 
-#define SDA_L         GPIO_ResetBits(GPIOA , GPIO_Pin_14)
+#define SDA_H         GPIO_SetBits(GPIOB , GPIO_Pin_7) 
+#define SDA_L         GPIO_ResetBits(GPIOB , GPIO_Pin_7)
 
 #define SCL_read      GPIO_ReadInputDataBit(GPIOA , GPIO_Pin_15) 
-#define SDA_read      GPIO_ReadInputDataBit(GPIOA , GPIO_Pin_14) 
+#define SDA_read      GPIO_ReadInputDataBit(GPIOB , GPIO_Pin_7) 
 
 #define ADDR_OV7725   0x42
 

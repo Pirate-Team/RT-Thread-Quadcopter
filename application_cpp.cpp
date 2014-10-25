@@ -43,7 +43,7 @@ void rt_thread_entry_main(void* parameter)
 /*************************************
 	declare variables
 *************************************/	
-	ctrl.quadx = true; ctrl.alt = ctrl.att = ctrl.thro = ctrl.coor = ctrl.trace = false;
+	ctrl.quadx = ctrl.att = ctrl.thro = true; ctrl.alt = ctrl.trace = ctrl.coor = false;
 	uint8_t rxData[RX_DATA_SIZE] = {0},txData[TX_DATA_SIZE];
 	uint8_t major,minor;
 
@@ -84,7 +84,7 @@ void rt_thread_entry_main(void* parameter)
 												7,
 												10);
 												
-	/*track_thread*/
+	/*trace_thread*/
 	rt_thread_t trace_thread = rt_thread_create("trace",
 												rt_thread_entry_trace,
 												RT_NULL,
@@ -103,7 +103,7 @@ void rt_thread_entry_main(void* parameter)
 	
 	
 	//让出cpu，队尾等待调度
-	rt_thread_delay(20);
+	rt_thread_delay(50);
 /*************************************
 	main loop
 *************************************/
@@ -161,12 +161,6 @@ void rt_thread_entry_main(void* parameter)
 				if(rxData[3] == 0xf1) ctrl.coor = true;
 				else if(rxData[3] == 0xf0) ctrl.coor = false;
 			}
-			else if(rxData[0]==0xce)
-			{
-//				//保持高度模式
-//				if(rxData[1] == 0xf1) ctrl.alt = true;
-//				else if(rxData[1] == 0xf0) ctrl.alt = false;
-			}
 			else if(rxData[0]==0xcf)
 			{
 				//校正
@@ -187,7 +181,7 @@ void rt_thread_entry_main(void* parameter)
 						mag->setOffset();
 						delete mag;
 					}
-					led3.interval = 500;
+					led3.interval = 1000;
 				}
 			}
 			else
@@ -227,7 +221,7 @@ void rt_thread_entry_main(void* parameter)
 //		cpu_usage_get(&major,&minor);
 //		sprintf(str,"major: %d\tminor: %d\r\n",major,minor);
 //		rt_kprintf("%s",str);
-		rt_thread_delay(10);
+		rt_thread_delay(25);
 	}
 }
 
@@ -241,7 +235,7 @@ void hardware_init(void)
 	led1.on();
 	led2.on();
 	led3.on();
-	rt_thread_delay(400);
+	rt_thread_delay(1000);
 	led1.off();
 	led2.off();
 		
@@ -249,35 +243,35 @@ void hardware_init(void)
 	I2Cdev::initialize();
 	Motor::initialize();
 	
-//	MPU6050 *accgyro = new MPU6050();
-//	while(!accgyro->initialize())
-//	{
-//		led2.toggle();
-//		rt_thread_delay(20);
-//	}
-//	delete accgyro;
-//	
-//	HMC5883L *mag = new HMC5883L();
-//	while(!mag->initialize())
-//	{
-//		led2.toggle();
-//		rt_thread_delay(80);
-//	}
-//	delete mag;
-//	
-//	MS5611 *baro = new MS5611();
-//	while(!baro->initialize())
-//	{
-//		led2.toggle();
-//		rt_thread_delay(140);
-//	}
-//	delete baro;
+	MPU6050 *accgyro = new MPU6050();
+	while(!accgyro->initialize())
+	{
+		led2.toggle();
+		rt_thread_delay(50);
+	}
+	delete accgyro;
 	
-//	while(!ov_7725_init())
-//	{
-//		led2.toggle();
-//		rt_thread_delay(200);
-//	}
+	HMC5883L *mag = new HMC5883L();
+	while(!mag->initialize())
+	{
+		led2.toggle();
+		rt_thread_delay(200);
+	}
+	delete mag;
+	
+	MS5611 *baro = new MS5611();
+	while(!baro->initialize())
+	{
+		led2.toggle();
+		rt_thread_delay(350);
+	}
+	delete baro;
+	
+	while(!ov_7725_init())
+	{
+		led2.toggle();
+		rt_thread_delay(500);
+	}
 }
 
 void param_init(void)

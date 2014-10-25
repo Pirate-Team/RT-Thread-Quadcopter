@@ -3,8 +3,8 @@
 #include "rtthread.h"
 #include "string.h"
 
-int16_t accXOffset = 0x002d,accYOffset = 0x000f,accZOffset = 0xff76;
-int16_t gyroXOffset = 0xffd2,gyroYOffset = 0xfff1,gyroZOffset = 0xffc4;
+int16_t accXOffset = -1,accYOffset = -12,accZOffset = -131;
+int16_t gyroXOffset = -35,gyroYOffset = -15,gyroZOffset = -39;
 
 MPU6050::MPU6050()
 {
@@ -25,7 +25,7 @@ MPU6050::~MPU6050()
 bool MPU6050::initialize(void)
 {
 	if(!I2Cdev::writeByte(devAddr, MPU6050_RA_PWR_MGMT_1, 0x80)) return false;             //PWR_MGMT_1    -- DEVICE_RESET 1
-	rt_thread_delay(40);
+	rt_thread_delay(100);
 	if(!I2Cdev::writeByte(devAddr, MPU6050_RA_PWR_MGMT_1, 0x01)) return false;
 	if(!I2Cdev::writeByte(devAddr, MPU6050_RA_GYRO_CONFIG, 0x10)) return false;
     if(!I2Cdev::writeByte(devAddr, MPU6050_RA_ACCEL_CONFIG, 0x18)) return false;
@@ -116,9 +116,9 @@ void MPU6050::getMotion6Cal(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, 
 			accYAve = *ay;
 			accZAve = *az;
 		}
-		accXAve = (((int32_t)*ax) + (int32_t)accXAve) >> 1;
-		accYAve = (((int32_t)*ay) + (int32_t)accYAve) >> 1;
-		accZAve = (((int32_t)*az) + (int32_t)accZAve) >> 1;
+		accXAve = (((int32_t)*ax)*3 + (int32_t)accXAve*5) >> 3;
+		accYAve = (((int32_t)*ay)*3 + (int32_t)accYAve*5) >> 3;
+		accZAve = (((int32_t)*az)*3 + (int32_t)accZAve*5) >> 3;
 		*ax = accXAve;
 		*ay = accYAve;
 		*az = accZAve;
@@ -241,15 +241,12 @@ void MPU6050::getRotationCal(int16_t* gx, int16_t* gy, int16_t* gz)
 
 void MPU6050::setOffset(void)
 {
-	int16_t ax, ay, az;//, axa = 0, aya = 0, aza = 0;
-	int16_t gx, gy, gz;//, gxa = 0, gya = 0, gza = 0;
-//	rt_kprintf("\r\nMPU6050 is calculating Offset...\r\n");
-	for(uint8_t i=0;i<100;i++)
+	int16_t ax, ay, az;
+	int16_t gx, gy, gz;
+	for(uint8_t i=0;i<200;i++)
 	{	
 		getAccelerationRaw(&ax,&ay,&az);
 		getRotationRaw(&gx,&gy,&gz);
-//		axa = (axa + ax) / 2; aya = (aya + ay) / 2; aza = (aza + az) / 2;
-//		gxa = (gxa + gx) / 2; gya = (gya + gy) / 2; gza = (gza + gz) / 2;
 		
 		accXOffset = (accXOffset + ax) >> 1;
 		accYOffset = (accYOffset + ay) >> 1;
@@ -262,6 +259,4 @@ void MPU6050::setOffset(void)
 		rt_thread_delay(1);
 	}
 	accZOffset -= 2048;
-//	rt_kprintf("\r\naccelOffset: %+d, %+d, %+d; gyroOffset: %+d, %+d, %+d\r\n",accXOffset,accYOffset,accZOffset,gyroXOffset,gyroYOffset,gyroZOffset);
-//	rt_kprintf("accelraw:    %+d, %+d, %+d; gyroraw:    %+d, %+d, %+d\r\n",axa,aya,aza,gxa,gya,gza);
 }

@@ -6,7 +6,7 @@
 
 typedef struct Reg
 {
-	uint8_t Address;			   /*寄存器地址*/
+	uint8_t Address;			       /*寄存器地址*/
 	uint8_t Value;		           /*寄存器值*/
 }Reg_Info;
 
@@ -41,13 +41,13 @@ Reg_Info Sensor_Config[] =
 	{COM9,		  0x21},
 	{BDBase,	  0xFF},
 	{BDMStep,	  0x01},
-	{AEW,		  0x34},
-	{AEB,		  0x3c},
-	{VPT,		  0xa1},
+	{AEW,		    0x34},
+	{AEB,		    0x3c},
+	{VPT,		    0xa1},
 	{EXHCL,		  0x00},
-	{AWBCtrl3,	  0xaa},
+	{AWBCtrl3,  0xaa},
 	{COM8,		  0xff},
-	{AWBCtrl1,	  0x5d},
+	{AWBCtrl1,  0x5d},
 
 	{EDGE1,		  0x0a},
 	{DNSOff,	  0x01},
@@ -60,7 +60,7 @@ Reg_Info Sensor_Config[] =
 	{MTX4,		  0x1a},
 	{MTX5,		  0x3d},
 	{MTX6,		  0x5a},
-	{MTX_Ctrl,    0x1e},
+	{MTX_Ctrl,  0x1e},
 
 	{BRIGHT,	  0x00},
 	{CNST,		  0x25},  //白平衡
@@ -97,8 +97,8 @@ Reg_Info Sensor_Config[] =
 	{LC_RADI,	  0x00},
 	{LC_COEF,	  0x13},
 	{LC_XC,		  0x08},
-	{LC_COEFB,    0x14},
-	{LC_COEFR,    0x17},
+	{LC_COEFB,  0x14},
+	{LC_COEFR,  0x17},
 	{LC_CTR,	  0x05},
 	
 	{COM3,		  0xd0},/*Horizontal mirror image*/
@@ -122,17 +122,17 @@ uint8_t Ov7725_vsync = 0;	 /* 帧同步信号标志，在中断函数和main函数里面使用 */
  ************************************************/
 static void FIFO_GPIO_Config(void)
 {
-    GPIO_InitTypeDef GPIO_InitStructure;
-	  RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_GPIOA | 
-	                          RCC_AHB1Periph_GPIOB | 
-	                          RCC_AHB1Periph_GPIOC | 
-	                          RCC_AHB1Periph_GPIOD , ENABLE);
-	
+	GPIO_InitTypeDef GPIO_InitStructure;
+	RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_GPIOA | 
+		  RCC_AHB1Periph_GPIOB | 
+		  RCC_AHB1Periph_GPIOC | 
+		  RCC_AHB1Periph_GPIOD , ENABLE);
+
 	GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_OUT;
-	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;						//推挽输出
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;		//GPIO_PuPd_UP;              //上拉输出
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;	//推挽输出
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;//GPIO_PuPd_UP; //上拉输出
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;        //IO速度
-   
+
 
 	/* 1W LED 灯控制 */
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
@@ -141,49 +141,42 @@ static void FIFO_GPIO_Config(void)
 	//GPIO_SetBits(GPIOA, GPIO_Pin_10);
 
 	/*PD3(FIFO_WEN--FIFO写使能)*/
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13;
-    GPIO_Init(GPIOA, &GPIO_InitStructure);
-	
-		/*PB5(FIFO_WRST--FIFO写复位)*/
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
-    GPIO_Init(GPIOC, &GPIO_InitStructure);
-	
-		/*PA2(FIFO_RRST--FIFO读复位)*/
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;
-    GPIO_Init(GPIOA, &GPIO_InitStructure); 
-		
-		// PA3(FIFO_OE--FIFO输出使能)
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12;
+	GPIO_Init(GPIOC, &GPIO_InitStructure);
+
+	/*PB5(FIFO_WRST--FIFO写复位)*/
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
+	GPIO_Init(GPIOC, &GPIO_InitStructure);
+
+	/*PA2(FIFO_RRST--FIFO读复位)*/
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;
+	GPIO_Init(GPIOA, &GPIO_InitStructure); 
+
+	// PA3(FIFO_OE--FIFO输出使能)
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
-    GPIO_Init(GPIOB, &GPIO_InitStructure); 
+	GPIO_Init(GPIOB, &GPIO_InitStructure); 
 
-		/*PC5(FIFO_RCLK-FIFO读时钟)*/
+	/*PC5(FIFO_RCLK-FIFO读时钟)*/
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1;
-    GPIO_Init(GPIOA, &GPIO_InitStructure);
-
-    /*PB8-PB15(FIFO_DATA--FIFO输出数据)*/
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
-	GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;						
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;           
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;        //IO速度
-    GPIO_Init(GPIOC, &GPIO_InitStructure);
-
-    GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
-	GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;						
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;           
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;        //IO速度
-    GPIO_Init(GPIOB, &GPIO_InitStructure);
-		
-	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_12 ;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
-	GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;						
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;           
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;        //IO速度
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
-		
-    FIFO_OE_L();	  					/*拉低使FIFO输出使能*/
-    FIFO_WE_H();   						/*拉高使FIFO写允许*/
+
+	/*PB8-PB15(FIFO_DATA--FIFO输出数据)*/
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;						
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;           
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;        //IO速度
+	GPIO_Init(GPIOC, &GPIO_InitStructure);
+
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;						
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;           
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;        //IO速度
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+	FIFO_OE_L();	  					/*拉低使FIFO输出使能*/
+	FIFO_WE_H();   						/*拉高使FIFO写允许*/
 }
 
 void Ov7725_GPIO_Config(void)
@@ -202,7 +195,7 @@ void Ov7725_GPIO_Config(void)
 static void VSYNC_GPIO_Configuration(void)
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
-	RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_GPIOD , ENABLE);	  /*PD---VSYNC*/
+	RCC_AHB1PeriphClockCmd( RCC_AHB1Periph_GPIOD , ENABLE);	  /*PA0---VSYNC*/
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG,ENABLE);  //打开systemconfig时钟
 
 	GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_2;
@@ -222,6 +215,7 @@ static void VSYNC_GPIO_Configuration(void)
 static void VSYNC_NVIC_Configuration(void)
 {
     NVIC_InitTypeDef NVIC_InitStructure;
+    //NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
     NVIC_InitStructure.NVIC_IRQChannel = EXTI2_IRQn;
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
@@ -251,6 +245,7 @@ static void VSYNC_EXTI_Configuration(void)
 	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling ; 
 	EXTI_InitStructure.EXTI_LineCmd = ENABLE;
 	EXTI_Init(&EXTI_InitStructure);
+
 }
 
 /************************************************
@@ -324,17 +319,6 @@ ErrorStatus Ov7725_Init(void)
  *|                   |
  *|                   |
  * -------------------
- *			|
- *			|
- *		   \|/
- *       320
- * -------------------
- *|   |           |   |
- *|180|   70KB    |   |
- *|   |           |   |  240
- *|    -----------    |
- *|        200        |
- * -------------------
  */
 void ImagDisp(uint16_t*  Cam_data)
 {
@@ -346,7 +330,7 @@ void ImagDisp(uint16_t*  Cam_data)
 		{
 			READ_FIFO_PIXEL(Camera_Data);		/* 从FIFO读出一个rgb565像素到Camera_Data变量 */
 			if((j>=60)&&(j<260))
-				*(Cam_data++)=Camera_Data;
+				 *(Cam_data++)=Camera_Data;
 		}
 	}
 }
@@ -380,33 +364,33 @@ void set_25fps()
 void set_30fps()
 {
 	SCCB_WriteByte(0x11, 0x01);//
-  SCCB_WriteByte(0x0d, 0x41);//
-  SCCB_WriteByte(0x2a, 0x00);//
-  SCCB_WriteByte(0x2b, 0x00);//
-  SCCB_WriteByte(0x33, 0x00);//66
-  SCCB_WriteByte(0x34, 0x00);//
-  SCCB_WriteByte(0x2d, 0x00);//
-  SCCB_WriteByte(0x2e, 0x00);//
-  SCCB_WriteByte(0x0e, 0x65);//
+	SCCB_WriteByte(0x0d, 0x41);//
+	SCCB_WriteByte(0x2a, 0x00);//
+	SCCB_WriteByte(0x2b, 0x00);//
+	SCCB_WriteByte(0x33, 0x00);//66
+	SCCB_WriteByte(0x34, 0x00);//
+	SCCB_WriteByte(0x2d, 0x00);//
+	SCCB_WriteByte(0x2e, 0x00);//
+    SCCB_WriteByte(0x0e, 0x65);//
 }
 
 void rmov_banding_50hz()  //for 25fps
 {
 	SCCB_WriteByte(0x13, 0xff); //banding filter enable
-  SCCB_WriteByte(0x22, 0x98); //50Hz banding filter
-  SCCB_WriteByte(0x23, 0x03); //4 step for 50hz
+	SCCB_WriteByte(0x22, 0x98); //50Hz banding filter
+	SCCB_WriteByte(0x23, 0x03); //4 step for 50hz
 }
 
 void rmov_banding_60hz()  //for 30fps
 {
-	SCCB_WriteByte(0x13, 0xff); //banding filter enable
+  SCCB_WriteByte(0x13, 0xff); //banding filter enable
   SCCB_WriteByte(0x22, 0x7f); //60Hz banding filter
   SCCB_WriteByte(0x23, 0x03); //4 step for 60hz
 }
 /*--------------------------White Balance----------------------*/
 void set_wb_sunny()
 {
-	SCCB_WriteByte(0x13, 0xfd); //AWB off
+  SCCB_WriteByte(0x13, 0xfd); //AWB off
   SCCB_WriteByte(0x01, 0x5a);
   SCCB_WriteByte(0x02, 0x5c);
   SCCB_WriteByte(0x0e, 0x65); 
@@ -435,7 +419,7 @@ void set_wb_office()
 
 void set_wb_home()
 {
-	SCCB_WriteByte(0x13, 0xfd); //AWB off
+  SCCB_WriteByte(0x13, 0xfd); //AWB off
   SCCB_WriteByte(0x01, 0x96);
   SCCB_WriteByte(0x02, 0x40);
   SCCB_WriteByte(0x0e, 0x65); 
@@ -445,66 +429,66 @@ void set_wb_home()
 
 void set_wb_night()
 {
-	SCCB_WriteByte(0x13, 0xff); //AWB on
+  SCCB_WriteByte(0x13, 0xff); //AWB on
   SCCB_WriteByte(0x0e, 0xe5); 
 }
 /*-----------------------Saturation-----------------------*/
 void set_saturation(int n)
 {
-	SCCB_WriteByte(0xa7, 0x40+n*0x10);
+  SCCB_WriteByte(0xa7, 0x40+n*0x10);
   SCCB_WriteByte(0xa8, 0x40+n*0x10);
 }
 /*-----------------------Brightness-----------------------*/
 void set_brightness_plus(int n)
 {
-	SCCB_WriteByte(0x9b, 0x08+n*0x10);
+  SCCB_WriteByte(0x9b, 0x08+n*0x10);
   SCCB_WriteByte(0xab, 0x06);
 }
 
 void set_brightness_minus(int n)
 {
-	SCCB_WriteByte(0x9b, 0x08+(-1*n)*0x10);
+  SCCB_WriteByte(0x9b, 0x08+(-1*n)*0x10);
   SCCB_WriteByte(0xab, 0x0e);
 }
 /*---------------------Special Effects--------------------*/
 void set_eff_normal()
 {
-	SCCB_WriteByte(0xa6, 0x06);
+  SCCB_WriteByte(0xa6, 0x06);
   SCCB_WriteByte(0x60, 0x80);
   SCCB_WriteByte(0x61, 0x80);
 }
 
 void set_eff_bw()
 {
-	SCCB_WriteByte(0xa6, 0x26);
+  SCCB_WriteByte(0xa6, 0x26);
   SCCB_WriteByte(0x60, 0x80);
   SCCB_WriteByte(0x61, 0x80);
 }
 
 void set_eff_bluish()
 {
-	SCCB_WriteByte(0xa6, 0x1e);
+  SCCB_WriteByte(0xa6, 0x1e);
   SCCB_WriteByte(0x60, 0xa0);
   SCCB_WriteByte(0x61, 0x40);
 }
 
 void set_eff_sepia()
 {
-	SCCB_WriteByte(0xa6, 0x1e);
+  SCCB_WriteByte(0xa6, 0x1e);
   SCCB_WriteByte(0x60, 0x40);
   SCCB_WriteByte(0x61, 0xa0);
 }
 
 void set_eff_redish()
 {
-	SCCB_WriteByte(0xa6, 0x1e);
+  SCCB_WriteByte(0xa6, 0x1e);
   SCCB_WriteByte(0x60, 0x80);
   SCCB_WriteByte(0x61, 0xc0);
 }
 
 void set_eff_greenish()
 {
-	SCCB_WriteByte(0xa6, 0x1e);
+  SCCB_WriteByte(0xa6, 0x1e);
   SCCB_WriteByte(0x60, 0x60);
   SCCB_WriteByte(0x61, 0x60);
 }

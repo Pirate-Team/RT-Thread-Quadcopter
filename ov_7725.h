@@ -172,21 +172,21 @@
 #define FIFO_RCLK_H()   GPIO_SetBits(GPIOA, GPIO_Pin_1) 
 #define FIFO_RCLK_L()   GPIO_ResetBits(GPIOA,GPIO_Pin_1) /*FIFO输出数据时钟*/
 
-#define FIFO_WE_H()     GPIO_SetBits(GPIOA, GPIO_Pin_13)  /*拉高使FIFO写允许*/
-#define FIFO_WE_L()     GPIO_ResetBits(GPIOA,GPIO_Pin_13)
+#define FIFO_WE_H()     GPIO_SetBits(GPIOC, GPIO_Pin_12)  /*拉高使FIFO写允许*/
+#define FIFO_WE_L()     GPIO_ResetBits(GPIOC,GPIO_Pin_12)
 
 
-#define READ_FIFO_PIXEL(RGB565)			RGB565=0;\
-										FIFO_RCLK_L();\
-										RGB565 = (GPIOB->IDR) & 0xe000;\
-										RGB565 |= (GPIOA->IDR) & 0x1000;\
-										RGB565 |= (GPIOC->IDR <<8) & 0x0f00;\
-										FIFO_RCLK_H();\
-										FIFO_RCLK_L();\
-										RGB565 |= (GPIOB->IDR >>8) & 0x00e0;\
-										RGB565 |= (GPIOA->IDR >>8) & 0x0010;\
-										RGB565 |= (GPIOC->IDR) & 0x000f;\
-										FIFO_RCLK_H()
+#define READ_FIFO_PIXEL(RGB565)   	do{\
+	                                  RGB565=0;\
+	                                  FIFO_RCLK_L();\
+	                                  RGB565 = (GPIOB->IDR) & 0xF000;\
+	                                  RGB565 |= (GPIOC->IDR <<8) & 0x0f00;\
+	                                  FIFO_RCLK_H();\
+                                      FIFO_RCLK_L();\
+	                                  RGB565 |= (GPIOB->IDR >>8) & 0x00F0;\
+									  RGB565 |= (GPIOC->IDR) & 0x000f;\
+	                                  FIFO_RCLK_H();\
+                                    }while(0)
 
 
 #define FIFO_PREPARE                do{\
@@ -226,4 +226,3 @@ void set_eff_greenish(void);
 void set_eff_negative(void);
 																																			
 #endif
-

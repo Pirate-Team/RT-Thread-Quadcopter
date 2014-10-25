@@ -15,13 +15,13 @@
 //#define  MS561101BA_D1_OSR_256 0x40 
 //#define  MS561101BA_D1_OSR_512 0x42 
 //#define  MS561101BA_D1_OSR_1024 0x44 
-//#define  MS561101BA_D1_OSR_2048 0x46 
+#define  MS561101BA_D1_OSR_2048 0x46 
 #define  MS561101BA_D1_OSR_4096 0x48 
 
 //#define  MS561101BA_D2_OSR_256 0x50 
 //#define  MS561101BA_D2_OSR_512 0x52 
 //#define  MS561101BA_D2_OSR_1024 0x54 
-//#define  MS561101BA_D2_OSR_2048 0x56 
+#define  MS561101BA_D2_OSR_2048 0x56 
 #define  MS561101BA_D2_OSR_4096 0x58 
 
 #define  MS561101BA_ADC_RD 0x00 
@@ -40,6 +40,7 @@ public:
 
 	bool getPressure(float* press = null);
 	bool getTemperature(float* temp = null);
+	void setGround(void);
 	bool readPROM(void);
 	bool reset();
 	bool getAltitude(float* altitude);
