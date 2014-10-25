@@ -267,11 +267,11 @@ void hardware_init(void)
 	}
 	delete baro;
 	
-	while(!ov_7725_init())
-	{
-		led2.toggle();
-		rt_thread_delay(500);
-	}
+//	while(!ov_7725_init())
+//	{
+//		led2.toggle();
+//		rt_thread_delay(500);
+//	}
 }
 
 void param_init(void)

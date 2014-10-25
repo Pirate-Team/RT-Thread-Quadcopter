@@ -24,11 +24,12 @@
 #define sampleFreq	170.0f		// sample frequency in Hz
 #define betaDef		0.1f		// 2 * proportional gain
 #define M_57_3 57.295779f
+#define INTERVAL 0.004f
 //---------------------------------------------------------------------------------------------------
 // Variable definitions
 
 volatile float beta = betaDef;								// 2 * proportional gain (Kp)
-volatile float sampleInterval = 0;
+volatile float sampleInterval = INTERVAL;
 Quaternion quat(1,0,0,0);
 
 //---------------------------------------------------------------------------------------------------

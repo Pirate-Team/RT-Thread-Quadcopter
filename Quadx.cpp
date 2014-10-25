@@ -22,10 +22,6 @@
 -----------------------------------*/
 float att[4] = {0};
 
-MPU6050 accelgyro;
-HMC5883L mag;
-MS5611 baro;
-
 struct sensor_data_t sensorData = {0};
 
 struct pid_t PID[4] = {0};
@@ -40,9 +36,13 @@ extern struct ctrl_t ctrl;
 -----------------------------------*/
 void rt_thread_entry_quadx_get_attitude(void* parameter)
 {
+	MPU6050 accelgyro;
+	HMC5883L mag;
+	MS5611 baro;
+	
 	uint8_t state = 0;
-	uint32_t preTick = 0,curTick = 0;
-	curTick = rt_tick_get();
+//	uint32_t preTick = 0,curTick = 0;
+//	curTick = rt_tick_get();
 	while(1)
 	{
 		/*getSensorData*/
@@ -50,7 +50,7 @@ void rt_thread_entry_quadx_get_attitude(void* parameter)
 		if(state == 0)
 		{
 			mag.getHeadingCal(&sensorData.mx,&sensorData.my,&sensorData.mz);
-			if(state == 0) state = 10;
+			state = 10;
 		}
 		else if(state == 8)
 		{
@@ -64,9 +64,9 @@ void rt_thread_entry_quadx_get_attitude(void* parameter)
 		}
 		state--;
 		/*calculate attitude*/
-		preTick = curTick;
-		curTick = rt_tick_get();
-		sampleInterval = (curTick - preTick) / 500.0f;
+//		preTick = curTick;
+//		curTick = rt_tick_get();
+//		sampleInterval = (curTick - preTick) / 500.0f;
 		//姿态数据
 		MadgwickAHRSupdate((float)sensorData.gx/GYRO_SCALE,(float)sensorData.gy/GYRO_SCALE,(float)sensorData.gz/GYRO_SCALE,(float)sensorData.ax,(float)sensorData.ay,(float)sensorData.az,(float)sensorData.mx,(float)sensorData.my,(float)sensorData.mz);
 		//MadgwickAHRSupdateIMU((float)sensorData.gx/GYRO_SCALE,(float)sensorData.gy/GYRO_SCALE,(float)sensorData.gz/GYRO_SCALE,(float)sensorData.ax,(float)sensorData.ay,(float)sensorData.az);
@@ -88,17 +88,24 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 	float alt = 0;
 	float vel = 0;
 	uint16_t throttle = 0;
-	int16_t RC[3] = {0};
+	int16_t RC[4] = {0};//比如YAW轴PID控制角速度，那么RC[YAW]纠正方向的偏差
 	int16_t accZ = 0;
+	MS5611 baro;
 	
 	rt_thread_delay(50);
 	while(1)
 	{
 //		RCValue[THROTTLE] = 1100;
-		quat.toEuler(att[PITCH],att[ROLL],att[YAW]);
 		
+		if(RCValue[THROTTLE]<1060)
+		{
+			baro.setGround();
+			heading = att[YAW];
+			accZ = (accZ + sensorData.az) >> 1;
+		}
 		/*calculate PID*/
 		{
+			quat.toEuler(att[PITCH],att[ROLL],att[YAW]);
 			/*pitch&roll*/
 			//最多30度
 			for(uint8_t i=0;i<2;i++)
@@ -120,7 +127,7 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 			}
 			
 			/*yaw*/
-			if(RCValue[YAW] == 1500 && RCValue[THROTTLE]>1400)
+			if(RCValue[YAW] == 1500)
 			{
 				float err = att[YAW] - heading;
 				if(err>180) err -= 360;
@@ -164,7 +171,7 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 					}
 					
 					if((RCValue[THROTTLE]<throttle-100)||(RCValue[THROTTLE]>throttle+100)) 
-						alt += (RCValue[THROTTLE]-throttle)/50000.0f;
+						alt += (RCValue[THROTTLE]-throttle)/20000.0f;
 					
 					err[THROTTLE].cur = (alt - att[THROTTLE]) * 100;
 					//死区
@@ -204,7 +211,6 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 				alt = 0;
 				PID[THROTTLE].result = 0;
 				throttle = RCValue[THROTTLE];
-				if(RCValue[THROTTLE]<1060) accZ = (accZ + sensorData.az) >> 1;
 			}
 		}
 		/*control motor*/
