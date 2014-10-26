@@ -26,7 +26,7 @@ float att[4] = {0};
 
 struct sensor_data_t sensorData = {0};
 
-struct pid_t PID[4] = {0};
+struct pid_t PID[6] = {0};
 
 struct ctrl_t
 {

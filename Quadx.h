@@ -14,6 +14,6 @@ struct sensor_data_t
 
 void rt_thread_entry_quadx_get_attitude(void* parameter);
 void rt_thread_entry_quadx_control_attitude(void* parameter);
-extern struct pid_t PID[4];
+extern struct pid_t PID[6];
 extern float att[4];
 #endif

@@ -86,4 +86,5 @@ public:
 	void setOffset(void);
 };
 
+extern int16_t magXOffset,magYOffset,magZOffset;
 #endif
