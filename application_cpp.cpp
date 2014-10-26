@@ -43,7 +43,7 @@ void rt_thread_entry_main(void* parameter)
 /*************************************
 	declare variables
 *************************************/	
-	ctrl.quadx = ctrl.att = ctrl.thro = true; ctrl.alt = ctrl.trace = ctrl.coor = false;
+	ctrl.quadx = ctrl.alt = ctrl.att = ctrl.thro = ctrl.trace = ctrl.coor = false;
 	uint8_t rxData[RX_DATA_SIZE] = {0},txData[TX_DATA_SIZE];
 	uint8_t major,minor;
 
@@ -243,29 +243,29 @@ void hardware_init(void)
 	I2Cdev::initialize();
 	Motor::initialize();
 	
-	MPU6050 *accgyro = new MPU6050();
-	while(!accgyro->initialize())
-	{
-		led2.toggle();
-		rt_thread_delay(50);
-	}
-	delete accgyro;
-	
-	HMC5883L *mag = new HMC5883L();
-	while(!mag->initialize())
-	{
-		led2.toggle();
-		rt_thread_delay(200);
-	}
-	delete mag;
-	
-	MS5611 *baro = new MS5611();
-	while(!baro->initialize())
-	{
-		led2.toggle();
-		rt_thread_delay(350);
-	}
-	delete baro;
+//	MPU6050 *accgyro = new MPU6050();
+//	while(!accgyro->initialize())
+//	{
+//		led2.toggle();
+//		rt_thread_delay(50);
+//	}
+//	delete accgyro;
+//	
+//	HMC5883L *mag = new HMC5883L();
+//	while(!mag->initialize())
+//	{
+//		led2.toggle();
+//		rt_thread_delay(200);
+//	}
+//	delete mag;
+//	
+//	MS5611 *baro = new MS5611();
+//	while(!baro->initialize())
+//	{
+//		led2.toggle();
+//		rt_thread_delay(350);
+//	}
+//	delete baro;
 	
 	if(!ov_7725_init())
 		led1.interval = 100;
