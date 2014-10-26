@@ -210,7 +210,7 @@ void rt_thread_entry_main(void* parameter)
 		if(ctrl.coor)
 		{
 			txData[0] = 0xec;
-			((int16_t*)(txData+1))[0] = targetX;
+			((int16_t*)(txData+1))[0] = targetX;//目标位置，不做变换
 			((int16_t*)(txData+1))[1] = targetY;
 			rt_mq_send(txQ,txData,TX_DATA_SIZE);
 		}
@@ -267,11 +267,8 @@ void hardware_init(void)
 	}
 	delete baro;
 	
-//	while(!ov_7725_init())
-//	{
-//		led2.toggle();
-//		rt_thread_delay(500);
-//	}
+	if(!ov_7725_init())
+		led1.interval = 100;
 }
 
 void param_init(void)
