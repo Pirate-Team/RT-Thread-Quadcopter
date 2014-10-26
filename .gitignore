@@ -38,8 +38,7 @@ build/*
 .LSOverride
 
 # Icon must ends with two \r.
-Icon
-
+Icon
 # Thumbnails
 ._*
 
@@ -67,7 +66,6 @@ $RECYCLE.BIN/
 *.msp
 *.dep
 *.bin
-project.uvgui.Spacelan
-project.uvgui_Spacelan.bak
 *.Spacelan
 *.bak
+*.uvopt
