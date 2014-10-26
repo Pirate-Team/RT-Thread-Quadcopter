@@ -165,7 +165,7 @@ void MyTIM3_IRQHandler(void)
 	if(TIM_GetITStatus(TIM3,TIM_IT_Update) == SET)
 	{
 		TIM_ClearITPendingBit(TIM3,TIM_IT_Update);
-		for(uint8_t i=0;i<RC_NUM;i++)
+		for(uint8_t i=0;i<RC_NUM-1;i++)
 		{
 			if(RCFlag[i] == 2)
 			{

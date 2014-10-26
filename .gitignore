@@ -67,3 +67,7 @@ $RECYCLE.BIN/
 *.msp
 *.dep
 *.bin
+project.uvgui.Spacelan
+project.uvgui_Spacelan.bak
+*.Spacelan
+*.bak

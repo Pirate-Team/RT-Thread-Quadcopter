@@ -124,23 +124,6 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 /*--------------------------------------------------------*/		
 		/*calculate PID*/
 		quat.toEuler(att[PITCH],att[ROLL],att[YAW]);
-		//trace
-		if(ctrl.trace)
-		{
-			int16_t x = BETWEEN(targetX,-180,180);
-			x = DEAD_BAND(x,0,20);
-			RC[PITCH] =  PID[ROLL].P * x;
-			RC[PITCH] += PID[ROLL].D * (x-preX);
-			preX = x;
-			
-			int16_t y = BETWEEN(targetY,-180,180);
-			y = DEAD_BAND(y,0,20);
-			RC[ROLL]  =  PID[ROLL].P * y;
-			RC[ROLL]  += PID[ROLL].D * (y-preY);
-			preY = y; 
-		}
-		else
-			RC[PITCH] = RC[ROLL] = 0;
 		
 		/*pitch&roll*/
 		//trace
@@ -186,8 +169,9 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 			float err = att[YAW] - heading;
 			if(err>180) err -= 360;
 			else if(err<-180) err += 360;
+			err = DEAD_BAND(err,0,1.2f);
 			RC[YAW] = PID[YAW].P * err;
-			if(fabs(err) < 1.2f) sensorData.gz = 0;
+			if(err == 0) sensorData.gz = 0;
 		}
 		else
 			heading = att[YAW];
