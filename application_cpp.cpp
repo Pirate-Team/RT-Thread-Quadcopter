@@ -14,7 +14,7 @@
 
 #define FLASH_ADDRESS_BASE (0x08020000)
 
-#define TRACE_TEST
+//#define TRACE_TEST
 
 struct param_t
 {
