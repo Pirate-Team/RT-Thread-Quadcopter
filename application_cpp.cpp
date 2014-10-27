@@ -35,7 +35,7 @@ struct ctrl_t ctrl = {0};
 
 extern "C" 
 {
-	extern int16_t targetX,targetY;
+	extern int16_t targetX,targetY,targetH,targetW;
 	void rt_thread_entry_trace(void* parameter);
 	uint8_t ov_7725_init(void);
 }
@@ -241,7 +241,10 @@ void rt_thread_entry_main(void* parameter)
 		{
 			txData[0] = 0xec;
 			((int16_t*)(txData+1))[0] = targetX;//目标位置，不做变换
-			((int16_t*)(txData+1))[1] = targetY;	
+			((int16_t*)(txData+1))[1] = targetY;
+			((int16_t*)(txData+1))[2] = targetH;//目标长宽，不做变换
+			((int16_t*)(txData+1))[3] = targetW;
+			
 			rt_mq_send(txQ,txData,TX_DATA_SIZE);
 		}
 /***************send end****************/

@@ -18,7 +18,7 @@ TARGET_CONDI condition_yellow = { 24 , 34 , 120, 240,0   ,240 ,  24   , 24   ,  
 TARGET_CONDI condition_darkBlue = {160 ,170 ,50  ,240 ,0   ,200 ,  60   , 60   ,   100  ,   70    }; //blue
 
 RESULT result,result1;//识别结果
-int16_t targetX=0,targetY=0;
+int8_t targetX=0,targetY=0,targetH=0,targetW=0;
 
 int  ShowImage(void){
 	uint8_t i,j;
@@ -49,7 +49,7 @@ uint8_t ov_7725_init(void)
 
 void rt_thread_entry_trace(void* parameter)
 {
-	uint32_t tick=0;
+//	uint32_t tick=0;
 	Ov7725_vsync = 0;
 	while(1)
 	{
@@ -63,12 +63,16 @@ void rt_thread_entry_trace(void* parameter)
 				targetY=result.y-90;
 				targetX/=5;
 				targetY/=5;
+				targetH = result.h/5;
+				targetW = result.w/5;
 //				ShowImage();
 //				ShowLocation(result);
 			}
 			else{
 				targetX=0;
 				targetY=0;
+				targetH=0;
+				targetW=0;
 			}
 			Ov7725_vsync = 0;		//处理结束标志			
 		}
