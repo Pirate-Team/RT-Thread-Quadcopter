@@ -13,7 +13,7 @@ TARGET_CONDI condition_blue  = {143 ,151 ,30  ,240 ,30  ,180 ,  10   , 10   ,   
 TARGET_CONDI condition_green = {124 ,136 ,20  ,240 ,10  ,180 ,  24   , 24   ,   120  ,   60    }; //green
 TARGET_CONDI condition_yellow1 = {0x18,0x2c,0x16,0xe0,0x1a,0xef,  20   , 20   ,   100  ,   80    }; //yellow
 TARGET_CONDI condition_white = {  0 ,   1,   0,  1 ,180 ,240 ,  10   , 10   ,   100  ,   80    }; //white light
-TARGET_CONDI condition_red = {   0, 10 ,40 ,170 ,40  ,160 ,  25   , 25   ,   150  ,  120   }; //red
+TARGET_CONDI condition_red = {    0, 10 ,70 ,200 ,20  ,130 ,  25   , 25   ,   150  ,  120   }; //red
 TARGET_CONDI condition_yellow = { 24 , 34 , 120, 240,0   ,240 ,  24   , 24   ,   100  ,   50    }; //yellow
 TARGET_CONDI condition_darkBlue = {160 ,170 ,50  ,240 ,0   ,200 ,  60   , 60   ,   100  ,   70    }; //blue
 
@@ -61,8 +61,14 @@ void rt_thread_entry_trace(void* parameter)
 			{
 				targetX=result.x-100;
 				targetY=result.y-90;
+				targetX/=5;
+				targetY/=5;
 //				ShowImage();
 //				ShowLocation(result);
+			}
+			else{
+				targetX=0;
+				targetY=0;
 			}
 			Ov7725_vsync = 0;		//处理结束标志			
 		}
