@@ -18,7 +18,7 @@
 #define ACCEL_SCALE 2048.0f
 #define BETWEEN(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 #define DEAD_BAND(value,mid,ban) (((value)<(mid)-(ban))?((value)+(ban)):(((value)>(mid)+(ban))?((value)-(ban)):(mid)))
-
+#define POS 4
 /*-----------------------------------
 	global
 -----------------------------------*/
@@ -98,14 +98,13 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 	struct err_t
 	{
 		float cur,pre,sum;
-	}err[4]={0};
+	}err[6]={0};
 	
 	float heading = 0;
 	float alt = 0;
 	float vel = 0;
 	uint16_t throttle = 0;
-	int16_t RC[4] = {0};//比如YAW轴PID控制角速度，那么RC[YAW]纠正方向的偏差
-	int16_t preX = 0,preY = 0;
+//	int16_t RC[4] = {0};//比如YAW轴PID控制角速度，那么RC[YAW]纠正方向的偏差
 	int16_t accZ = 0;
 	MS5611 baro;
 	
@@ -129,25 +128,27 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 		//trace
 		if(ctrl.trace)
 		{
-			int16_t x = BETWEEN(targetX,-180,180);
-			x = DEAD_BAND(x,0,20);
-			RC[PITCH] =  PID[ROLL].P * x;
-			RC[PITCH] += PID[ROLL].D * (x-preX);
-			preX = x;
+			err[PITCH+POS].cur = BETWEEN(targetX,-180,180);
+			err[PITCH+POS].cur = DEAD_BAND(err[PITCH+POS].cur,0,10);
+
+			PID[PITCH+POS].result =  PID[PITCH+POS].P * err[PITCH+POS].cur;
+			PID[PITCH+POS].result += PID[PITCH+POS].D * (err[PITCH+POS].cur-err[PITCH+POS].pre);
+			err[PITCH+POS].pre = err[PITCH+POS].cur;
 			
-			int16_t y = BETWEEN(targetY,-180,180);
-			y = DEAD_BAND(y,0,20);
-			RC[ROLL]  =  PID[ROLL].P * y;
-			RC[ROLL]  += PID[ROLL].D * (y-preY);
-			preY = y; 
+			err[ROLL+POS].cur = BETWEEN(targetY,-180,180);
+			err[ROLL+POS].cur = DEAD_BAND(err[ROLL+POS].cur,0,10);
+			
+			PID[ROLL+POS].result  =  PID[ROLL +POS].P * err[ROLL+POS].cur;
+			PID[ROLL+POS].result  += PID[ROLL +POS].D * (err[ROLL+POS].cur-err[ROLL+POS].pre);
+			err[ROLL+POS].pre = err[ROLL+POS].cur; 
 		}
 		else
-			RC[PITCH] = RC[ROLL] = 0;
+			PID[PITCH+POS].result = PID[ROLL+POS].result = 0;
 		
 		for(uint8_t i=0;i<2;i++)
 		{
 			//遥控最多30度
-			err[i].cur = BETWEEN(RCValue[i] - 1500,-500,500)/16.0f + RC[i]- att[i];
+			err[i].cur = BETWEEN(RCValue[i] - 1500,-500,500)/16.0f + PID[i+POS].result- att[i];
 			PID[i].result = PID[i].P * err[i].cur;
 			
 			//遥控器小于5度积分
@@ -166,17 +167,17 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 		/*yaw*/
 		if(RCValue[YAW] == 1500)
 		{
-			float err = att[YAW] - heading;
-			if(err>180) err -= 360;
-			else if(err<-180) err += 360;
-			err = DEAD_BAND(err,0,1.2f);
-			RC[YAW] = PID[YAW].P * err;
-			if(err == 0) sensorData.gz = 0;
+			err[YAW].cur= att[YAW] - heading;
+			if(err[YAW].cur>180) err[YAW].cur -= 360;
+			else if(err[YAW].cur<-180) err[YAW].cur += 360;
+			err[YAW].cur = DEAD_BAND(err[YAW].cur,0,1.2f);
+			PID[YAW].result = PID[YAW].P * err[YAW].cur;
+			if(err[YAW].cur == 0) sensorData.gz = 0;
 		}
 		else
 			heading = att[YAW];
 		
-		err[YAW].cur = BETWEEN(RCValue[YAW] - 1500,-500,+500)/8.0f - RC[YAW]  - (sensorData.gz / GYRO_SCALE);
+		err[YAW].cur = BETWEEN(RCValue[YAW] - 1500,-500,+500)/8.0f - PID[YAW].result  - (sensorData.gz / GYRO_SCALE);
 		PID[YAW].result = PID[YAW].P * err[YAW].cur;
 		
 		//遥控器小于5度积分
