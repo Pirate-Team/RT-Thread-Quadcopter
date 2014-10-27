@@ -12,8 +12,9 @@
 #include "Motor.h"
 #include "I2Cdev.h"
 
-
 #define FLASH_ADDRESS_BASE (0x08020000)
+
+#define TRACE_TEST
 
 struct param_t
 {
@@ -52,7 +53,7 @@ void rt_thread_entry_main(void* parameter)
 *************************************/	
 	ctrl.quadx = ctrl.alt = ctrl.att = ctrl.thro = ctrl.trace = ctrl.coor = false;
 	uint8_t rxData[RX_DATA_SIZE] = {0},txData[TX_DATA_SIZE];
-	uint8_t major,minor;
+//	uint8_t major,minor;
 
 /*************************************
 	hardware init
@@ -121,7 +122,7 @@ void rt_thread_entry_main(void* parameter)
 *************************************/
 	while(1)
 	{
-		//recv
+/***************recv begin****************/
 		if(rt_mq_recv(rxQ,rxData,RX_DATA_SIZE,0) == RT_EOK)
 		{
 			if(rxData[0]>=0xda&&rxData[0]<=0xdf)
@@ -216,7 +217,9 @@ void rt_thread_entry_main(void* parameter)
 				rt_kprintf("Unknown command!\r\n");
 			}
 		}
-		//send
+/***************recv end****************/
+		
+/***************send begin****************/
 		if(ctrl.att)
 		{
 			uint8_t i;
@@ -238,9 +241,10 @@ void rt_thread_entry_main(void* parameter)
 		{
 			txData[0] = 0xec;
 			((int16_t*)(txData+1))[0] = targetX;//目标位置，不做变换
-			((int16_t*)(txData+1))[1] = targetY;
+			((int16_t*)(txData+1))[1] = targetY;	
 			rt_mq_send(txQ,txData,TX_DATA_SIZE);
 		}
+/***************send end****************/
 		
 //		char str[100];
 //		sprintf(str,"%+f\t%+f\t%+f\t%+f\r\n",att[PITCH],att[ROLL],att[YAW],att[THROTTLE]);
@@ -257,8 +261,9 @@ void hardware_init(void)
 	led1.initialize();
 	led2.initialize();
 	led3.initialize();
-	led1.interval = 0xff;
+	led1.interval = 2000;
 	led2.interval = 0xff;
+	led3.interval = 2000;
 	led1.on();
 	led2.on();
 	led3.on();
@@ -270,29 +275,31 @@ void hardware_init(void)
 	I2Cdev::initialize();
 	Motor::initialize();
 	
-//	MPU6050 *accgyro = new MPU6050();
-//	while(!accgyro->initialize())
-//	{
-//		led2.toggle();
-//		rt_thread_delay(50);
-//	}
-//	delete accgyro;
-//	
-//	HMC5883L *mag = new HMC5883L();
-//	while(!mag->initialize())
-//	{
-//		led2.toggle();
-//		rt_thread_delay(200);
-//	}
-//	delete mag;
-//	
-//	MS5611 *baro = new MS5611();
-//	while(!baro->initialize())
-//	{
-//		led2.toggle();
-//		rt_thread_delay(350);
-//	}
-//	delete baro;
+#ifdef TRACE_TEST
+	MPU6050 *accgyro = new MPU6050();
+	while(!accgyro->initialize())
+	{
+		led2.toggle();
+		rt_thread_delay(50);
+	}
+	delete accgyro;
+	
+	HMC5883L *mag = new HMC5883L();
+	while(!mag->initialize())
+	{
+		led2.toggle();
+		rt_thread_delay(200);
+	}
+	delete mag;
+	
+	MS5611 *baro = new MS5611();
+	while(!baro->initialize())
+	{
+		led2.toggle();
+		rt_thread_delay(350);
+	}
+	delete baro;
+#endif
 	
 	if(!ov_7725_init())
 		led1.interval = 0;

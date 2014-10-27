@@ -95,10 +95,35 @@ void HMC5883L::getHeadingCal(int16_t *x, int16_t *y, int16_t *z)
 	avgX = (((int32_t)*x)*3 + (int32_t)avgX*5) >> 3;
 	avgY = (((int32_t)*y)*3 + (int32_t)avgY*5) >> 3;
 	avgZ = (((int32_t)*z)*3 + (int32_t)avgZ*5) >> 3;
-	
+		
 	*x = avgX;
 	*y = avgY;
 	*z = avgZ;
+	
+//	#define MAG_TAB_SIZE 5
+//	static int16_t magXHistTab[MAG_TAB_SIZE] = {0},magYHistTab[MAG_TAB_SIZE] = {0},magZHistTab[MAG_TAB_SIZE] = {0};
+//	static int32_t magXSum = 0,magYSum = 0,magZSum = 0;
+//	static uint8_t magHistIdx = 0;
+//	uint8_t indexplus1 = (magHistIdx + 1);
+//	if (indexplus1 == MAG_TAB_SIZE) indexplus1 = 0;
+
+//	magXHistTab[magHistIdx] = *x;
+//	magXSum += magXHistTab[magHistIdx];
+//	magXSum -= magXHistTab[indexplus1];
+
+//	magYHistTab[magHistIdx] = *y;
+//	magYSum += magYHistTab[magHistIdx];
+//	magYSum -= magYHistTab[indexplus1];
+
+//	magZHistTab[magHistIdx] = *z;
+//	magZSum += magZHistTab[magHistIdx];
+//	magZSum -= magZHistTab[indexplus1];
+
+//	magHistIdx = indexplus1;
+
+//	*x = magXSum >> 2;
+//	*y = magYSum >> 2;
+//	*z = magZSum >> 2;
 }
 
 void HMC5883L::getHeadingCal(float *heading)

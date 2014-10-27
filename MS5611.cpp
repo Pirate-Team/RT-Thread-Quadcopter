@@ -38,9 +38,9 @@ bool MS5611::initialize(void)
 	if(!reset()) return false;
 	rt_thread_delay(200);
 	if(!readPROM()) return false;
-	C[0] = C1-100;
+	C[0] = C1;
 	C[1] = C2;
-	C[2] = C3-100;
+	C[2] = C3;
 	C[3] = C4;
 	C[4] = C5;
 	C[5] = C6;

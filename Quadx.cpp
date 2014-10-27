@@ -123,7 +123,7 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 /*--------------------------------------------------------*/		
 		/*calculate PID*/
 		quat.toEuler(att[PITCH],att[ROLL],att[YAW]);
-		
+//		att[PITCH] = att[ROLL] = att[YAW] = 0;
 		/*pitch&roll*/
 		//trace
 		if(ctrl.trace)
@@ -135,7 +135,7 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 			PID[PITCH+POS].result += PID[PITCH+POS].D * (err[PITCH+POS].cur-err[PITCH+POS].pre);
 			err[PITCH+POS].pre = err[PITCH+POS].cur;
 			
-			err[ROLL+POS].cur = BETWEEN(targetY,-180,180);
+			err[ROLL+POS].cur = BETWEEN(-targetY,-180,180);
 			err[ROLL+POS].cur = DEAD_BAND(err[ROLL+POS].cur,0,10);
 			
 			PID[ROLL+POS].result  =  PID[ROLL +POS].P * err[ROLL+POS].cur;
@@ -175,7 +175,10 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 			if(err[YAW].cur == 0) sensorData.gz = 0;
 		}
 		else
+		{
 			heading = att[YAW];
+			PID[YAW].result = 0;
+		}
 		
 		err[YAW].cur = BETWEEN(RCValue[YAW] - 1500,-500,+500)/8.0f - PID[YAW].result  - (sensorData.gz / GYRO_SCALE);
 		PID[YAW].result = PID[YAW].P * err[YAW].cur;
@@ -189,7 +192,7 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 		
 		PID[YAW].result += PID[YAW].D * (err[YAW].cur -err[YAW].pre);
 		
-		PID[YAW].result = BETWEEN(PID[YAW].result,-50,+50);
+		PID[YAW].result = BETWEEN(PID[YAW].result,-100,+100);
 		
 		err[YAW].pre = err[YAW].cur;
 		

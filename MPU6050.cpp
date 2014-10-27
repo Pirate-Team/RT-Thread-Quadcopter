@@ -99,6 +99,7 @@ uint8_t MPU6050::getData(void* data1,void* data2,void* data3,void* data4,void* d
 void MPU6050::getMotion6Cal(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, int16_t* gy, int16_t* gz)
 {
 	static int16_t accXAve = 0, accYAve = 0, accZAve = 0;
+	static int16_t gyroXAve = 0, gyroYAve = 0, gyroZAve = 0;
 	
     if(I2Cdev::readBytes(devAddr, MPU6050_RA_ACCEL_XOUT_H, 14, buffer))
 	{
@@ -115,6 +116,10 @@ void MPU6050::getMotion6Cal(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, 
 			accXAve = *ax;
 			accYAve = *ay;
 			accZAve = *az;
+			
+			gyroXAve = *gx;
+			gyroYAve = *gy;
+			gyroZAve = *gz;
 		}
 		accXAve = (((int32_t)*ax)*3 + (int32_t)accXAve*5) >> 3;
 		accYAve = (((int32_t)*ay)*3 + (int32_t)accYAve*5) >> 3;
@@ -122,6 +127,13 @@ void MPU6050::getMotion6Cal(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, 
 		*ax = accXAve;
 		*ay = accYAve;
 		*az = accZAve;
+		
+		gyroXAve = (((int32_t)*gx)*15 + (int32_t)gyroXAve) >> 4;
+		gyroYAve = (((int32_t)*gy)*15 + (int32_t)gyroYAve) >> 4;
+		gyroZAve = (((int32_t)*gz)*15 + (int32_t)gyroZAve) >> 4;
+		*gx = gyroXAve;
+		*gy = gyroYAve;
+		*gz = gyroZAve;		
 	}
 	else
 	{
@@ -132,35 +144,6 @@ void MPU6050::getMotion6Cal(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, 
 		*gy = 0;
 		*gz = 0;
 	}
-	
-	
-	
-	/***********MPU6050内部已做低通滤波，以下不需要了***************/
-	
-	
-	
-//	accXAve = (*ax + accXAve) >> 1;
-//	accYAve = (*ay + accYAve) >> 1;
-//	accZAve = (*az + accZAve) >> 1;
-//	gyroXAve = (*gx + gyroXAve) >> 1;
-//	gyroYAve = (*gy + gyroYAve) >> 1;
-//	gyroZAve = (*gz + gyroZAve) >> 1;
-	
-//	/*三倍均值滤波，快速接近当前测量值    低通*/
-//	accXAve = (((int32_t)*ax)*3 + (int32_t)accXAve) >> 2;
-//	accYAve = (((int32_t)*ay)*3 + (int32_t)accYAve) >> 2;
-//	accZAve = (((int32_t)*az)*3 + (int32_t)accZAve) >> 2;
-//	/*角速度需要动态响应*/
-//	gyroXAve = (((int32_t)*gx)*7 + (int32_t)gyroXAve) >> 3;
-//	gyroYAve = (((int32_t)*gy)*7 + (int32_t)gyroYAve) >> 3;
-//	gyroZAve = (((int32_t)*gz)*7 + (int32_t)gyroZAve) >> 3;
-//	
-//	*ax = accXAve;
-//	*ay = accYAve;
-//	*az = accZAve;
-//	*gx = gyroXAve;
-//	*gy = gyroYAve;
-//	*gz = gyroZAve;
 }
 
 void MPU6050::getAccelerationRaw(int16_t* x, int16_t* y, int16_t* z)
