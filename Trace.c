@@ -3,7 +3,7 @@
 #include "rtthread.h"
 #include "ov_7725.h"
 #include "Sccb.h"
-#include "EasyTracer.h"
+#include "Meanshift.h"
 
 
 extern uint8_t Ov7725_vsync;
