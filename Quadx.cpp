@@ -114,7 +114,7 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 //		RCValue[THROTTLE] = 1500;
 		
 		//落地任务
-		if(RCValue[THROTTLE]<1060)
+		if(RCValue[THROTTLE]<1100)
 		{
 			baro.setGround();
 			heading = att[YAW];
@@ -128,19 +128,20 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 		//trace
 		if(ctrl.trace)
 		{
-			err[PITCH+POS].cur = BETWEEN(targetX,-180,180);
-			err[PITCH+POS].cur = DEAD_BAND(err[PITCH+POS].cur,0,10);
+			err[PITCH+POS].cur = BETWEEN(targetX,-16,16);
+			err[PITCH+POS].cur = DEAD_BAND(err[PITCH+POS].cur,0,2);
 
 			PID[PITCH+POS].result =  PID[PITCH+POS].P * err[PITCH+POS].cur;
 			PID[PITCH+POS].result += PID[PITCH+POS].D * (err[PITCH+POS].cur-err[PITCH+POS].pre);
 			err[PITCH+POS].pre = err[PITCH+POS].cur;
 			
-			err[ROLL+POS].cur = BETWEEN(-targetY,-180,180);
-			err[ROLL+POS].cur = DEAD_BAND(err[ROLL+POS].cur,0,10);
 			
-			PID[ROLL+POS].result  =  PID[ROLL +POS].P * err[ROLL+POS].cur;
-			PID[ROLL+POS].result  += PID[ROLL +POS].D * (err[ROLL+POS].cur-err[ROLL+POS].pre);
-			err[ROLL+POS].pre = err[ROLL+POS].cur; 
+			err[ROLL +POS].cur = BETWEEN(-targetY,-16,16);
+			err[ROLL +POS].cur = DEAD_BAND(err[ROLL+POS].cur,0,2);
+			
+			PID[ROLL +POS].result =  PID[ROLL +POS].P * err[ROLL+POS].cur;
+			PID[ROLL +POS].result += PID[ROLL +POS].D * (err[ROLL+POS].cur-err[ROLL+POS].pre);
+			err[ROLL +POS].pre = err[ROLL+POS].cur; 
 		}
 		else
 			PID[PITCH+POS].result = PID[ROLL+POS].result = 0;
@@ -199,7 +200,7 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 		/*altitude*/
 		if(RCValue[HOLD]>1500) ctrl.alt = true;
 		else ctrl.alt = false;
-		if(ctrl.alt||ctrl.trace)
+		if(ctrl.alt)
 		{
 			static uint8_t state = 0;
 			if(state == 0)
@@ -214,7 +215,7 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 				}
 				
 				if((RCValue[THROTTLE]<throttle-100)||(RCValue[THROTTLE]>throttle+100)) 
-					alt += (RCValue[THROTTLE]-throttle)/20000.0f;
+					alt += (RCValue[THROTTLE]-throttle)/30000.0f;
 				
 				err[THROTTLE].cur = (alt - att[THROTTLE]) * 100;
 				//死区

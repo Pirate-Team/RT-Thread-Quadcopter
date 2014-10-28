@@ -14,7 +14,7 @@
 
 #define FLASH_ADDRESS_BASE (0x08020000)
 
-#define TRACE_TEST
+//#define TRACE_TEST
 
 struct param_t
 {
@@ -240,6 +240,9 @@ void rt_thread_entry_main(void* parameter)
 		if(ctrl.coor)
 		{
 			txData[0] = 0xec;
+//			static int16_t n = 0;
+//			n = (n+1) % 100;
+//			targetX = targetY = targetH = targetW = n / 5 - 10;
 			((int16_t*)(txData+1))[0] = targetX;//目标位置，不做变换
 			((int16_t*)(txData+1))[1] = targetY;
 			((int16_t*)(txData+1))[2] = targetH;//目标长宽，不做变换
@@ -278,7 +281,7 @@ void hardware_init(void)
 	I2Cdev::initialize();
 	Motor::initialize();
 	
-#ifdef TRACE_TEST
+#ifndef TRACE_TEST
 	MPU6050 *accgyro = new MPU6050();
 	while(!accgyro->initialize())
 	{

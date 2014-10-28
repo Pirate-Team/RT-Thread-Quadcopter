@@ -177,6 +177,6 @@ bool MS5611::getAltitude(float* altitude)
 	
 void MS5611::setGround(void)
 {
-	if(pressure == 0) return;
+	if(pressure <= 0) return;
 	sea_press = pressure;
 }
