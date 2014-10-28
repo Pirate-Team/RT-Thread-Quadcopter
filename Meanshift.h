@@ -8,7 +8,7 @@
 #define IMG_H 180 //图片高度
 
 #define ALLOW_FAIL_PER 2 //容错率，没1<<ALLOW_FAIL_PER个点允许出现一个错误点，容错率越大越容易识别，但错误率越大
-#define ITERATE_NUM    14 //迭代次数，迭代次数越多识别越精确，但计算量越大
+#define ITERATE_NUM    10 //迭代次数，迭代次数越多识别越精确，但计算量越大
 
 #define WHITE         	 0xFFFF
 #define BLACK         	 0x0000	  

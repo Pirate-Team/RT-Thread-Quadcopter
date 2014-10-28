@@ -259,7 +259,7 @@ int Trace(const TARGET_CONDI *Condition,RESULT *Resu)
 
 }
 
-int Trace1(const TARGET_CONDI *Condition,RESULT *Resu)
+int TraceinFrame(const TARGET_CONDI *Condition,RESULT *Resu)
 {
 	static unsigned int x0,y0;
 	static SEARCH_AREA FullFrameArea1={IMG_X,IMG_X+IMG_W-1,IMG_Y,IMG_Y+IMG_H-1};
