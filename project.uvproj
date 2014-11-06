@@ -460,11 +460,6 @@
               <FilePath>.\applications_cpp\Led.cpp</FilePath>
             </File>
             <File>
-              <FileName>MadgwickAHRS.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>.\applications_cpp\MadgwickAHRS.cpp</FilePath>
-            </File>
-            <File>
               <FileName>Motor.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>.\applications_cpp\Motor.cpp</FilePath>

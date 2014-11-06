@@ -37,15 +37,14 @@ extern "C"
 {
 	extern int16_t targetX,targetY;
 }
+
+
+
 /*-----------------------------------
 	thread
 -----------------------------------*/
 void rt_thread_entry_quadx_get_attitude(void* parameter)
 {
-	MPU6050 accelgyro;
-	HMC5883L mag;
-	MS5611 baro;
-	
 	uint8_t state = 0;
 	quat.sampleInterval = 0.004f;
 	while(1)
@@ -54,18 +53,18 @@ void rt_thread_entry_quadx_get_attitude(void* parameter)
 		accelgyro.getMotion6Cal(sensorData.ax, sensorData.ay, sensorData.az, sensorData.gx, sensorData.gy, sensorData.gz);
 		if(state == 0)
 		{
-			mag.getHeadingCal(&sensorData.mx,&sensorData.my,&sensorData.mz);
+			mag.getHeadingCal(sensorData.mx,sensorData.my,sensorData.mz);
 			state = 10;
 		}
 		else if(state == 8)
 		{
 			baro.getTemperature();
-			baro.getAltitude(&att[THROTTLE]);
+			baro.getAltitude(att[THROTTLE]);
 		}
 		else if(state == 2)
 		{
 			baro.getPressure();	
-			baro.getAltitude(&att[THROTTLE]);
+			baro.getAltitude(att[THROTTLE]);
 		}
 		state--;
 		/*calculate attitude*/
@@ -99,7 +98,6 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 	float vel = 0;
 	uint16_t throttle = 0;
 	int16_t accZ = 0;
-	MS5611 baro;
 	
 	rt_thread_delay(10);	
 	while(1)

@@ -6,10 +6,12 @@
 #include "Parameter.h"
 #define M_57_3 57.29577f
 
+HMC5883L mag;
+
 HMC5883L::HMC5883L(void)
 {
 	devAddr = HMC5883L_ADDRESS;
-	buffer = (uint8_t*)rt_malloc(6);
+	buffer = new uint8_t[6];
 	strcpy(name,HMC5883L_NAME);
 }
 
@@ -17,7 +19,7 @@ HMC5883L::~HMC5883L(void)
 {
 	if(buffer != null)
 	{
-		rt_free(buffer);
+		delete(buffer);
 		buffer = null;
 	}
 }
@@ -46,7 +48,7 @@ bool HMC5883L::testConnection(void)
 
 uint8_t HMC5883L::getData(void* data1,void* data2,void* data3,void* data4,void* data5,void* data6)
 {
-	getHeadingCal((int16_t*)data1,(int16_t*)data2,(int16_t*)data3);
+//	getHeadingCal((int16_t*)data1,(int16_t*)data2,(int16_t*)data3);
 	if(data4 != null) getHeadingCal((float*)data4);
 	return 4;
 }
@@ -73,60 +75,78 @@ void HMC5883L::getHeadingRaw(int16_t *x, int16_t *y, int16_t *z)
 	*z = (((int16_t)buffer[2]) << 8) | buffer[3];
 }
 
-void HMC5883L::getHeadingCal(int16_t *x, int16_t *y, int16_t *z)
+//void HMC5883L::getHeadingCal(int16_t *x, int16_t *y, int16_t *z)
+//{
+//	static int16_t avgX = 0,avgY = 0,avgZ = 0;
+//	
+//	I2Cdev::readBytes(devAddr, HMC5883L_RA_DATAX_H, 6, buffer);
+////	I2Cdev::writeByte(devAddr, HMC5883L_RA_MODE, HMC5883L_MODE_SINGLE << (HMC5883L_MODEREG_BIT - HMC5883L_MODEREG_LENGTH + 1));
+//	*x = ((((int16_t)buffer[0]) << 8) | buffer[1]) - param.magXOffset;
+//	*y = ((((int16_t)buffer[4]) << 8) | buffer[5]) - param.magYOffset;
+//	*z = ((((int16_t)buffer[2]) << 8) | buffer[3]) - param.magZOffset;
+//	
+//	if(avgX == 0 && avgY == 0) 
+//	{
+//		avgX = *x;
+//		avgY = *y;
+//		avgZ = *z;
+//	}
+//	avgX = (((int32_t)*x)*3 + (int32_t)avgX*5) >> 3;
+//	avgY = (((int32_t)*y)*3 + (int32_t)avgY*5) >> 3;
+//	avgZ = (((int32_t)*z)*3 + (int32_t)avgZ*5) >> 3;
+//		
+//	*x = avgX;
+//	*y = avgY;
+//	*z = avgZ;
+//	
+////	#define MAG_TAB_SIZE 5
+////	static int16_t magXHistTab[MAG_TAB_SIZE] = {0},magYHistTab[MAG_TAB_SIZE] = {0},magZHistTab[MAG_TAB_SIZE] = {0};
+////	static int32_t magXSum = 0,magYSum = 0,magZSum = 0;
+////	static uint8_t magHistIdx = 0;
+////	uint8_t indexplus1 = (magHistIdx + 1);
+////	if (indexplus1 == MAG_TAB_SIZE) indexplus1 = 0;
+
+////	magXHistTab[magHistIdx] = *x;
+////	magXSum += magXHistTab[magHistIdx];
+////	magXSum -= magXHistTab[indexplus1];
+
+////	magYHistTab[magHistIdx] = *y;
+////	magYSum += magYHistTab[magHistIdx];
+////	magYSum -= magYHistTab[indexplus1];
+
+////	magZHistTab[magHistIdx] = *z;
+////	magZSum += magZHistTab[magHistIdx];
+////	magZSum -= magZHistTab[indexplus1];
+
+////	magHistIdx = indexplus1;
+
+////	*x = magXSum >> 2;
+////	*y = magYSum >> 2;
+////	*z = magZSum >> 2;
+//}
+
+void HMC5883L::getHeadingCal(int16_t &x, int16_t &y, int16_t &z)
 {
-	static int16_t avgX = 0,avgY = 0,avgZ = 0;
-	
-	I2Cdev::readBytes(devAddr, HMC5883L_RA_DATAX_H, 6, buffer);
-//	I2Cdev::writeByte(devAddr, HMC5883L_RA_MODE, HMC5883L_MODE_SINGLE << (HMC5883L_MODEREG_BIT - HMC5883L_MODEREG_LENGTH + 1));
-	*x = ((((int16_t)buffer[0]) << 8) | buffer[1]) - param.magXOffset;
-	*y = ((((int16_t)buffer[4]) << 8) | buffer[5]) - param.magYOffset;
-	*z = ((((int16_t)buffer[2]) << 8) | buffer[3]) - param.magZOffset;
-	
-	if(avgX == 0 && avgY == 0) 
+	if(I2Cdev::readBytes(devAddr, HMC5883L_RA_DATAX_H, 6, buffer))
 	{
-		avgX = *x;
-		avgY = *y;
-		avgZ = *z;
+		int16_t xt = ((((int16_t)buffer[0]) << 8) | buffer[1]) - param.magXOffset;
+		int16_t yt = ((((int16_t)buffer[4]) << 8) | buffer[5]) - param.magYOffset;
+		int16_t zt = ((((int16_t)buffer[2]) << 8) | buffer[3]) - param.magZOffset;
+
+		x = (((int32_t)x)*3 + (int32_t)xt*5) >> 3;
+		y = (((int32_t)y)*3 + (int32_t)yt*5) >> 3;
+		z = (((int32_t)z)*3 + (int32_t)zt*5) >> 3;
 	}
-	avgX = (((int32_t)*x)*3 + (int32_t)avgX*5) >> 3;
-	avgY = (((int32_t)*y)*3 + (int32_t)avgY*5) >> 3;
-	avgZ = (((int32_t)*z)*3 + (int32_t)avgZ*5) >> 3;
-		
-	*x = avgX;
-	*y = avgY;
-	*z = avgZ;
-	
-//	#define MAG_TAB_SIZE 5
-//	static int16_t magXHistTab[MAG_TAB_SIZE] = {0},magYHistTab[MAG_TAB_SIZE] = {0},magZHistTab[MAG_TAB_SIZE] = {0};
-//	static int32_t magXSum = 0,magYSum = 0,magZSum = 0;
-//	static uint8_t magHistIdx = 0;
-//	uint8_t indexplus1 = (magHistIdx + 1);
-//	if (indexplus1 == MAG_TAB_SIZE) indexplus1 = 0;
-
-//	magXHistTab[magHistIdx] = *x;
-//	magXSum += magXHistTab[magHistIdx];
-//	magXSum -= magXHistTab[indexplus1];
-
-//	magYHistTab[magHistIdx] = *y;
-//	magYSum += magYHistTab[magHistIdx];
-//	magYSum -= magYHistTab[indexplus1];
-
-//	magZHistTab[magHistIdx] = *z;
-//	magZSum += magZHistTab[magHistIdx];
-//	magZSum -= magZHistTab[indexplus1];
-
-//	magHistIdx = indexplus1;
-
-//	*x = magXSum >> 2;
-//	*y = magYSum >> 2;
-//	*z = magZSum >> 2;
+	else
+	{
+		x = y = z = 0;
+	}
 }
 
 void HMC5883L::getHeadingCal(float *heading)
 {
 	int16_t x,y,z;
-	getHeadingCal(&x,&y,&z);
+	getHeadingCal(x,y,z);
 	*heading = atan2((float)y, (float)x);
     if(*heading < 0)
       *heading += 2 * PI;

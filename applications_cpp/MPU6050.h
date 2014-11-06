@@ -396,4 +396,6 @@ public:
 	void setOffset(void);
 };
 
+extern MPU6050 accelgyro;
+
 #endif

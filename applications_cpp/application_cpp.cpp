@@ -241,7 +241,7 @@ void rt_thread_entry_main(void* parameter)
 		}
 /***************send end****************/
 		
-		rt_thread_delay(25);
+		rt_thread_delay(50);
 	}
 }
 

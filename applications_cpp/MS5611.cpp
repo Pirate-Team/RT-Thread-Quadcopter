@@ -15,20 +15,22 @@
 
 static uint16_t C[6];
 static int64_t dT;
-static float temperature,pressure,ground_press = SEA_PRESS;
+
+MS5611 baro;
 
 MS5611::MS5611(void)
 {
 	devAddr = MS561101BA_SlaveAddress;
-	buffer = (uint8_t*)rt_malloc(3);
+	buffer = new uint8_t[3];
 	strcpy(name,MS5611_NAME);
+	ground_press = SEA_PRESS;
 }
 
 MS5611::~MS5611(void)
 {
 	if(buffer != null)
 	{
-		rt_free(buffer);
+		delete(buffer);
 		buffer = null;
 	}
 }
@@ -65,7 +67,7 @@ bool MS5611::testConnection(void)
 
 uint8_t MS5611::getData(void* data1,void* data2,void* data3,void* data4,void* data5,void* data6)
 {
-	if(!getAltitude((float*)data1)) return false;
+//	if(!getAltitude((float*)data1)) return false;
 	return true;
 }
 
@@ -164,16 +166,24 @@ bool MS5611::getPressure(float* press)
 	return true;
 }
 
-bool MS5611::getAltitude(float* altitude)
+//bool MS5611::getAltitude(float* altitude)
+//{
+//	if(pressure<500) return false;
+//	float temp = ((pow(ground_press / pressure, 1/5.257f) - 1.0f) * (temperature + 273.15f)) / 0.0065f;
+//	*altitude = ((*altitude)*5.0f + temp*3.0f) / 8.0f;
+//	return true;
+//}
+
+bool MS5611::getAltitude(float &altitude)
 {
 	if(pressure<500) return false;
 	float temp = ((pow(ground_press / pressure, 1/5.257f) - 1.0f) * (temperature + 273.15f)) / 0.0065f;
-	*altitude = ((*altitude)*5.0f + temp*3.0f) / 8.0f;
+	altitude = ((altitude)*5.0f + temp*3.0f) / 8.0f;
 	return true;
 }
 	
 void MS5611::setGround(void)
 {
 	if(pressure < 500) return;
-	ground_press = pressure;
+	ground_press = ground_press*0.5f + pressure*0.5f;
 }

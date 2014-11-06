@@ -4,10 +4,12 @@
 #include "string.h"
 #include "Parameter.h"
 
+MPU6050 accelgyro;
+
 MPU6050::MPU6050()
 {
 	devAddr = (uint8_t)MPU6050_DEFAULT_ADDRESS;
-	buffer = (uint8_t*)rt_malloc(14);
+	buffer = new uint8_t[14];
 	strcpy(name,MPU6050_NAME);
 }
 
@@ -15,7 +17,7 @@ MPU6050::~MPU6050()
 {
 	if(buffer != null)
 	{
-		rt_free(buffer);
+		delete(buffer);
 		buffer = null;
 	}
 }
@@ -146,42 +148,21 @@ uint8_t MPU6050::getData(void* data1,void* data2,void* data3,void* data4,void* d
 
 void MPU6050::getMotion6Cal(int16_t &ax, int16_t &ay, int16_t &az, int16_t &gx, int16_t &gy, int16_t &gz)
 {
-	static int16_t accXAve = 0, accYAve = 0, accZAve = 0;
-	static int16_t gyroXAve = 0, gyroYAve = 0, gyroZAve = 0;
-	
     if(I2Cdev::readBytes(devAddr, MPU6050_RA_ACCEL_XOUT_H, 14, buffer))
 	{
-		ax = ((((int16_t)buffer[0]) << 8) | buffer[1]) - param.accXOffset;
-		ay = ((((int16_t)buffer[2]) << 8) | buffer[3]) - param.accYOffset;
-		az = ((((int16_t)buffer[4]) << 8) | buffer[5]) - param.accZOffset;
-		gx = ((((int16_t)buffer[8]) << 8) | buffer[9]) - param.gyroXOffset;
-		gy = ((((int16_t)buffer[10]) << 8) | buffer[11]) - param.gyroYOffset;
-		gz = ((((int16_t)buffer[12]) << 8) | buffer[13]) - param.gyroZOffset;
+		int16_t axt = ((((int16_t)buffer[0]) << 8) | buffer[1]) - param.accXOffset;
+		int16_t ayt = ((((int16_t)buffer[2]) << 8) | buffer[3]) - param.accYOffset;
+		int16_t azt = ((((int16_t)buffer[4]) << 8) | buffer[5]) - param.accZOffset;
+		int16_t gxt = ((((int16_t)buffer[8]) << 8) | buffer[9]) - param.gyroXOffset;
+		int16_t gyt = ((((int16_t)buffer[10]) << 8) | buffer[11]) - param.gyroYOffset;
+		int16_t gzt = ((((int16_t)buffer[12]) << 8) | buffer[13]) - param.gyroZOffset;
 		
-		
-		if(accXAve == 0 && accZAve == 0)
-		{
-			accXAve = ax;
-			accYAve = ay;
-			accZAve = az;
-			
-			gyroXAve = gx;
-			gyroYAve = gy;
-			gyroZAve = gz;
-		}
-		accXAve = (((int32_t)ax)*3 + (int32_t)accXAve*5) >> 3;
-		accYAve = (((int32_t)ay)*3 + (int32_t)accYAve*5) >> 3;
-		accZAve = (((int32_t)az)*3 + (int32_t)accZAve*5) >> 3;
-		ax = accXAve;
-		ay = accYAve;
-		az = accZAve;
-		
-		gyroXAve = (((int32_t)gx)*15 + (int32_t)gyroXAve) >> 4;
-		gyroYAve = (((int32_t)gy)*15 + (int32_t)gyroYAve) >> 4;
-		gyroZAve = (((int32_t)gz)*15 + (int32_t)gyroZAve) >> 4;
-		gx = gyroXAve;
-		gy = gyroYAve;
-		gz = gyroZAve;		
+		ax = (((int32_t)ax)*3 + (int32_t)axt*5) >> 3;
+		ay = (((int32_t)ay)*3 + (int32_t)ayt*5) >> 3;
+		az = (((int32_t)az)*3 + (int32_t)azt*5) >> 3;
+		gx = (((int32_t)gx)*15 + (int32_t)gxt) >> 4;
+		gy = (((int32_t)gy)*15 + (int32_t)gyt) >> 4;
+		gz = (((int32_t)gz)*15 + (int32_t)gzt) >> 4;
 	}
 	else
 	{

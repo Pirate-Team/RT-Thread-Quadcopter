@@ -80,10 +80,13 @@ public:
 	virtual uint8_t getData(void* data1,void* data2 = null,void* data3 = null,void* data4 = null,void* data5 = null,void* data6 = null);
 
 	void getHeadingRaw(int16_t *x, int16_t *y, int16_t *z);
-	void getHeadingCal(int16_t *x, int16_t *y, int16_t *z);
+//	void getHeadingCal(int16_t *x, int16_t *y, int16_t *z);
+	void getHeadingCal(int16_t &x, int16_t &y, int16_t &z);
 	void getHeadingCal(float *heading);
 
 	void setOffset(void);
 };
+
+extern HMC5883L mag;
 
 #endif

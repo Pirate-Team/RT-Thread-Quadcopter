@@ -43,8 +43,11 @@ public:
 	void setGround(void);
 	bool readPROM(void);
 	bool reset();
-	bool getAltitude(float* altitude);
+	bool getAltitude(float &altitude);
+private:
+	float temperature,pressure,ground_press;
 };
 
+extern MS5611 baro;
 
 #endif
