@@ -361,7 +361,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER,STM32F401xx,ARM_MATH_CM4</Define>
               <Undefine></Undefine>
-              <IncludePath>.;..\..\components\finsh;..\..\include;..\..\libcpu\arm\common;..\..\libcpu\arm\cortex-m4;applications;drivers;.\Libraries\STM32F4xx_StdPeriph_Driver\inc;.\Libraries\CMSIS\Device\ST\STM32F4xx\Include;.\Libraries\CMSIS\Include;.\STM32F4xx-Nucleo</IncludePath>
+              <IncludePath>.;..\..\components\finsh;..\..\include;..\..\libcpu\arm\common;..\..\libcpu\arm\cortex-m4;applications;drivers;.\Libraries\STM32F4xx_StdPeriph_Driver\inc;.\Libraries\CMSIS\Device\ST\STM32F4xx\Include;.\Libraries\CMSIS\Include;.\applications_cpp</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -405,34 +405,24 @@
           <GroupName>Applications</GroupName>
           <Files>
             <File>
-              <FileName>application.c</FileName>
+              <FileName>Meanshift.c</FileName>
               <FileType>1</FileType>
-              <FilePath>applications\application.c</FilePath>
-            </File>
-            <File>
-              <FileName>startup.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>applications\startup.c</FilePath>
+              <FilePath>.\applications\Meanshift.c</FilePath>
             </File>
             <File>
               <FileName>ov_7725.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\ov_7725.c</FilePath>
+              <FilePath>.\applications\ov_7725.c</FilePath>
             </File>
             <File>
               <FileName>Sccb.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Sccb.c</FilePath>
+              <FilePath>.\applications\Sccb.c</FilePath>
             </File>
             <File>
               <FileName>Trace.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Trace.c</FilePath>
-            </File>
-            <File>
-              <FileName>Meanshift.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Meanshift.c</FilePath>
+              <FilePath>.\applications\Trace.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -442,77 +432,82 @@
             <File>
               <FileName>application_cpp.cpp</FileName>
               <FileType>8</FileType>
-              <FilePath>.\application_cpp.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>startup_cpp.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>.\startup_cpp.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>Led.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>.\Led.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>Motor.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>.\Motor.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>Receiver.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>.\Receiver.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>Sensor.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>.\Sensor.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>MPU6050.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>.\MPU6050.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>I2Cdev.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>.\I2Cdev.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>HMC5883L.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>.\HMC5883L.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>MS5611.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>.\MS5611.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>MadgwickAHRS.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>.\MadgwickAHRS.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>Quadx.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>.\Quadx.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>Quaternion.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>.\Quaternion.cpp</FilePath>
+              <FilePath>.\applications_cpp\application_cpp.cpp</FilePath>
             </File>
             <File>
               <FileName>Communication.cpp</FileName>
               <FileType>8</FileType>
-              <FilePath>.\Communication.cpp</FilePath>
+              <FilePath>.\applications_cpp\Communication.cpp</FilePath>
             </File>
             <File>
               <FileName>cpu_usage.cpp</FileName>
               <FileType>8</FileType>
-              <FilePath>.\cpu_usage.cpp</FilePath>
+              <FilePath>.\applications_cpp\cpu_usage.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>HMC5883L.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\applications_cpp\HMC5883L.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>I2Cdev.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\applications_cpp\I2Cdev.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>Led.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\applications_cpp\Led.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>MadgwickAHRS.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\applications_cpp\MadgwickAHRS.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>Motor.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\applications_cpp\Motor.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>MPU6050.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\applications_cpp\MPU6050.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>MS5611.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\applications_cpp\MS5611.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>Parameter.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\applications_cpp\Parameter.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>Quadx.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\applications_cpp\Quadx.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>Quaternion.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\applications_cpp\Quaternion.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>Receiver.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\applications_cpp\Receiver.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>Sensor.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\applications_cpp\Sensor.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>startup_cpp.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\applications_cpp\startup_cpp.cpp</FilePath>
             </File>
           </Files>
         </Group>
