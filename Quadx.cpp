@@ -10,6 +10,7 @@
 #include "MadgwickAHRS.h"
 #include "Receiver.h"
 #include "Led.h"
+#include "Parameter.h"
 /*-----------------------------------
 	define
 -----------------------------------*/
@@ -25,8 +26,6 @@
 float att[4] = {0};
 
 struct sensor_data_t sensorData = {0};
-
-struct pid_t PID[6] = {0};
 
 struct ctrl_t
 {
@@ -81,8 +80,8 @@ void rt_thread_entry_quadx_get_attitude(void* parameter)
 		
 		if(ctrl.quadx == false) 
 		{
-			rt_thread_delay(50); 
-			sampleInterval = 0.1f;
+			rt_thread_delay(20); 
+			sampleInterval = 0.04f;
 		}
 		else
 		{
@@ -104,26 +103,21 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 	float alt = 0;
 	float vel = 0;
 	uint16_t throttle = 0;
-//	int16_t RC[4] = {0};//比如YAW轴PID控制角速度，那么RC[YAW]纠正方向的偏差
 	int16_t accZ = 0;
 	MS5611 baro;
 	
 	rt_thread_delay(50);	
 	while(1)
 	{
-//		RCValue[THROTTLE] = 1500;
-		
 		//落地任务
-		if(RCValue[THROTTLE]<1100)
+		if(ctrl.quadx == false)
 		{
 			baro.setGround();
-			heading = att[YAW];
 			accZ = (accZ + sensorData.az) >> 1;
 		}
 /*--------------------------------------------------------*/		
 		/*calculate PID*/
 		quat.toEuler(att[PITCH],att[ROLL],att[YAW]);
-//		att[PITCH] = att[ROLL] = att[YAW] = 0;
 		/*pitch&roll*/
 		//trace
 		if(ctrl.trace)
@@ -131,69 +125,69 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 			err[PITCH+POS].cur = BETWEEN(targetX,-16,16);
 			err[PITCH+POS].cur = DEAD_BAND(err[PITCH+POS].cur,0,2);
 
-			PID[PITCH+POS].result =  PID[PITCH+POS].P * err[PITCH+POS].cur;
-			PID[PITCH+POS].result += PID[PITCH+POS].D * (err[PITCH+POS].cur-err[PITCH+POS].pre);
+			param.PID[PITCH+POS].result =  param.PID[PITCH+POS].P * err[PITCH+POS].cur;
+			param.PID[PITCH+POS].result += param.PID[PITCH+POS].D * (err[PITCH+POS].cur-err[PITCH+POS].pre);
 			err[PITCH+POS].pre = err[PITCH+POS].cur;
 			
 			
 			err[ROLL +POS].cur = BETWEEN(-targetY,-16,16);
 			err[ROLL +POS].cur = DEAD_BAND(err[ROLL+POS].cur,0,2);
 			
-			PID[ROLL +POS].result =  PID[ROLL +POS].P * err[ROLL+POS].cur;
-			PID[ROLL +POS].result += PID[ROLL +POS].D * (err[ROLL+POS].cur-err[ROLL+POS].pre);
+			param.PID[ROLL +POS].result =  param.PID[ROLL +POS].P * err[ROLL+POS].cur;
+			param.PID[ROLL +POS].result += param.PID[ROLL +POS].D * (err[ROLL+POS].cur-err[ROLL+POS].pre);
 			err[ROLL +POS].pre = err[ROLL+POS].cur; 
 		}
 		else
-			PID[PITCH+POS].result = PID[ROLL+POS].result = 0;
+			param.PID[PITCH+POS].result = param.PID[ROLL+POS].result = 0;
 		
 		for(uint8_t i=0;i<2;i++)
 		{
 			//遥控最多30度
-			err[i].cur = BETWEEN(RCValue[i] - 1500,-500,500)/16.0f + PID[i+POS].result- att[i];
-			PID[i].result = PID[i].P * err[i].cur;
+			err[i].cur = BETWEEN(RCValue[i] - 1500,-500,500)/16.0f + param.PID[i+POS].result- att[i];
+			param.PID[i].result = param.PID[i].P * err[i].cur;
 			
 			//遥控器小于5度积分
 			if(RCValue[i]<1580&&RCValue[i]>1420)
 				err[i].sum = BETWEEN(err[i].sum+err[i].cur,-500,500);
 			else
 				err[i].sum = 0;
-			PID[i].result += PID[i].I * err[i].sum;
+			param.PID[i].result += param.PID[i].I * err[i].sum;
 			
-			PID[i].result -= PID[i].D * ((i==0?sensorData.gx:sensorData.gy) / GYRO_SCALE);
-			PID[i].result = BETWEEN(PID[i].result,-100,100);
+			param.PID[i].result -= param.PID[i].D * ((i==0?sensorData.gx:sensorData.gy) / GYRO_SCALE);
+			param.PID[i].result = BETWEEN(param.PID[i].result,-100,100);
 			
 			err[i].pre = err[i].cur;
 		}
 		
 		/*yaw*/
-		if(RCValue[YAW] == 1500)
+		if(RCValue[YAW] == 1500 &&RCValue[THROTTLE]>1500)
 		{
 			err[YAW].cur= att[YAW] - heading;
 			if(err[YAW].cur>180) err[YAW].cur -= 360;
 			else if(err[YAW].cur<-180) err[YAW].cur += 360;
 			err[YAW].cur = DEAD_BAND(err[YAW].cur,0,1.2f);
-			PID[YAW].result = PID[YAW].P * err[YAW].cur;
+			param.PID[YAW].result = param.PID[YAW].P * err[YAW].cur;
 			if(err[YAW].cur == 0) sensorData.gz = 0;
 		}
 		else
 		{
 			heading = att[YAW];
-			PID[YAW].result = 0;
+			param.PID[YAW].result = 0;
 		}
 		
-		err[YAW].cur = BETWEEN(RCValue[YAW] - 1500,-500,+500)/8.0f - PID[YAW].result  - (sensorData.gz / GYRO_SCALE);
-		PID[YAW].result = PID[YAW].P * err[YAW].cur;
+		err[YAW].cur = BETWEEN(RCValue[YAW] - 1500,-500,+500)/8.0f - param.PID[YAW].result  - (sensorData.gz / GYRO_SCALE);
+		param.PID[YAW].result = param.PID[YAW].P * err[YAW].cur;
 		
 		//遥控器小于5度积分
 		if(RCValue[YAW]<1540&&RCValue[YAW]>1460)
 			err[YAW].sum = BETWEEN(err[YAW].sum + err[YAW].cur,-500,500); 
 		else
 			err[YAW].sum = 0;
-		PID[YAW].result += PID[YAW].I * err[YAW].sum;
+		param.PID[YAW].result += param.PID[YAW].I * err[YAW].sum;
 		
-		PID[YAW].result += PID[YAW].D * (err[YAW].cur -err[YAW].pre);
+		param.PID[YAW].result += param.PID[YAW].D * (err[YAW].cur -err[YAW].pre);
 		
-		PID[YAW].result = BETWEEN(PID[YAW].result,-100,+100);
+		param.PID[YAW].result = BETWEEN(param.PID[YAW].result,-100,+100);
 		
 		err[YAW].pre = err[YAW].cur;
 		
@@ -220,33 +214,24 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 				err[THROTTLE].cur = (alt - att[THROTTLE]) * 100;
 				//死区
 				err[THROTTLE].cur = DEAD_BAND(err[THROTTLE].cur,0,20);
-//				if(err[THROTTLE].cur>20) err[THROTTLE].cur -= 20;
-//				else if(err[THROTTLE].cur<-20) err[THROTTLE].cur += 20;
-//				else err[THROTTLE].cur = 0;
 				
-				PID[THROTTLE].result = PID[THROTTLE].P * err[THROTTLE].cur;
+				param.PID[THROTTLE].result = param.PID[THROTTLE].P * err[THROTTLE].cur;
 				
 				err[THROTTLE].sum = BETWEEN(err[THROTTLE].sum + err[THROTTLE].cur,-500,500);
-				PID[THROTTLE].result += PID[THROTTLE].I * err[THROTTLE].sum;
+				param.PID[THROTTLE].result += param.PID[THROTTLE].I * err[THROTTLE].sum;
 				
 				vel += (sensorData.az - accZ) / ACCEL_SCALE * 5;//0.05*100
 				float baroVel = (att[THROTTLE] - err[THROTTLE].pre) * 2000;//20*100
 				//死区
 				baroVel = DEAD_BAND(baroVel,0,20);
-//				if(baroVel>-20&&baroVel<20) baroVel = 0;
 				
 				err[THROTTLE].pre = att[THROTTLE];
 				
 				vel = vel * 0.9f + baroVel * 0.1f;
 
-//				char str[100];
-//				sprintf(str,"vel = %+f\tbaro = %+f\r\n",vel,baroVel);
-//				//sprintf(str,"gx=%+d\tgy=%+d\tgz=%+d\tax=%+d\tay=%+d\taz=%+d\r\n",sensorData.gx,sensorData.gy,sensorData.gz,sensorData.ax,sensorData.ay,sensorData.az);
-//				rt_kprintf(str);
-
-				PID[THROTTLE].result -= PID[THROTTLE].D * vel;
+				param.PID[THROTTLE].result -= param.PID[THROTTLE].D * vel;
 				
-				PID[THROTTLE].result = BETWEEN(PID[THROTTLE].result,-100,+100);
+				param.PID[THROTTLE].result = BETWEEN(param.PID[THROTTLE].result,-100,+100);
 				
 				state = 5;
 			}
@@ -255,13 +240,13 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 		else 
 		{
 			alt = 0;
-			PID[THROTTLE].result = 0;
+			param.PID[THROTTLE].result = 0;
 			throttle = RCValue[THROTTLE];
 		}
 /*--------------------------------------------------------*/
 		/*control motor*/
 		//停机条件
-		if(abs(att[PITCH])>80||abs(att[ROLL])>80||RCValue[THROTTLE]<1060||ctrl.quadx == false)
+		if(abs(att[PITCH])>80||abs(att[ROLL])>80||RCValue[THROTTLE]<1050||ctrl.quadx == false)
 		{
 			motorValue[0] = 1000;
 			motorValue[1] = 1000;
@@ -270,10 +255,10 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 		}
 		else
 		{
-			motorValue[0] = throttle + PID[PITCH].result + PID[ROLL].result + PID[YAW].result + PID[THROTTLE].result;
-			motorValue[1] = throttle + PID[PITCH].result - PID[ROLL].result - PID[YAW].result + PID[THROTTLE].result;
-			motorValue[2] = throttle - PID[PITCH].result - PID[ROLL].result + PID[YAW].result + PID[THROTTLE].result;
-			motorValue[3] = throttle - PID[PITCH].result + PID[ROLL].result - PID[YAW].result + PID[THROTTLE].result;
+			motorValue[0] = throttle + param.PID[PITCH].result + param.PID[ROLL].result + param.PID[YAW].result + param.PID[THROTTLE].result;
+			motorValue[1] = throttle + param.PID[PITCH].result - param.PID[ROLL].result - param.PID[YAW].result + param.PID[THROTTLE].result;
+			motorValue[2] = throttle - param.PID[PITCH].result - param.PID[ROLL].result + param.PID[YAW].result + param.PID[THROTTLE].result;
+			motorValue[3] = throttle - param.PID[PITCH].result + param.PID[ROLL].result - param.PID[YAW].result + param.PID[THROTTLE].result;
 		}
 		Motor::setValue(motorValue[0],motorValue[1],motorValue[2],motorValue[3]);
 /*--------------------------------------------------------*/			

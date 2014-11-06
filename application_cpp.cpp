@@ -11,20 +11,9 @@
 #include "Receiver.h"
 #include "Motor.h"
 #include "I2Cdev.h"
-
-#define FLASH_ADDRESS_BASE (0x08020000)
+#include "Parameter.h"
 
 //#define TRACE_TEST
-
-struct param_t
-{
-	struct pid_t PID[6];
-	int16_t accXOffset,accYOffset,accZOffset;
-	int16_t gyroXOffset,gyroYOffset,gyroZOffset;
-	int16_t magXOffset,magYOffset,magZOffset;
-	int16_t reserve1,reserve2;
-	uint16_t checkSum;
-};//120kb
 
 struct ctrl_t
 {
@@ -53,8 +42,7 @@ void rt_thread_entry_main(void* parameter)
 *************************************/	
 	ctrl.quadx = ctrl.alt = ctrl.att = ctrl.thro = ctrl.trace = ctrl.coor = false;
 	uint8_t rxData[RX_DATA_SIZE] = {0},txData[TX_DATA_SIZE];
-//	uint8_t major,minor;
-
+	
 /*************************************
 	hardware init
 *************************************/
@@ -127,15 +115,15 @@ void rt_thread_entry_main(void* parameter)
 		{
 			if(rxData[0]>=0xda&&rxData[0]<=0xdf)
 			{
-				PID[rxData[0] - 0xda].P = rxData[1] / 10.0f;//P[0,20],精度0.1
-				PID[rxData[0] - 0xda].I = rxData[2] / 1000.0f;//I[0,0.250],精度0.001
-				PID[rxData[0] - 0xda].D = rxData[3] / 10.0f;//D[0,20],精度0.1
+				param.PID[rxData[0] - 0xda].P = rxData[1] / 10.0f;//P[0,20],精度0.1
+				param.PID[rxData[0] - 0xda].I = rxData[2] / 1000.0f;//I[0,0.250],精度0.001
+				param.PID[rxData[0] - 0xda].D = rxData[3] / 10.0f;//D[0,20],精度0.1
 				//pitch&roll 一样
 				if(rxData[0] == 0xda || rxData[0] == 0xde)
 				{
-					PID[rxData[0] - 0xda + 1].P = rxData[1] / 10.0f;//P[0,20],精度0.1
-					PID[rxData[0] - 0xda + 1].I = rxData[2] / 1000.0f;//I[0,0.250],精度0.001
-					PID[rxData[0] - 0xda + 1].D = rxData[3] / 10.0f;//D[0,20],精度0.1
+					param.PID[rxData[0] - 0xda + 1].P = rxData[1] / 10.0f;//P[0,20],精度0.1
+					param.PID[rxData[0] - 0xda + 1].I = rxData[2] / 1000.0f;//I[0,0.250],精度0.001
+					param.PID[rxData[0] - 0xda + 1].D = rxData[3] / 10.0f;//D[0,20],精度0.1
 				}
 			}
 			else if(rxData[0]==0xca)
@@ -186,7 +174,11 @@ void rt_thread_entry_main(void* parameter)
 				//保存参数
 				if(ctrl.quadx == false)
 				{
+					rt_enter_critical();
+					led3.on();
+					rt_thread_delay(500);
 					param_save();
+					rt_exit_critical();
 				}
 			}
 			else if(rxData[0]==0xcf)
@@ -240,9 +232,6 @@ void rt_thread_entry_main(void* parameter)
 		if(ctrl.coor)
 		{
 			txData[0] = 0xec;
-//			static int16_t n = 0;
-//			n = (n+1) % 100;
-//			targetX = targetY = targetH = targetW = n / 5 - 10;
 			((int16_t*)(txData+1))[0] = targetX;//目标位置，不做变换
 			((int16_t*)(txData+1))[1] = targetY;
 			((int16_t*)(txData+1))[2] = targetH;//目标长宽，不做变换
@@ -252,12 +241,6 @@ void rt_thread_entry_main(void* parameter)
 		}
 /***************send end****************/
 		
-//		char str[100];
-//		sprintf(str,"%+f\t%+f\t%+f\t%+f\r\n",att[PITCH],att[ROLL],att[YAW],att[THROTTLE]);
-//		sprintf(str,"%+d\t%+d\t%+d\t%+d\r\n",motorValue[0],motorValue[1],motorValue[2],motorValue[3]);
-//		cpu_usage_get(&major,&minor);
-//		sprintf(str,"major: %d\tminor: %d\r\n",major,minor);
-//		rt_kprintf("%s",str);
 		rt_thread_delay(25);
 	}
 }
@@ -314,71 +297,15 @@ void hardware_init(void)
 void param_init(void)
 {
 	led3.on();
-	struct param_t *param;
-	param = (struct param_t *)FLASH_ADDRESS_BASE;
-	
-	uint16_t size = sizeof(struct param_t);
-	uint16_t checkSum = 0;
-	for(uint8_t i=0;i<(size-2)/2;i++)
-		checkSum += ((uint16_t*)(param))[i];
-	if(checkSum != (*param).checkSum) 
-	{
+	if(!param.flashRead())
 		led3.interval = 0;
-		return;
-	}
-
-	for(uint8_t i=0;i<6;i++)
-	{
-		PID[i].P = (*param).PID[i].P;
-		PID[i].I = (*param).PID[i].I;
-		PID[i].D = (*param).PID[i].D;
-		PID[i].result = 0;
-	}
-	accXOffset = (*param).accXOffset;
-	accYOffset = (*param).accYOffset;
-	accZOffset = (*param).accZOffset;
-	gyroXOffset = (*param).gyroXOffset;
-	gyroYOffset = (*param).gyroYOffset;
-	gyroZOffset = (*param).gyroZOffset;
-	magXOffset = (*param).magXOffset;
-	magYOffset = (*param).magYOffset;
-	magZOffset = (*param).magZOffset;
 }
 
 void param_save(void)
 {
-	struct param_t param = {0};
-	for(uint8_t i=0;i<6;i++)
-	{
-		param.PID[i].P = PID[i].P;
-		param.PID[i].I = PID[i].I;
-		param.PID[i].D = PID[i].D;
-		param.PID[i].result = 0;
-	}
-	param.accXOffset = accXOffset;
-	param.accYOffset = accYOffset;
-	param.accZOffset = accZOffset;
-	param.gyroXOffset = gyroXOffset;
-	param.gyroYOffset = gyroYOffset;
-	param.gyroZOffset = gyroZOffset;
-	param.magXOffset = magXOffset;
-	param.magYOffset = magYOffset;
-	param.magZOffset = magZOffset;
-	param.reserve1 = 0;
-	param.reserve2 = 0;
-	
-	param.checkSum = 0;
-	uint16_t size = sizeof(struct param_t);
-	for(uint8_t i=0;i<(size-2)/2;i++)
-		param.checkSum += ((uint16_t*)(&param))[i];
-	
-	FLASH_Unlock();
-	FLASH_EraseSector(FLASH_Sector_5,VoltageRange_3);
-	for(uint8_t i=0;i<size/4;i++)
-		FLASH_ProgramWord(FLASH_ADDRESS_BASE+i*4,((uint32_t*)(&param))[i]);
-	FLASH_Lock();
-	
-	param_init();
+	led3.on();
+	if(!param.flashWrite())
+		led3.interval = 0;
 }
 
 int  rt_application_init(void)

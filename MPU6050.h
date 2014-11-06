@@ -395,7 +395,4 @@ public:
 	void setOffset(void);
 };
 
-extern int16_t accXOffset,accYOffset,accZOffset;
-extern int16_t gyroXOffset,gyroYOffset,gyroZOffset;
-
 #endif

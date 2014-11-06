@@ -415,11 +415,6 @@
               <FilePath>applications\startup.c</FilePath>
             </File>
             <File>
-              <FileName>EasyTracer.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\EasyTracer.c</FilePath>
-            </File>
-            <File>
               <FileName>ov_7725.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\ov_7725.c</FilePath>
@@ -433,6 +428,11 @@
               <FileName>Trace.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Trace.c</FilePath>
+            </File>
+            <File>
+              <FileName>Meanshift.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Meanshift.c</FilePath>
             </File>
           </Files>
         </Group>

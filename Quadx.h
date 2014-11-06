@@ -1,10 +1,6 @@
 #ifndef QUATX_H
 #define QUATX_H
 #include "stm32f4xx.h"
-struct pid_t
-{
-	float P,I,D,result;
-};
 
 struct sensor_data_t
 {

@@ -15,7 +15,7 @@
 
 static uint16_t C[6];
 static int64_t dT;
-static float temperature,pressure,sea_press = SEA_PRESS;
+static float temperature,pressure,ground_press = SEA_PRESS;
 
 MS5611::MS5611(void)
 {
@@ -166,17 +166,14 @@ bool MS5611::getPressure(float* press)
 
 bool MS5611::getAltitude(float* altitude)
 {
-	if(pressure>0)
-	{
-		float temp = ((pow(sea_press / pressure, 1/5.257f) - 1.0f) * (temperature + 273.15f)) / 0.0065f;
-		*altitude = ((*altitude)*5.0f + temp*3.0f) / 8.0f;
-		return true;
-	}
-	return false;
+	if(pressure<500) return false;
+	float temp = ((pow(ground_press / pressure, 1/5.257f) - 1.0f) * (temperature + 273.15f)) / 0.0065f;
+	*altitude = ((*altitude)*5.0f + temp*3.0f) / 8.0f;
+	return true;
 }
 	
 void MS5611::setGround(void)
 {
-	if(pressure <= 0) return;
-	sea_press = pressure;
+	if(pressure < 500) return;
+	ground_press = pressure;
 }
