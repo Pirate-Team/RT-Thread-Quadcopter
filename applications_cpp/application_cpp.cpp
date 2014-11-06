@@ -104,7 +104,7 @@ void rt_thread_entry_main(void* parameter)
 	
 	
 	//让出cpu，队尾等待调度
-	rt_thread_delay(50);
+	rt_thread_delay(10);
 /*************************************
 	main loop
 *************************************/

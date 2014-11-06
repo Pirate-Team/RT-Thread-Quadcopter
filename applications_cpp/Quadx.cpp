@@ -7,10 +7,10 @@
 #include "HMC5883L.h"
 #include "MS5611.h"
 #include "Motor.h"
-#include "MadgwickAHRS.h"
 #include "Receiver.h"
 #include "Led.h"
 #include "Parameter.h"
+#include "Quaternion.h"
 /*-----------------------------------
 	define
 -----------------------------------*/
@@ -47,13 +47,11 @@ void rt_thread_entry_quadx_get_attitude(void* parameter)
 	MS5611 baro;
 	
 	uint8_t state = 0;
-//	uint32_t preTick = 0,curTick = 0;
-//	curTick = rt_tick_get();
-	sampleInterval = 0.004f;
+	quat.sampleInterval = 0.004f;
 	while(1)
 	{
 		/*getSensorData*/
-		accelgyro.getMotion6Cal(&sensorData.ax, &sensorData.ay, &sensorData.az, &sensorData.gx, &sensorData.gy, &sensorData.gz);
+		accelgyro.getMotion6Cal(sensorData.ax, sensorData.ay, sensorData.az, sensorData.gx, sensorData.gy, sensorData.gz);
 		if(state == 0)
 		{
 			mag.getHeadingCal(&sensorData.mx,&sensorData.my,&sensorData.mz);
@@ -71,22 +69,19 @@ void rt_thread_entry_quadx_get_attitude(void* parameter)
 		}
 		state--;
 		/*calculate attitude*/
-//		preTick = curTick;
-//		curTick = rt_tick_get();
-//		sampleInterval = (curTick - preTick) / 500.0f;
 		//姿态数据
-		MadgwickAHRSupdate((float)sensorData.gx/GYRO_SCALE,(float)sensorData.gy/GYRO_SCALE,(float)sensorData.gz/GYRO_SCALE,(float)sensorData.ax,(float)sensorData.ay,(float)sensorData.az,(float)sensorData.mx,(float)sensorData.my,(float)sensorData.mz);
+		quat.MadgwickAHRSupdate((float)sensorData.gx/GYRO_SCALE,(float)sensorData.gy/GYRO_SCALE,(float)sensorData.gz/GYRO_SCALE,(float)sensorData.ax,(float)sensorData.ay,(float)sensorData.az,(float)sensorData.mx,(float)sensorData.my,(float)sensorData.mz);
 		//MadgwickAHRSupdateIMU((float)sensorData.gx/GYRO_SCALE,(float)sensorData.gy/GYRO_SCALE,(float)sensorData.gz/GYRO_SCALE,(float)sensorData.ax,(float)sensorData.ay,(float)sensorData.az);
 		
 		if(ctrl.quadx == false) 
 		{
 			rt_thread_delay(20); 
-			sampleInterval = 0.04f;
+			quat.sampleInterval = 0.04f;
 		}
 		else
 		{
 			rt_thread_delay(2);
-			sampleInterval = 0.004f;
+			quat.sampleInterval = 0.004f;
 		}
 	}
 }
@@ -106,7 +101,7 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 	int16_t accZ = 0;
 	MS5611 baro;
 	
-	rt_thread_delay(50);	
+	rt_thread_delay(10);	
 	while(1)
 	{
 		//落地任务

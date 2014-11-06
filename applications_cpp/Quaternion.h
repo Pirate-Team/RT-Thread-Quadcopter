@@ -12,10 +12,13 @@ public:
 	
 	float& operator[](int8_t index);
 	void toEuler(float& pitch,float& roll, float& yaw);
-	
+	void MadgwickAHRSupdate(float gx, float gy, float gz, float ax, float ay, float az, float mx, float my, float mz);
+	void MadgwickAHRSupdateIMU(float gx, float gy, float gz, float ax, float ay, float az);	
 	float w,x,y,z;
+	float beta;								// 2 * proportional gain (Kp)
+	float sampleInterval;
 };
 
-
+extern Quaternion quat;
 
 #endif

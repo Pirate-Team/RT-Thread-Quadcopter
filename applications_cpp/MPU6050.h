@@ -370,7 +370,8 @@ public:
 
 	// ACCEL_*OUT_* registers
 //	void getMotion9(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, int16_t* gy, int16_t* gz, int16_t* mx, int16_t* my, int16_t* mz);
-	void getMotion6Cal(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, int16_t* gy, int16_t* gz);
+//	void getMotion6Cal(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, int16_t* gy, int16_t* gz);
+	void getMotion6Cal(int16_t &ax, int16_t &ay, int16_t &az, int16_t &gx, int16_t &gy, int16_t &gz);
 	void getAccelerationRaw(int16_t* x, int16_t* y, int16_t* z);
 	void getAccelerationCal(int16_t* x, int16_t* y, int16_t* z);
 //	int16_t getAccelerationX();
