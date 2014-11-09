@@ -2,7 +2,6 @@
 #include "rtthread.h"
 #include "I2Cdev.h"
 #include "arm_math.h"
-#include "string.h"
 
 //#define DEBUG
 
@@ -178,7 +177,7 @@ bool MS5611::getAltitude(float &altitude)
 {
 	if(pressure<500) return false;
 	float temp = ((pow(ground_press / pressure, 1/5.257f) - 1.0f) * (temperature + 273.15f)) / 0.0065f;
-	altitude = ((altitude)*5.0f + temp*3.0f) / 8.0f;
+	altitude = (altitude)*0.7f + temp*0.3f;
 	return true;
 }
 	

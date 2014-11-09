@@ -11,6 +11,7 @@
 #include "Led.h"
 #include "Parameter.h"
 #include "Quaternion.h"
+#include "Attitude.h"
 /*-----------------------------------
 	define
 -----------------------------------*/
@@ -23,7 +24,6 @@
 /*-----------------------------------
 	global
 -----------------------------------*/
-float att[4] = {0};
 
 struct sensor_data_t sensorData = {0};
 
@@ -37,8 +37,6 @@ extern "C"
 {
 	extern int16_t targetX,targetY;
 }
-
-
 
 /*-----------------------------------
 	thread

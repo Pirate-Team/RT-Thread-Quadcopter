@@ -12,6 +12,7 @@
 #include "Motor.h"
 #include "I2Cdev.h"
 #include "Parameter.h"
+#include "Attitude.h"
 
 //#define TRACE_TEST
 
