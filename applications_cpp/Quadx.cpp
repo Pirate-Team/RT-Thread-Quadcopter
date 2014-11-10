@@ -73,12 +73,12 @@ void rt_thread_entry_quadx_get_attitude(void* parameter)
 		if(ctrl.quadx == false) 
 		{
 			rt_thread_delay(20); 
-			quat.sampleInterval = 0.04f;
+//			quat.sampleInterval = 0.04f;
 		}
 		else
 		{
 			rt_thread_delay(2);
-			quat.sampleInterval = 0.004f;
+//			quat.sampleInterval = 0.004f;
 		}
 	}
 }

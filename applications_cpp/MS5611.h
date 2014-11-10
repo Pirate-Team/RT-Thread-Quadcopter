@@ -46,6 +46,8 @@ public:
 	bool getAltitude(float &altitude);
 private:
 	float temperature,pressure,ground_press;
+	int64_t dT;
+	uint16_t C[6];
 };
 
 extern MS5611 baro;

@@ -504,6 +504,11 @@
               <FileType>8</FileType>
               <FilePath>.\applications_cpp\startup_cpp.cpp</FilePath>
             </File>
+            <File>
+              <FileName>Attitude.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\applications_cpp\Attitude.cpp</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

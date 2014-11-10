@@ -12,9 +12,6 @@
 #define C5 32431
 #define C6 27811
 
-static uint16_t C[6];
-static int64_t dT;
-
 MS5611 baro;
 
 MS5611::MS5611(void)

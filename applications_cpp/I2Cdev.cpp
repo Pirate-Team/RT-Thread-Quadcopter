@@ -205,6 +205,7 @@ bool I2Cdev::readBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_t
 		rt_exit_critical();
         return false;
     }
+	stop();//增加一个stop
     start();
     sendByte(devAddr << 1 | I2C_Direction_Receiver);
     if (!waitAck()) {

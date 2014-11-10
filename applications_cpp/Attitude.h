@@ -9,6 +9,7 @@ public:
 	Attitude();
 	float& operator[](int8_t index);
 	float pitch,roll,yaw,altitude;
+	double longitude,latitude;
 };
 
 extern Attitude att;
