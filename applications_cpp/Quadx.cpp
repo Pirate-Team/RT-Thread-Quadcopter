@@ -54,14 +54,15 @@ void rt_thread_entry_quadx_get_attitude(void* parameter)
 			mag.getHeadingCal(sensorData.mx,sensorData.my,sensorData.mz);
 			state = 10;
 		}
-		else if(state == 8)
+		else if(state == 5)
 		{
 			baro.getTemperature();
-			baro.getAltitude(att[THROTTLE]);
+			baro.ConvertPressure();
 		}
 		else if(state == 2)
 		{
 			baro.getPressure();	
+			baro.ConvertTemperature();
 			baro.getAltitude(att[THROTTLE]);
 		}
 		state--;

@@ -266,29 +266,23 @@ void hardware_init(void)
 	Motor::initialize();
 	
 #ifndef TRACE_TEST
-	MPU6050 *accgyro = new MPU6050();
-	while(!accgyro->initialize())
+	while(!accelgyro.initialize())
 	{
 		led2.toggle();
 		rt_thread_delay(50);
 	}
-	delete accgyro;
 	
-	HMC5883L *mag = new HMC5883L();
-	while(!mag->initialize())
+	while(!mag.initialize())
 	{
 		led2.toggle();
 		rt_thread_delay(200);
 	}
-	delete mag;
 	
-	MS5611 *baro = new MS5611();
-	while(!baro->initialize())
+	while(!baro.initialize())
 	{
 		led2.toggle();
 		rt_thread_delay(350);
 	}
-	delete baro;
 #endif
 	
 	if(!ov_7725_init())
