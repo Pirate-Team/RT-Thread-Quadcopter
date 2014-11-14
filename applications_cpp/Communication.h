@@ -13,12 +13,9 @@ public:
 	Communication(const char *name);
 	~Communication(void);
 	
-//	static rt_err_t usartInput(rt_device_t dev, rt_size_t size);
-	
 	bool getData(void);
 	void sendData(void);
 
-//	static uint8_t availableData;
 	rt_device_t device;
 	uint8_t rxData[RX_DATA_SIZE + 1],txData[TX_DATA_SIZE + 1];
 };

@@ -10,29 +10,17 @@ enum GET_DATA_STATE
 
 rt_mq_t rxQ,txQ;
 
-//uint8_t Communication::availableData;
-
 Communication::Communication(const char *name)
 {
-//	availableData = 0;
 	device = rt_device_find(name);
 	if (device != RT_NULL)
-	{
-//		rt_device_set_rx_indicate(device,usartInput);
 		rt_device_open(device, RT_DEVICE_OFLAG_RDWR);
-	}
 }
 
 Communication::~Communication(void)
 {
 
 }
-	
-//rt_err_t Communication::usartInput(rt_device_t dev, rt_size_t size)
-//{
-//	availableData = size;
-//	return RT_EOK;
-//}
 
 bool Communication::getData(void)
 {
@@ -56,18 +44,6 @@ bool Communication::getData(void)
 		length = 0;
 		state = NEED_DATA;
 	}
-//	if(state == NEED_TYPE)
-//	{
-//		if(rt_device_read(device, 0, &byte, 1) != 1) return false;
-//		if(!(byte>=0xca && byte<=0xdf))
-//		{
-//			state = NEED_AA;
-//			return false;
-//		}
-//		length = 0;
-//		rxData[0] = byte;
-//		state = NEED_DATA;
-//	}
 	if(state == NEED_DATA)
 	{
 		length += rt_device_read(device, 0, rxData + length, RX_DATA_SIZE + 1 -length);
