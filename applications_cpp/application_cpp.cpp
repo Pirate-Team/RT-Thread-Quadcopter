@@ -30,8 +30,6 @@ extern "C"
 	uint8_t ov_7725_init(void);
 }
 
-extern Led led1,led2,led3;
-
 void hardware_init(void);
 void param_init(void);
 void param_save(void);
@@ -173,7 +171,7 @@ void rt_thread_entry_main(void* parameter)
 			else if(rxData[0]==0xce)
 			{
 				//保存参数
-				if(ctrl.quadx == false)
+				if(ctrl.quadx != true)
 				{
 					rt_enter_critical();
 					led3.on();
@@ -185,7 +183,7 @@ void rt_thread_entry_main(void* parameter)
 			else if(rxData[0]==0xcf)
 			{
 				//校正
-				if(ctrl.quadx == false)
+				if(ctrl.quadx != true)
 				{
 					led3.interval = 100;
 					//加计
@@ -213,7 +211,7 @@ void rt_thread_entry_main(void* parameter)
 /***************recv end****************/
 		
 /***************send begin****************/
-		if(ctrl.att)
+		if(ctrl.att == true)
 		{
 			uint8_t i;
 			txData[0] = 0xea;
@@ -222,7 +220,7 @@ void rt_thread_entry_main(void* parameter)
 			((uint16_t*)(txData+1))[i] = att[i] * 50;//米乘50，无符号
 			rt_mq_send(txQ,txData,TX_DATA_SIZE);
 		}
-		if(ctrl.thro)
+		if(ctrl.thro == true)
 		{
 			uint8_t i;
 			txData[0] = 0xeb;
@@ -230,7 +228,7 @@ void rt_thread_entry_main(void* parameter)
 				((uint16_t*)(txData+1))[i] = motorValue[i];//电机不乘，无符号
 			rt_mq_send(txQ,txData,TX_DATA_SIZE);
 		}
-		if(ctrl.coor)
+		if(ctrl.coor == true)
 		{
 			txData[0] = 0xec;
 			((int16_t*)(txData+1))[0] = targetX;//目标位置，不做变换
@@ -242,7 +240,7 @@ void rt_thread_entry_main(void* parameter)
 		}
 /***************send end****************/
 		
-		rt_thread_delay(50);
+		rt_thread_delay(30);
 	}
 }
 

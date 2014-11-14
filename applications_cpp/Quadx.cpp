@@ -2,13 +2,11 @@
 #include "rtthread.h"
 #include "stdio.h"
 #include "arm_math.h"
-#include "I2Cdev.h"
 #include "MPU6050.h"
 #include "HMC5883L.h"
 #include "MS5611.h"
 #include "Motor.h"
 #include "Receiver.h"
-#include "Led.h"
 #include "Parameter.h"
 #include "Quaternion.h"
 #include "Attitude.h"
@@ -71,16 +69,10 @@ void rt_thread_entry_quadx_get_attitude(void* parameter)
 		quat.MadgwickAHRSupdate((float)sensorData.gx/GYRO_SCALE,(float)sensorData.gy/GYRO_SCALE,(float)sensorData.gz/GYRO_SCALE,(float)sensorData.ax,(float)sensorData.ay,(float)sensorData.az,(float)sensorData.mx,(float)sensorData.my,(float)sensorData.mz);
 		//MadgwickAHRSupdateIMU((float)sensorData.gx/GYRO_SCALE,(float)sensorData.gy/GYRO_SCALE,(float)sensorData.gz/GYRO_SCALE,(float)sensorData.ax,(float)sensorData.ay,(float)sensorData.az);
 		
-		if(ctrl.quadx == false) 
-		{
-			rt_thread_delay(20); 
-//			quat.sampleInterval = 0.04f;
-		}
+		if(ctrl.quadx == true) 
+			rt_thread_delay(2); 
 		else
-		{
-			rt_thread_delay(2);
-//			quat.sampleInterval = 0.004f;
-		}
+			rt_thread_delay(4);
 	}
 }
 
@@ -102,7 +94,7 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 	while(1)
 	{
 		//落地任务
-		if(ctrl.quadx == false)
+		if(ctrl.quadx != true)
 		{
 			baro.setGround();
 			accZ = (accZ + sensorData.az) >> 1;
@@ -112,7 +104,7 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 		quat.toEuler(att[PITCH],att[ROLL],att[YAW]);
 		/*pitch&roll*/
 		//trace
-		if(ctrl.trace)
+		if(ctrl.trace == true)
 		{
 			err[PITCH+POS].cur = BETWEEN(targetX,-16,16);
 			err[PITCH+POS].cur = DEAD_BAND(err[PITCH+POS].cur,0,2);
@@ -186,7 +178,7 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 		/*altitude*/
 		if(RCValue[HOLD]>1500) ctrl.alt = true;
 		else ctrl.alt = false;
-		if(ctrl.alt)
+		if(ctrl.alt == true)
 		{
 			static uint8_t state = 0;
 			if(state == 0)
@@ -215,7 +207,8 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 				vel += (sensorData.az - accZ) / ACCEL_SCALE * 5;//0.05*100
 				float baroVel = (att[THROTTLE] - err[THROTTLE].pre) * 2000;//20*100
 				//死区
-				baroVel = DEAD_BAND(baroVel,0,20);
+				vel = DEAD_BAND(vel,0,10);
+				baroVel = DEAD_BAND(baroVel,0,10);
 				
 				err[THROTTLE].pre = att[THROTTLE];
 				
@@ -238,7 +231,7 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 /*--------------------------------------------------------*/
 		/*control motor*/
 		//停机条件
-		if(abs(att[PITCH])>80||abs(att[ROLL])>80||RCValue[THROTTLE]<1050||ctrl.quadx == false)
+		if(abs(att[PITCH])>80||abs(att[ROLL])>80||RCValue[THROTTLE]<1050||ctrl.quadx != true)
 		{
 			motorValue[0] = 1000;
 			motorValue[1] = 1000;
@@ -254,8 +247,10 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 		}
 		Motor::setValue(motorValue[0],motorValue[1],motorValue[2],motorValue[3]);
 /*--------------------------------------------------------*/			
-		if(ctrl.quadx == false) rt_thread_delay(50);
-		else rt_thread_delay(5);
+		if(ctrl.quadx == true) 
+			rt_thread_delay(5);
+		else 
+			rt_thread_delay(10);
 	}
 }
 

@@ -16,6 +16,7 @@ public:
 	uint16_t Pin;
 };
 
+extern Led led1,led2,led3;
 void rt_thread_entry_led(void* parameter);
 
 #endif
