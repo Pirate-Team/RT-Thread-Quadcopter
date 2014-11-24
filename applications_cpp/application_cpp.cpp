@@ -18,8 +18,7 @@
 
 struct ctrl_t
 {
-	bool att,thro,coor;
-	bool alt,trace,quadx;
+	bool send,quadx,trace;
 };
 struct ctrl_t ctrl = {0};
 
@@ -39,8 +38,10 @@ void rt_thread_entry_main(void* parameter)
 /*************************************
 	declare variables
 *************************************/	
-	ctrl.quadx = ctrl.alt = ctrl.att = ctrl.thro = ctrl.trace = ctrl.coor = false;
-	uint8_t rxData[RX_DATA_SIZE] = {0},txData[TX_DATA_SIZE];
+	ctrl.quadx = ctrl.send = ctrl.trace = true;
+	rx_data_t rxData;
+	tx_data_t txData;
+	rt_memset(&txData,0,sizeof(tx_data_t));
 	
 /*************************************
 	hardware init
@@ -99,7 +100,7 @@ void rt_thread_entry_main(void* parameter)
 	if(communication_thread != RT_NULL) rt_thread_startup(communication_thread);
 	if(quadx_get_thread != RT_NULL) rt_thread_startup(quadx_get_thread);
 	if(quadx_control_thread != RT_NULL) rt_thread_startup(quadx_control_thread);
-	if(trace_thread != RT_NULL) rt_thread_startup(trace_thread); 
+//	if(trace_thread != RT_NULL) rt_thread_startup(trace_thread); 
 	
 	
 	//让出cpu，队尾等待调度
@@ -109,149 +110,125 @@ void rt_thread_entry_main(void* parameter)
 *************************************/
 	while(1)
 	{
+/***************led control****************/		
+		if(ctrl.quadx == false)
+			led3.interval = 1000;
+		else
+			led3.interval = 500;
+		if(ctrl.trace == false)
+			led1.interval = 1000;
+		else
+			led1.interval = 500;
 /***************recv begin****************/
-		if(rt_mq_recv(rxQ,rxData,RX_DATA_SIZE,0) == RT_EOK)
+		if(rt_mq_recv(rxQ,&rxData,RX_DATA_SIZE,0) == RT_EOK)
 		{
-			if(rxData[0]>=0xda&&rxData[0]<=0xdf)
+			if(rxData.type == 'P')
 			{
-				param.PID[rxData[0] - 0xda].P = rxData[1] / 10.0f;//P[0,20],精度0.1
-				param.PID[rxData[0] - 0xda].I = rxData[2] / 1000.0f;//I[0,0.250],精度0.001
-				param.PID[rxData[0] - 0xda].D = rxData[3] / 10.0f;//D[0,20],精度0.1
-				//pitch&roll 一样
-				if(rxData[0] == 0xda || rxData[0] == 0xde)
-				{
-					param.PID[rxData[0] - 0xda + 1].P = rxData[1] / 10.0f;//P[0,20],精度0.1
-					param.PID[rxData[0] - 0xda + 1].I = rxData[2] / 1000.0f;//I[0,0.250],精度0.001
-					param.PID[rxData[0] - 0xda + 1].D = rxData[3] / 10.0f;//D[0,20],精度0.1
-				}
+				param.PID[PITCH].P = param.PID[ROLL].P = rxData.pid.level[0] / 10.0f;//P[0,20],精度0.1
+				param.PID[PITCH].I = param.PID[ROLL].I = rxData.pid.level[1] / 1000.0f;//I[0,0.250],精度0.001
+				param.PID[PITCH].D = param.PID[ROLL].D = rxData.pid.level[2] / 10.0f;//D[0,20],精度0.1
+
+				param.PID[YAW].P = rxData.pid.heading[0] / 10.0f;//P[0,20],精度0.1
+				param.PID[YAW].I = rxData.pid.heading[1] / 1000.0f;//I[0,0.250],精度0.001
+				param.PID[YAW].D = rxData.pid.heading[2] / 10.0f;//D[0,20],精度0.1
+				
+				param.PID[ALT].P = rxData.pid.altitude[0] / 10.0f;//P[0,20],精度0.1
+				param.PID[ALT].I = rxData.pid.altitude[1] / 1000.0f;//I[0,0.250],精度0.001
+				param.PID[ALT].D = rxData.pid.altitude[2] / 10.0f;//P[0,20],精度0.1
+				
+				param.PID[LNG].P = param.PID[LAT].P = rxData.pid.position[0] / 10.0f;//P[0,20],精度0.1
+				param.PID[LNG].I = param.PID[LAT].I = rxData.pid.position[1] / 1000.0f;//I[0,0.250],精度0.001
+				param.PID[LNG].D = param.PID[LAT].D = rxData.pid.position[2] / 10.0f;//D[0,20],精度0.1
 			}
-			else if(rxData[0]==0xca)
+			else if(rxData.type == 'C')
 			{
-				//TODO: restart
-				NVIC_SystemReset();
-			}
-			else if(rxData[0]==0xcb)
-			{
-				//四轴模式
-				if(rxData[1] == 0xf1)
-				{
+				if(rxData.ctrl.restart != 0)
+					NVIC_SystemReset();
+				
+				if(rxData.ctrl.quadx != 0)
 					ctrl.quadx = true;
-					led3.interval = 500;
-				}
-				else if(rxData[1] == 0xf0)
-				{
+				else 
 					ctrl.quadx = false;
-					led3.interval = 2000;
-				}
-			}
-			else if(rxData[0]==0xcc)
-			{
-				//图像跟踪模式
-				if(rxData[1] == 0xf1)
-				{
+				
+				if(rxData.ctrl.send != 0)
+					ctrl.send = true;
+				else
+					ctrl.send = false;
+				
+				if(rxData.ctrl.trace != 0)
 					ctrl.trace = true;
-					led1.interval = 500;
-				}
-				else if(rxData[1] == 0xf0)
-				{
+				else
 					ctrl.trace = false;
-					led1.interval = 2000;
-				}
-			}
-			else if(rxData[0]==0xcd)
-			{
-				//发送的数据
-				if(rxData[1] == 0xf1) ctrl.att = true;
-				else if(rxData[1] == 0xf0) ctrl.att = false;
-				if(rxData[2] == 0xf1) ctrl.thro = true;
-				else if(rxData[2] == 0xf0) ctrl.thro = false;
-				if(rxData[3] == 0xf1) ctrl.coor = true;
-				else if(rxData[3] == 0xf0) ctrl.coor = false;
-			}
-			else if(rxData[0]==0xce)
-			{
-				//保存参数
-				if(ctrl.quadx != true)
+				
+				if(ctrl.quadx == 0)
 				{
-					rt_enter_critical();
-					led3.on();
-					rt_thread_delay(500);
-					param_save();
-					rt_exit_critical();
+					//保存参数
+					if(rxData.ctrl.save != 0)
+					{
+						led3.interval = 100;
+						rt_thread_delay(500);
+						param_save();
+					}
+					if(rxData.ctrl.acc != 0)
+					{
+						led3.interval = 100;
+						rt_thread_delay(500);
+						accelgyro.setOffset();
+					}
+					if(rxData.ctrl.mag != 0)
+					{
+						led3.interval = 100;
+						rt_thread_delay(500);
+						mag.setOffset();
+					}
 				}
 			}
-			else if(rxData[0]==0xcf)
+			else if(rxData.type == 'G')
 			{
-				//校正
-				if(ctrl.quadx != true)
-				{
-					led3.interval = 100;
-					//加计
-					if(rxData[1] == 0xf1)
-					{
-						MPU6050 *accelgyro = new MPU6050();
-						accelgyro->setOffset();
-						delete accelgyro;
-					}
-					//罗盘
-					else if(rxData[1] == 0xf0)
-					{
-						HMC5883L *mag = new HMC5883L();
-						mag->setOffset();
-						delete mag;
-					}
-					led3.interval = 2000;
-				}
-			}
-			else
-			{
-				rt_kprintf("Unknown command!\r\n");
+				//TODO: GPS
 			}
 		}
 /***************recv end****************/
 		
 /***************send begin****************/
-		if(ctrl.att == true)
+		if(ctrl.send != 0)
 		{
-			uint8_t i;
-			txData[0] = 0xea;
-			for(i=0;i<3;i++)
-				((int16_t*)(txData+1))[i] = att[i] * 10;//角度乘10，有符号
-			((uint16_t*)(txData+1))[i] = att[i] * 50;//米乘50，无符号
-			rt_mq_send(txQ,txData,TX_DATA_SIZE);
-		}
-		if(ctrl.thro == true)
-		{
-			uint8_t i;
-			txData[0] = 0xeb;
-			for(i=0;i<4;i++)
-				((uint16_t*)(txData+1))[i] = motorValue[i];//电机不乘，无符号
-			rt_mq_send(txQ,txData,TX_DATA_SIZE);
-		}
-		if(ctrl.coor == true)
-		{
-			txData[0] = 0xec;
-			((int16_t*)(txData+1))[0] = targetX;//目标位置，不做变换
-			((int16_t*)(txData+1))[1] = targetY;
-			((int16_t*)(txData+1))[2] = targetH;//目标长宽，不做变换
-			((int16_t*)(txData+1))[3] = targetW;
+			txData.status.type = 'S';
 			
-			rt_mq_send(txQ,txData,TX_DATA_SIZE);
+			txData.status.gps[0] ++;
+			txData.status.gps[1] = 2;
+			
+			//角度乘10，有符号
+			txData.status.att[0] = att[0] * 10;
+			txData.status.att[1] = att[1] * 10;
+			txData.status.att[2] = att[2] * 10;
+			//米乘50，无符号
+			txData.status.att[3] = att[3] * 50;
+			
+			rt_memcpy(txData.status.motor,motorValue,8);//电机不乘，无符号,直接拷贝
+			
+			txData.status.target[0] = 1;//targetX;//目标位置，不做变换
+			txData.status.target[1] = 2;//targetY;
+			txData.status.target[2] = 3;//targetH;//目标长宽，不做变换
+			txData.status.target[3] = 4;//targetW;
+			
+			rt_mq_send(txQ,&txData,TX_DATA_SIZE);
 		}
 /***************send end****************/
-		
-		rt_thread_delay(30);
+		rt_thread_delay(100);
 	}
 }
 
 void hardware_init(void)
 {
+	rt_thread_delay(500);
+	
 	led1.initialize();
 	led2.initialize();
 	led3.initialize();
-	led1.interval = 2000;
+	led1.interval = 1000;
 	led2.interval = 0xff;
-	led3.interval = 2000;
+	led3.interval = 1000;
 	led1.on();
 	led2.on();
 	led3.on();
@@ -283,22 +260,26 @@ void hardware_init(void)
 	}
 #endif
 	
-	if(!ov_7725_init())
-		led1.interval = 0;
+//	if(!ov_7725_init())
+//		led1.interval = 0;
+	
+	Communication::initialize();
 }
 
 void param_init(void)
 {
-	led3.on();
 	if(!param.flashRead())
-		led3.interval = 0;
+		led2.interval = 0;
+	else
+		led2.interval = 0xff;
 }
 
 void param_save(void)
 {
-	led3.on();
 	if(!param.flashWrite())
-		led3.interval = 0;
+		led2.interval = 0;
+	else
+		led2.interval = 0xff;
 }
 
 int  rt_application_init(void)

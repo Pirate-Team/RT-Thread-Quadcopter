@@ -1,10 +1,12 @@
 #include "Communication.h"
 
+#define ADDR "255.255.255.255"//"192.168.31.135"
+#define PORT 45454
+
 enum GET_DATA_STATE
 {
     NEED_AA = 0,
     NEED_BB,
-    NEED_TYPE,
     NEED_DATA
 };
 
@@ -15,11 +17,24 @@ Communication::Communication(const char *name)
 	device = rt_device_find(name);
 	if (device != RT_NULL)
 		rt_device_open(device, RT_DEVICE_OFLAG_RDWR);
+	rt_memset(&txFrame,0,TX_FRAME_SIZE);
+	rt_memset(&rxFrame,0,RX_FRAME_SIZE);
+	txFrame.AA = 0xaa;
+	txFrame.BB = 0xbb;
 }
 
-Communication::~Communication(void)
+bool Communication::initialize(void)
 {
-
+	rt_kprintf("ATE0\n");
+	rt_thread_delay(50);
+	rt_kprintf("AT+CIPMUX=1\n");
+	rt_thread_delay(50);
+	rt_kprintf("AT+CIPSERVER=1,2333\n");
+	rt_thread_delay(50);
+	rt_kprintf("AT+CIPSTART=0\"UDP\",\"%s\",%d\n",ADDR,PORT);
+	rt_thread_delay(50);
+	rt_kprintf("AT+CIPSEND=0,2\nOK");
+	return true;
 }
 
 bool Communication::getData(void)
@@ -46,12 +61,12 @@ bool Communication::getData(void)
 	}
 	if(state == NEED_DATA)
 	{
-		length += rt_device_read(device, 0, rxData + length, RX_DATA_SIZE + 1 -length);
-		if(length != RX_DATA_SIZE + 1) return false;
+		length += rt_device_read(device, 0, ((uint8_t*)&(rxFrame.data)) + length, RX_FRAME_SIZE - 2 - length);
+		if(length != RX_FRAME_SIZE - 2) return false;
 		uint8_t checkSum = 0;
 		for(uint8_t i=0;i<RX_DATA_SIZE;i++)
-			checkSum += rxData[i];
-		if(checkSum != rxData[RX_DATA_SIZE])
+			checkSum += ((uint8_t*)&(rxFrame.data))[i];
+		if(checkSum != rxFrame.checkSum)
 		{
 			state = NEED_AA;
 			return false;
@@ -65,33 +80,28 @@ bool Communication::getData(void)
 
 void Communication::sendData(void)
 {
-	static uint8_t buf[2];
-	buf[0] = 0xaa;
-	buf[1] = 0xbb;
-	rt_device_write(device,0,buf,2);
-	rt_device_write(device,0,txData,TX_DATA_SIZE);
-	buf[0] = 0;
-//	buf[1] = '\r';
+	rt_kprintf("AT+CIPSEND=0,%d\n",TX_FRAME_SIZE);
+	txFrame.checkSum = 0;
 	for(uint8_t i=0;i<TX_DATA_SIZE;i++)
-		buf[0] += txData[i];
-	rt_device_write(device,0,buf,1);
+		txFrame.checkSum += ((uint8_t*)&(txFrame.data))[i];
+	rt_device_write(device,0,&txFrame,TX_FRAME_SIZE);
 }
 
 void rt_thread_entry_communication(void* parameter)
 {
-	rxQ = rt_mq_create("rx",RX_DATA_SIZE,5,RT_IPC_FLAG_PRIO);
-	txQ = rt_mq_create("tx",TX_DATA_SIZE,5,RT_IPC_FLAG_PRIO);
+	rxQ = rt_mq_create("rx",RX_DATA_SIZE,3,RT_IPC_FLAG_PRIO);
+	txQ = rt_mq_create("tx",TX_DATA_SIZE,3,RT_IPC_FLAG_PRIO);
 	Communication com("uart2");
 	while(1)
 	{
 		if(com.getData())
 		{
-			rt_mq_send(rxQ,com.rxData,RX_DATA_SIZE);
+			rt_mq_send(rxQ,&(com.rxFrame.data),RX_DATA_SIZE);
 		}
-		if(rt_mq_recv(txQ,com.txData,TX_DATA_SIZE,0) == RT_EOK)
+		if(rt_mq_recv(txQ,&(com.txFrame.data),TX_DATA_SIZE,0) == RT_EOK)
 		{
 			com.sendData();
 		}
-		rt_thread_delay(10);
+		rt_thread_delay(20);
 	}
 }
