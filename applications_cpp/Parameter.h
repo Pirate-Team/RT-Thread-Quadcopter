@@ -5,14 +5,6 @@
 #include "rtthread.h"
 #define FLASH_ADDRESS_BASE (0x08020000)
 
-#define PITCH 0
-#define ROLL 1
-#define YAW 2
-#define ALT 3
-#define LNG 4
-#define LAT 5
-
-
 struct pid_t
 {
 	float P,I,D,result;

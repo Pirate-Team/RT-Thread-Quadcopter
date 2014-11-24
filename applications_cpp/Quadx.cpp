@@ -27,7 +27,7 @@ struct sensor_data_t sensorData = {0};
 
 struct ctrl_t
 {
-	bool send,quadx,trace;
+	bool att,thro,coor,alt,trace,quadx;
 };
 extern struct ctrl_t ctrl;
 
@@ -176,7 +176,9 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 		err[YAW].pre = err[YAW].cur;
 		
 		/*altitude*/
-		if(RCValue[HOLD]>1500)
+		if(RCValue[HOLD]>1500) ctrl.alt = true;
+		else ctrl.alt = false;
+		if(ctrl.alt == true)
 		{
 			static uint8_t state = 0;
 			if(state == 0)
