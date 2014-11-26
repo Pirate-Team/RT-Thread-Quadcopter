@@ -1,6 +1,6 @@
 #include "Communication.h"
 
-#define ADDR "255.255.255.255"//"192.168.31.135"
+#define ADDR "192.168.4.255"//"192.168.31.135"
 #define PORT 45454
 
 enum GET_DATA_STATE
@@ -25,6 +25,7 @@ Communication::Communication(const char *name)
 
 bool Communication::initialize(void)
 {
+	rt_thread_delay(500);
 	rt_kprintf("ATE0\n");
 	rt_thread_delay(50);
 	rt_kprintf("AT+CIPMUX=1\n");
@@ -33,7 +34,7 @@ bool Communication::initialize(void)
 	rt_thread_delay(50);
 	rt_kprintf("AT+CIPSTART=0\"UDP\",\"%s\",%d\n",ADDR,PORT);
 	rt_thread_delay(50);
-	rt_kprintf("AT+CIPSEND=0,2\nOK");
+//	rt_kprintf("AT+CIPSEND=0,2\nOK");
 	return true;
 }
 
@@ -81,6 +82,7 @@ bool Communication::getData(void)
 void Communication::sendData(void)
 {
 	rt_kprintf("AT+CIPSEND=0,%d\n",TX_FRAME_SIZE);
+	rt_thread_delay(20);
 	txFrame.checkSum = 0;
 	for(uint8_t i=0;i<TX_DATA_SIZE;i++)
 		txFrame.checkSum += ((uint8_t*)&(txFrame.data))[i];
