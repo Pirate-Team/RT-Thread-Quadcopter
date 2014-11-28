@@ -94,6 +94,7 @@ void rt_thread_entry_communication(void* parameter)
 	rxQ = rt_mq_create("rx",RX_DATA_SIZE,3,RT_IPC_FLAG_PRIO);
 	txQ = rt_mq_create("tx",TX_DATA_SIZE,3,RT_IPC_FLAG_PRIO);
 	Communication com("uart2");
+	com.initialize();
 	while(1)
 	{
 		if(com.getData())

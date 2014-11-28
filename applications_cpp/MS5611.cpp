@@ -182,7 +182,7 @@ bool MS5611::getAltitude(float &altitude)
 void MS5611::setGround(void)
 {
 	if(pressure < 50000) return;
-	groundPress = ((groundPress*3 + pressure) >> 2) + 1;
+	groundPress = (groundPress*3 + pressure) >> 2;
 }
 
 void MS5611::ConvertPressure()

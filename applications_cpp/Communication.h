@@ -71,7 +71,7 @@ class Communication
 {
 public:
 	Communication(const char *name);
-	static bool initialize(void);
+	bool initialize(void);
 	
 	bool getData(void);
 	void sendData(void);

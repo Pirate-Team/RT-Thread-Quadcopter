@@ -38,7 +38,8 @@ void rt_thread_entry_main(void* parameter)
 /*************************************
 	declare variables
 *************************************/	
-	ctrl.quadx = ctrl.send = ctrl.trace = true;
+	ctrl.quadx = ctrl.send = true;
+	ctrl.trace = false;
 	rx_data_t rxData;
 	tx_data_t txData;
 	rt_memset(&txData,0,sizeof(tx_data_t));
@@ -262,8 +263,6 @@ void hardware_init(void)
 	
 //	if(!ov_7725_init())
 //		led1.interval = 0;
-	
-	Communication::initialize();
 }
 
 void param_init(void)

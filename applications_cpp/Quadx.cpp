@@ -93,12 +93,6 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 	rt_thread_delay(10);	
 	while(1)
 	{
-		//落地任务
-		if(ctrl.quadx != true)
-		{
-			baro.setGround();
-			accZ = (accZ + sensorData.az) >> 1;
-		}
 /*--------------------------------------------------------*/		
 		/*calculate PID*/
 		quat.toEuler(att[PITCH],att[ROLL],att[YAW]);
@@ -112,7 +106,6 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 			param.PID[PITCH+POS].result =  param.PID[PITCH+POS].P * err[PITCH+POS].cur;
 			param.PID[PITCH+POS].result += param.PID[PITCH+POS].D * (err[PITCH+POS].cur-err[PITCH+POS].pre);
 			err[PITCH+POS].pre = err[PITCH+POS].cur;
-			
 			
 			err[ROLL +POS].cur = BETWEEN(-targetY,-16,16);
 			err[ROLL +POS].cur = DEAD_BAND(err[ROLL+POS].cur,0,2);
@@ -129,22 +122,19 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 			//遥控最多30度
 			err[i].cur = BETWEEN(RCValue[i] - 1500,-500,500)/16.0f + param.PID[i+POS].result- att[i];
 			param.PID[i].result = param.PID[i].P * err[i].cur;
-			
 			//遥控器小于5度积分
 			if(RCValue[i]<1580&&RCValue[i]>1420)
 				err[i].sum = BETWEEN(err[i].sum+err[i].cur,-500,500);
 			else
 				err[i].sum = 0;
 			param.PID[i].result += param.PID[i].I * err[i].sum;
-			
 			param.PID[i].result -= param.PID[i].D * ((i==0?sensorData.gx:sensorData.gy) / GYRO_SCALE);
 			param.PID[i].result = BETWEEN(param.PID[i].result,-100,100);
-			
 			err[i].pre = err[i].cur;
 		}
 		
 		/*yaw*/
-		if(RCValue[YAW] == 1500 &&RCValue[THROTTLE]>1500)
+		if(RCValue[YAW] == 1500 && RCValue[THROTTLE]>1400)
 		{
 			err[YAW].cur= att[YAW] - heading;
 			if(err[YAW].cur>180) err[YAW].cur -= 360;
@@ -158,21 +148,16 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 			heading = att[YAW];
 			param.PID[YAW].result = 0;
 		}
-		
 		err[YAW].cur = BETWEEN(RCValue[YAW] - 1500,-500,+500)/8.0f - param.PID[YAW].result  - (sensorData.gz / GYRO_SCALE);
 		param.PID[YAW].result = param.PID[YAW].P * err[YAW].cur;
-		
 		//遥控器小于5度积分
 		if(RCValue[YAW]<1540&&RCValue[YAW]>1460)
 			err[YAW].sum = BETWEEN(err[YAW].sum + err[YAW].cur,-500,500); 
 		else
 			err[YAW].sum = 0;
 		param.PID[YAW].result += param.PID[YAW].I * err[YAW].sum;
-		
 		param.PID[YAW].result += param.PID[YAW].D * (err[YAW].cur -err[YAW].pre);
-		
 		param.PID[YAW].result = BETWEEN(param.PID[YAW].result,-100,+100);
-		
 		err[YAW].pre = err[YAW].cur;
 		
 		/*altitude*/
@@ -189,33 +174,23 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 					err[THROTTLE].pre = att[THROTTLE];
 					throttle = RCValue[THROTTLE];
 				}
-				
 				if((RCValue[THROTTLE]<throttle-100)||(RCValue[THROTTLE]>throttle+100)) 
 					alt += (RCValue[THROTTLE]-throttle)/30000.0f;
-				
 				err[THROTTLE].cur = (alt - att[THROTTLE]) * 100;
 				//死区
 				err[THROTTLE].cur = DEAD_BAND(err[THROTTLE].cur,0,20);
-				
 				param.PID[THROTTLE].result = param.PID[THROTTLE].P * err[THROTTLE].cur;
-				
 				err[THROTTLE].sum = BETWEEN(err[THROTTLE].sum + err[THROTTLE].cur,-500,500);
 				param.PID[THROTTLE].result += param.PID[THROTTLE].I * err[THROTTLE].sum;
-				
 				vel += (sensorData.az - accZ) / ACCEL_SCALE * 5;//0.05*100
 				float baroVel = (att[THROTTLE] - err[THROTTLE].pre) * 2000;//20*100
 				//死区
 				vel = DEAD_BAND(vel,0,10);
 				baroVel = DEAD_BAND(baroVel,0,10);
-				
 				err[THROTTLE].pre = att[THROTTLE];
-				
 				vel = vel * 0.9f + baroVel * 0.1f;
-
 				param.PID[THROTTLE].result -= param.PID[THROTTLE].D * vel;
-				
 				param.PID[THROTTLE].result = BETWEEN(param.PID[THROTTLE].result,-100,+100);
-				
 				state = 5;
 			}
 			state--;
@@ -225,6 +200,22 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 			alt = 0;
 			param.PID[THROTTLE].result = 0;
 			throttle = RCValue[THROTTLE];
+		}
+/*--------------------------------------------------------*/
+		/*动态*/
+		if(RCValue[THROTTLE]>1400)
+		{
+			float t = BETWEEN((RCValue[THROTTLE] - 1000 + 1) / 700.0f,0,1.1f);
+			param.PID[PITCH].result *= t;
+			param.PID[ROLL].result *=  t;
+			throttle += BETWEEN((abs(param.PID[PITCH].result) + abs(param.PID[ROLL].result) + abs(param.PID[YAW].result)) / 10,0,5);
+		}
+/*--------------------------------------------------------*/		
+		/*落地任务*/
+		if(ctrl.quadx != true || RCValue[THROTTLE]<1050)
+		{
+			baro.setGround();
+			accZ = (accZ + sensorData.az) >> 1;
 		}
 /*--------------------------------------------------------*/
 		/*control motor*/
