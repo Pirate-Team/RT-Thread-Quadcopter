@@ -74,12 +74,12 @@ struct rt_device uart3_device;
 //#define USART3_DR_Base  0x40004804
 
 /* USART1_REMAP = 0 */
-#define UART1_GPIO_TX		GPIO_Pin_9
-#define UART1_TX_PIN_SOURCE GPIO_PinSource9
-#define UART1_GPIO_RX		GPIO_Pin_10
-#define UART1_RX_PIN_SOURCE GPIO_PinSource10
-#define UART1_GPIO			GPIOA
-#define UART1_GPIO_RCC      RCC_AHB1Periph_GPIOA
+#define UART1_GPIO_TX		GPIO_Pin_6
+#define UART1_TX_PIN_SOURCE GPIO_PinSource6
+#define UART1_GPIO_RX		GPIO_Pin_7
+#define UART1_RX_PIN_SOURCE GPIO_PinSource7
+#define UART1_GPIO			GPIOB
+#define UART1_GPIO_RCC      RCC_AHB1Periph_GPIOB
 #define RCC_APBPeriph_UART1	RCC_APB2Periph_USART1
 #define UART1_TX_DMA		DMA1_Channel4
 #define UART1_RX_DMA		DMA1_Channel5
@@ -137,7 +137,7 @@ static void GPIO_Configuration(void)
 	GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AF;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
 	GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_UP;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 
 #ifdef RT_USING_UART1
 	/* Configure USART1 Rx/tx PIN */
@@ -177,7 +177,8 @@ static void NVIC_Configuration(void)
 #ifdef RT_USING_UART1
 	/* Enable the USART1 Interrupt */
 	NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
 #endif
@@ -270,7 +271,7 @@ static void DMA_Configuration(void)
 #endif
 }
 
-volatile USART_TypeDef * uart2_debug = USART2;
+//volatile USART_TypeDef * uart2_debug = USART2;
 /*
  * Init all related hardware in here
  * rt_hw_serial_init() will register all supported USART device
