@@ -145,7 +145,7 @@ static void GPIO_Configuration(void)
 	GPIO_Init(UART1_GPIO, &GPIO_InitStructure);
 
     /* Connect alternate function */
-    GPIO_PinAFConfig(UART1_GPIO, UART1_TX_PIN_SOURCE, GPIO_AF_USART1);
+//    GPIO_PinAFConfig(UART1_GPIO, UART1_TX_PIN_SOURCE, GPIO_AF_USART1);//GPS模块不需要TX，而且PB6本来就被占用了
     GPIO_PinAFConfig(UART1_GPIO, UART1_RX_PIN_SOURCE, GPIO_AF_USART1);
 #endif
 
