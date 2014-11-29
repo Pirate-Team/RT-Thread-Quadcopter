@@ -22,6 +22,8 @@ struct ctrl_t
 };
 struct ctrl_t ctrl = {0};
 
+int32_t lng = 0,lat = 0;
+
 extern "C" 
 {
 	extern int16_t targetX,targetY,targetH,targetW;
@@ -186,7 +188,8 @@ void rt_thread_entry_main(void* parameter)
 			}
 			else if(rxData.type == 'G')
 			{
-				//TODO: GPS
+				lng = rxData.gps.lng;
+				lat = rxData.gps.lat;
 			}
 		}
 /***************recv end****************/

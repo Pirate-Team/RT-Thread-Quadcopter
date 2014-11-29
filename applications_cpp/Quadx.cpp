@@ -176,7 +176,7 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 				}
 				if((RCValue[THROTTLE]<throttle-100)||(RCValue[THROTTLE]>throttle+100)) 
 					alt += (RCValue[THROTTLE]-throttle)/30000.0f;
-				err[THROTTLE].cur = (alt - att[THROTTLE]) * 100;
+				err[THROTTLE].cur = (alt - att[THROTTLE]) * 100;//单位从米到厘米
 				//死区
 				err[THROTTLE].cur = DEAD_BAND(err[THROTTLE].cur,0,20);
 				param.PID[THROTTLE].result = param.PID[THROTTLE].P * err[THROTTLE].cur;
@@ -208,7 +208,7 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 			float t = BETWEEN((RCValue[THROTTLE] - 1000 + 1) / 700.0f,0,1.1f);
 			param.PID[PITCH].result *= t;
 			param.PID[ROLL].result *=  t;
-			throttle += BETWEEN((abs(param.PID[PITCH].result) + abs(param.PID[ROLL].result) + abs(param.PID[YAW].result)) / 10,0,5);
+			param.PID[THROTTLE].result += BETWEEN((abs(param.PID[PITCH].result) + abs(param.PID[ROLL].result) + abs(param.PID[YAW].result)) / 10,0,5);
 		}
 /*--------------------------------------------------------*/		
 		/*落地任务*/
@@ -237,7 +237,7 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 		Motor::setValue(motorValue[0],motorValue[1],motorValue[2],motorValue[3]);
 /*--------------------------------------------------------*/			
 		if(ctrl.quadx == true) 
-			rt_thread_delay(5);
+			rt_thread_delay(5);//间隔10ms
 		else 
 			rt_thread_delay(10);
 	}
