@@ -116,7 +116,7 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 		}
 		else
 			param.PID[PITCH+POS].result = param.PID[ROLL+POS].result = 0;
-		
+		 
 		for(uint8_t i=0;i<2;i++)
 		{
 			//遥控最多30度
@@ -202,14 +202,15 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 			throttle = RCValue[THROTTLE];
 		}
 /*--------------------------------------------------------*/
-		/*动态*/
-		if(RCValue[THROTTLE]>1400)
-		{
-			float t = BETWEEN((RCValue[THROTTLE] - 1000 + 1) / 700.0f,0,1.1f);
-			param.PID[PITCH].result *= t;
-			param.PID[ROLL].result *=  t;
-			param.PID[THROTTLE].result += BETWEEN((abs(param.PID[PITCH].result) + abs(param.PID[ROLL].result) + abs(param.PID[YAW].result)) / 10,0,5);
-		}
+//		/*动态PID*/
+//		if(RCValue[THROTTLE]>1400)
+//		{
+//			#define K (2000.0f)
+//			float t = BETWEEN((RCValue[THROTTLE] - 1000) / K + 1 - 700 / K,0,1.1f);//油门为1700时t=1
+//			param.PID[PITCH].result *= t;
+//			param.PID[ROLL].result *=  t;
+//			param.PID[THROTTLE].result += BETWEEN((abs(param.PID[PITCH].result) + abs(param.PID[ROLL].result)) / 20,0,2);
+//		}
 /*--------------------------------------------------------*/		
 		/*落地任务*/
 		if(ctrl.quadx != true || RCValue[THROTTLE]<1050)

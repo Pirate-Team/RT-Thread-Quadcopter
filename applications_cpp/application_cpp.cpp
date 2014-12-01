@@ -169,19 +169,19 @@ void rt_thread_entry_main(void* parameter)
 					if(rxData.ctrl.save != 0)
 					{
 						led3.interval = 100;
-						rt_thread_delay(500);
+						rt_thread_delay(1000);//看起来更明显
 						param_save();
 					}
 					if(rxData.ctrl.acc != 0)
 					{
 						led3.interval = 100;
-						rt_thread_delay(500);
+						rt_thread_delay(1000);
 						accelgyro.setOffset();
 					}
 					if(rxData.ctrl.mag != 0)
 					{
 						led3.interval = 100;
-						rt_thread_delay(500);
+						rt_thread_delay(1000);
 						mag.setOffset();
 					}
 				}
@@ -206,7 +206,7 @@ void rt_thread_entry_main(void* parameter)
 			txData.status.att[0] = att[0] * 10;
 			txData.status.att[1] = att[1] * 10;
 			txData.status.att[2] = att[2] * 10;
-			//米乘50，无符号
+			//高度乘50，有符号
 			txData.status.att[3] = att[3] * 50;
 			
 			rt_memcpy(txData.status.motor,motorValue,8);//电机不乘，无符号,直接拷贝
