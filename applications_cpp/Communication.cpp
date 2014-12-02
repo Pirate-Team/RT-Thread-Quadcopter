@@ -1,4 +1,5 @@
 #include "Communication.h"
+#include "head.h"
 
 #define ADDR "192.168.4.255"//"192.168.31.135"
 #define PORT 45454
@@ -25,15 +26,15 @@ Communication::Communication(const char *name)
 
 bool Communication::initialize(void)
 {
-	rt_thread_delay(500);
+	DELAY_MS(1000);
 	rt_kprintf("ATE0\n");
-	rt_thread_delay(50);
+	DELAY_MS(100);
 	rt_kprintf("AT+CIPMUX=1\n");
-	rt_thread_delay(50);
+	DELAY_MS(100);
 	rt_kprintf("AT+CIPSERVER=1,2333\n");
-	rt_thread_delay(50);
+	DELAY_MS(100);
 	rt_kprintf("AT+CIPSTART=0\"UDP\",\"%s\",%d\n",ADDR,PORT);
-	rt_thread_delay(50);
+	DELAY_MS(100);
 //	rt_kprintf("AT+CIPSEND=0,2\nOK");
 	return true;
 }
@@ -82,7 +83,7 @@ bool Communication::getData(void)
 void Communication::sendData(void)
 {
 	rt_kprintf("AT+CIPSEND=0,%d\n",TX_FRAME_SIZE);
-	rt_thread_delay(20);
+	DELAY_MS(40);
 	txFrame.checkSum = 0;
 	for(uint8_t i=0;i<TX_DATA_SIZE;i++)
 		txFrame.checkSum += ((uint8_t*)&(txFrame.data))[i];
@@ -105,6 +106,6 @@ void rt_thread_entry_communication(void* parameter)
 		{
 			com.sendData();
 		}
-		rt_thread_delay(20);
+		DELAY_MS(40);
 	}
 }

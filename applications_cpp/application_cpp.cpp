@@ -1,4 +1,5 @@
 #include "Led.h"
+#include "head.h"
 #include "stdio.h"
 #include "rtthread.h"
 #include "stm32f4xx.h"
@@ -107,7 +108,7 @@ void rt_thread_entry_main(void* parameter)
 	
 	
 	//让出cpu，队尾等待调度
-	rt_thread_delay(10);
+	DELAY_MS(20);
 /*************************************
 	main loop
 *************************************/
@@ -169,19 +170,19 @@ void rt_thread_entry_main(void* parameter)
 					if(rxData.ctrl.save != 0)
 					{
 						led3.interval = 100;
-						rt_thread_delay(1000);//看起来更明显
+						DELAY_MS(2000);//看起来更明显
 						param_save();
 					}
 					if(rxData.ctrl.acc != 0)
 					{
 						led3.interval = 100;
-						rt_thread_delay(1000);
+						DELAY_MS(2000);
 						accelgyro.setOffset();
 					}
 					if(rxData.ctrl.mag != 0)
 					{
 						led3.interval = 100;
-						rt_thread_delay(1000);
+						DELAY_MS(2000);
 						mag.setOffset();
 					}
 				}
@@ -219,13 +220,13 @@ void rt_thread_entry_main(void* parameter)
 			rt_mq_send(txQ,&txData,TX_DATA_SIZE);
 		}
 /***************send end****************/
-		rt_thread_delay(75);
+		DELAY_MS(150);
 	}
 }
 
 void hardware_init(void)
 {
-	rt_thread_delay(500);
+	DELAY_MS(1000);
 	
 	led1.initialize();
 	led2.initialize();
@@ -236,7 +237,7 @@ void hardware_init(void)
 	led1.on();
 	led2.on();
 	led3.on();
-	rt_thread_delay(1000);
+	DELAY_MS(2000);
 	led1.off();
 	led2.off();
 		
@@ -248,19 +249,19 @@ void hardware_init(void)
 	while(!accelgyro.initialize())
 	{
 		led2.toggle();
-		rt_thread_delay(50);
+		DELAY_MS(100);
 	}
 	
 	while(!mag.initialize())
 	{
 		led2.toggle();
-		rt_thread_delay(200);
+		DELAY_MS(400);
 	}
 	
 	while(!baro.initialize())
 	{
 		led2.toggle();
-		rt_thread_delay(350);
+		DELAY_MS(700);
 	}
 #endif
 	

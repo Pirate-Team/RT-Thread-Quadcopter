@@ -1,4 +1,5 @@
 #include "Motor.h"
+#include "head.h"
 /*-------------------------------------------------
 	使用TIM1，通道PA8,9,10,11
 --------------------------------------------------*/
@@ -81,7 +82,8 @@ void Motor::setValue(MOTOR_ENUM motor,uint16_t Value)
 {
 	//限速1800
 #define LIMIT 1800
-	Value = (Value>LIMIT)?(LIMIT):((Value<INIT_DUTYCYCLE)?(INIT_DUTYCYCLE):(Value));
+	Value = BETWEEN(Value,1000,LIMIT);
+//	Value = (Value>LIMIT)?(LIMIT):((Value<INIT_DUTYCYCLE)?(INIT_DUTYCYCLE):(Value));
 	switch(motor)
 	{
 		case MOTOR1:

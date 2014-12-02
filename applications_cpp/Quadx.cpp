@@ -1,4 +1,5 @@
 #include "quadx.h"
+#include "head.h"
 #include "rtthread.h"
 #include "stdio.h"
 #include "arm_math.h"
@@ -16,8 +17,6 @@
 #define M_57_3 57.29577f
 #define GYRO_SCALE 32.8f
 #define ACCEL_SCALE 2048.0f
-#define BETWEEN(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
-#define DEAD_BAND(value,mid,ban) (((value)<(mid)-(ban))?((value)+(ban)):(((value)>(mid)+(ban))?((value)-(ban)):(mid)))
 #define POS 4
 //#define DYNAMIC_PID
 /*-----------------------------------
@@ -43,7 +42,7 @@ extern "C"
 void rt_thread_entry_quadx_get_attitude(void* parameter)
 {
 	uint8_t state = 0;
-	quat.sampleInterval = 0.004f;
+	quat.sampleInterval = 0.0041f;
 	while(1)
 	{
 		/*getSensorData*/
@@ -71,9 +70,9 @@ void rt_thread_entry_quadx_get_attitude(void* parameter)
 		//MadgwickAHRSupdateIMU((float)sensorData.gx/GYRO_SCALE,(float)sensorData.gy/GYRO_SCALE,(float)sensorData.gz/GYRO_SCALE,(float)sensorData.ax,(float)sensorData.ay,(float)sensorData.az);
 		
 		if(ctrl.quadx == true) 
-			rt_thread_delay(2); 
+			DELAY_MS(4); 
 		else
-			rt_thread_delay(4);
+			DELAY_MS(10);
 	}
 }
 
@@ -91,7 +90,7 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 	uint16_t throttle = 0;
 	int16_t accZ = 0;
 	
-	rt_thread_delay(10);	
+	DELAY_MS(20);	
 	while(1)
 	{
 /*--------------------------------------------------------*/		
@@ -242,9 +241,9 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 		Motor::setValue(motorValue[0],motorValue[1],motorValue[2],motorValue[3]);
 /*--------------------------------------------------------*/			
 		if(ctrl.quadx == true) 
-			rt_thread_delay(5);//¼ä¸ô10ms
+			DELAY_MS(10);//¼ä¸ô10ms
 		else 
-			rt_thread_delay(10);
+			DELAY_MS(20);
 	}
 }
 

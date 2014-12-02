@@ -1,4 +1,5 @@
 #include "MS5611.h"
+#include "head.h"
 #include "rtthread.h"
 #include "I2Cdev.h"
 #include "arm_math.h"
@@ -35,20 +36,20 @@ MS5611::~MS5611(void)
 bool MS5611::initialize(void)
 {
 	if(!reset()) return false;
-	rt_thread_delay(200);
+	DELAY_MS(400);
 	if(!readPROM()) return false;
 
 	ConvertTemperature();
-	rt_thread_delay(10);
+	DELAY_MS(20);
 	getTemperature();
 	ConvertPressure();
-	rt_thread_delay(10);
+	DELAY_MS(20);
 	getPressure();
 	ConvertTemperature();
-	rt_thread_delay(10);
+	DELAY_MS(20);
 	getTemperature();
 	ConvertPressure();
-	rt_thread_delay(10);
+	DELAY_MS(20);
 	getPressure();
 	
 	return true;

@@ -1,4 +1,5 @@
 #include "Led.h"
+#include "head.h"
 #include "rtthread.h"
 
 Led led1(GPIOA,GPIO_Pin_5);
@@ -84,7 +85,7 @@ void rt_thread_entry_led(void* parameter)
 			led3.toggle();
 			led3Tick = tick + led3.interval / 2;
 		}
-		rt_thread_delay(50);
+		DELAY_MS(100);
 	}
 }
 

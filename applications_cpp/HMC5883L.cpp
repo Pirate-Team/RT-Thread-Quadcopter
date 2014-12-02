@@ -1,4 +1,5 @@
 #include "HMC5883L.h"
+#include "head.h"
 #include "I2Cdev.h"
 #include "arm_math.h"
 #include "string.h"
@@ -171,7 +172,7 @@ void HMC5883L::setOffset(void)
 			if(data[i]<min[i]) min[i] = data[i];
 			if(data[i]>max[i]) max[i] = data[i];
 		}
-		rt_thread_delay(10);
+		DELAY_MS(20);
 	}
 	param.magXOffset = (min[0] + max[0]) / 2;
 	param.magYOffset = (min[1] + max[1]) / 2;

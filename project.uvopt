@@ -222,22 +222,6 @@
           <ExecCommand></ExecCommand>
           <Expression></Expression>
         </Bp>
-        <Bp>
-          <Number>1</Number>
-          <Type>0</Type>
-          <LineNumber>57</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>134222788</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>F:\Users\Spacelan\Desktop\RTTHREAD\RT-Thread_1.2.0\bsp\RT-Thread-Quadcopter\applications_cpp\application_cpp.cpp</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\rtthread_stm32f4xx\applications_cpp/application_cpp.cpp\57</Expression>
-        </Bp>
       </Breakpoint>
       <WatchWindow1>
         <Ww>
@@ -422,8 +406,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>319</TopLine>
-      <CurrentLine>329</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\applications\ov_7725.c</PathWithFileName>
       <FilenameWithoutPath>ov_7725.c</FilenameWithoutPath>
@@ -454,8 +438,8 @@
       <Focus>0</Focus>
       <ColumnNumber>17</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>57</TopLine>
-      <CurrentLine>65</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\applications\Trace.c</PathWithFileName>
       <FilenameWithoutPath>Trace.c</FilenameWithoutPath>
@@ -476,10 +460,10 @@
       <FileType>8</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>28</ColumnNumber>
+      <ColumnNumber>18</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>193</TopLine>
-      <CurrentLine>291</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\applications_cpp\application_cpp.cpp</PathWithFileName>
       <FilenameWithoutPath>application_cpp.cpp</FilenameWithoutPath>
@@ -492,10 +476,10 @@
       <FileType>8</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>12</ColumnNumber>
+      <ColumnNumber>1</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>89</TopLine>
-      <CurrentLine>98</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\applications_cpp\Communication.cpp</PathWithFileName>
       <FilenameWithoutPath>Communication.cpp</FilenameWithoutPath>
@@ -510,8 +494,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>37</TopLine>
-      <CurrentLine>38</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\applications_cpp\cpu_usage.cpp</PathWithFileName>
       <FilenameWithoutPath>cpu_usage.cpp</FilenameWithoutPath>
@@ -524,10 +508,10 @@
       <FileType>8</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>1</ColumnNumber>
+      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>23</TopLine>
-      <CurrentLine>28</CurrentLine>
+      <TopLine>1</TopLine>
+      <CurrentLine>9</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\applications_cpp\HMC5883L.cpp</PathWithFileName>
       <FilenameWithoutPath>HMC5883L.cpp</FilenameWithoutPath>
@@ -542,8 +526,8 @@
       <Focus>0</Focus>
       <ColumnNumber>10</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>28</TopLine>
-      <CurrentLine>32</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\applications_cpp\I2Cdev.cpp</PathWithFileName>
       <FilenameWithoutPath>I2Cdev.cpp</FilenameWithoutPath>
@@ -556,10 +540,10 @@
       <FileType>8</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>1</ColumnNumber>
+      <ColumnNumber>16</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>6</TopLine>
-      <CurrentLine>13</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\applications_cpp\Led.cpp</PathWithFileName>
       <FilenameWithoutPath>Led.cpp</FilenameWithoutPath>
@@ -572,10 +556,10 @@
       <FileType>8</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>16</ColumnNumber>
+      <ColumnNumber>36</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>80</TopLine>
-      <CurrentLine>83</CurrentLine>
+      <TopLine>1</TopLine>
+      <CurrentLine>125</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\applications_cpp\Motor.cpp</PathWithFileName>
       <FilenameWithoutPath>Motor.cpp</FilenameWithoutPath>
@@ -588,10 +572,10 @@
       <FileType>8</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>7</ColumnNumber>
+      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>20</TopLine>
-      <CurrentLine>29</CurrentLine>
+      <TopLine>1</TopLine>
+      <CurrentLine>9</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\applications_cpp\MPU6050.cpp</PathWithFileName>
       <FilenameWithoutPath>MPU6050.cpp</FilenameWithoutPath>
@@ -604,10 +588,10 @@
       <FileType>8</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
+      <ColumnNumber>16</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>1</TopLine>
-      <CurrentLine>1</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\applications_cpp\MS5611.cpp</PathWithFileName>
       <FilenameWithoutPath>MS5611.cpp</FilenameWithoutPath>
@@ -622,8 +606,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>3</TopLine>
-      <CurrentLine>4</CurrentLine>
+      <TopLine>15</TopLine>
+      <CurrentLine>48</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\applications_cpp\Parameter.cpp</PathWithFileName>
       <FilenameWithoutPath>Parameter.cpp</FilenameWithoutPath>
@@ -636,10 +620,10 @@
       <FileType>8</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>9</ColumnNumber>
+      <ColumnNumber>18</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>133</TopLine>
-      <CurrentLine>139</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\applications_cpp\Quadx.cpp</PathWithFileName>
       <FilenameWithoutPath>Quadx.cpp</FilenameWithoutPath>
@@ -652,10 +636,10 @@
       <FileType>8</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
+      <ColumnNumber>16</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>7</TopLine>
-      <CurrentLine>14</CurrentLine>
+      <TopLine>249</TopLine>
+      <CurrentLine>263</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\applications_cpp\Quaternion.cpp</PathWithFileName>
       <FilenameWithoutPath>Quaternion.cpp</FilenameWithoutPath>
@@ -668,10 +652,10 @@
       <FileType>8</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>1</ColumnNumber>
+      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>295</TopLine>
-      <CurrentLine>308</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\applications_cpp\Receiver.cpp</PathWithFileName>
       <FilenameWithoutPath>Receiver.cpp</FilenameWithoutPath>
@@ -686,8 +670,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>1</TopLine>
-      <CurrentLine>1</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\applications_cpp\Sensor.cpp</PathWithFileName>
       <FilenameWithoutPath>Sensor.cpp</FilenameWithoutPath>
@@ -702,8 +686,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>106</TopLine>
-      <CurrentLine>117</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\applications_cpp\startup_cpp.cpp</PathWithFileName>
       <FilenameWithoutPath>startup_cpp.cpp</FilenameWithoutPath>
@@ -716,10 +700,10 @@
       <FileType>8</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>25</ColumnNumber>
+      <ColumnNumber>41</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>1</TopLine>
-      <CurrentLine>15</CurrentLine>
+      <TopLine>2</TopLine>
+      <CurrentLine>10</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\applications_cpp\Attitude.cpp</PathWithFileName>
       <FilenameWithoutPath>Attitude.cpp</FilenameWithoutPath>
@@ -742,8 +726,8 @@
       <Focus>0</Focus>
       <ColumnNumber>2</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>8</TopLine>
-      <CurrentLine>9</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>drivers\board.c</PathWithFileName>
       <FilenameWithoutPath>board.c</FilenameWithoutPath>
@@ -758,8 +742,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>117</TopLine>
-      <CurrentLine>123</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>drivers\serial.c</PathWithFileName>
       <FilenameWithoutPath>serial.c</FilenameWithoutPath>
@@ -774,8 +758,8 @@
       <Focus>0</Focus>
       <ColumnNumber>4</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>156</TopLine>
-      <CurrentLine>156</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>drivers\stm32f4xx_it.c</PathWithFileName>
       <FilenameWithoutPath>stm32f4xx_it.c</FilenameWithoutPath>
@@ -790,8 +774,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>299</TopLine>
-      <CurrentLine>300</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>drivers\usart.c</PathWithFileName>
       <FilenameWithoutPath>usart.c</FilenameWithoutPath>
@@ -846,8 +830,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>627</TopLine>
-      <CurrentLine>632</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>Libraries\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_dma.c</PathWithFileName>
       <FilenameWithoutPath>stm32f4xx_dma.c</FilenameWithoutPath>
@@ -878,8 +862,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>733</TopLine>
-      <CurrentLine>753</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>Libraries\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_flash.c</PathWithFileName>
       <FilenameWithoutPath>stm32f4xx_flash.c</FilenameWithoutPath>
@@ -1070,8 +1054,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>181</TopLine>
-      <CurrentLine>183</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\Libraries\CMSIS\Device\ST\STM32F4xx\Source\Templates\arm\startup_stm32f401xx.s</PathWithFileName>
       <FilenameWithoutPath>startup_stm32f401xx.s</FilenameWithoutPath>
@@ -1110,8 +1094,8 @@
       <Focus>0</Focus>
       <ColumnNumber>24</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>315</TopLine>
-      <CurrentLine>324</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\src\device.c</PathWithFileName>
       <FilenameWithoutPath>device.c</FilenameWithoutPath>
@@ -1142,8 +1126,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>1924</TopLine>
-      <CurrentLine>1925</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\src\ipc.c</PathWithFileName>
       <FilenameWithoutPath>ipc.c</FilenameWithoutPath>
@@ -1174,8 +1158,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>217</TopLine>
-      <CurrentLine>218</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\src\kservice.c</PathWithFileName>
       <FilenameWithoutPath>kservice.c</FilenameWithoutPath>
@@ -1190,8 +1174,8 @@
       <Focus>0</Focus>
       <ColumnNumber>12</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>480</TopLine>
-      <CurrentLine>500</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\src\mem.c</PathWithFileName>
       <FilenameWithoutPath>mem.c</FilenameWithoutPath>
@@ -1206,8 +1190,8 @@
       <Focus>0</Focus>
       <ColumnNumber>33</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>199</TopLine>
-      <CurrentLine>219</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\src\mempool.c</PathWithFileName>
       <FilenameWithoutPath>mempool.c</FilenameWithoutPath>
@@ -1222,8 +1206,8 @@
       <Focus>0</Focus>
       <ColumnNumber>49</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>274</TopLine>
-      <CurrentLine>294</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\src\object.c</PathWithFileName>
       <FilenameWithoutPath>object.c</FilenameWithoutPath>
@@ -1254,8 +1238,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>454</TopLine>
-      <CurrentLine>459</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\src\thread.c</PathWithFileName>
       <FilenameWithoutPath>thread.c</FilenameWithoutPath>
@@ -1534,8 +1518,8 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>94</TopLine>
-      <CurrentLine>105</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\components\finsh\finsh_parser.c</PathWithFileName>
       <FilenameWithoutPath>finsh_parser.c</FilenameWithoutPath>
@@ -1566,8 +1550,8 @@
       <Focus>0</Focus>
       <ColumnNumber>48</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>92</TopLine>
-      <CurrentLine>112</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\components\finsh\finsh_var.c</PathWithFileName>
       <FilenameWithoutPath>finsh_var.c</FilenameWithoutPath>
@@ -1582,8 +1566,8 @@
       <Focus>0</Focus>
       <ColumnNumber>48</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>60</TopLine>
-      <CurrentLine>80</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\components\finsh\finsh_vm.c</PathWithFileName>
       <FilenameWithoutPath>finsh_vm.c</FilenameWithoutPath>
@@ -1598,8 +1582,8 @@
       <Focus>0</Focus>
       <ColumnNumber>42</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>602</TopLine>
-      <CurrentLine>622</CurrentLine>
+      <TopLine>0</TopLine>
+      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\components\finsh\shell.c</PathWithFileName>
       <FilenameWithoutPath>shell.c</FilenameWithoutPath>

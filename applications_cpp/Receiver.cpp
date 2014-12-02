@@ -3,7 +3,7 @@
 
 #include "Receiver.h"
 #include "rtthread.h"
-
+#include "head.h"
 
 #define COUNTER_FREQ 1000000	//计数器频率，精确到1us
 #define PWM_FREQ 50			//PWM频率，周期20ms
@@ -195,10 +195,12 @@ void MyTIM3_IRQHandler(void)
 				RCValue[THROTTLE] = (CCR[THROTTLE] - preCCR[THROTTLE]);
 			else
 				RCValue[THROTTLE] = (ARR + CCR[THROTTLE] - preCCR[THROTTLE]);
-			if(RCValue[THROTTLE]>2000) RCValue[THROTTLE] = 2000;
-			else if(RCValue[THROTTLE]<1000) RCValue[THROTTLE] = 1000;
-			else if(RCValue[THROTTLE]>1000+VALUE_THRE) RCValue[THROTTLE] -= VALUE_THRE;
-			else RCValue[THROTTLE] = 1000;
+			RCValue[THROTTLE] = DEAD_BAND(RCValue[THROTTLE],1000,VALUE_THRE);
+			RCValue[THROTTLE] = BETWEEN(RCValue[THROTTLE],1000,2000);
+//			if(RCValue[THROTTLE]>2000) RCValue[THROTTLE] = 2000;
+//			else if(RCValue[THROTTLE]<1000) RCValue[THROTTLE] = 1000;
+//			else if(RCValue[THROTTLE]>1000+VALUE_THRE) RCValue[THROTTLE] -= VALUE_THRE;
+//			else RCValue[THROTTLE] = 1000;
 			RCFlag[THROTTLE] = 0;
 		}
 	}
@@ -217,11 +219,13 @@ void MyTIM3_IRQHandler(void)
 				RCValue[ROLL] = (CCR[ROLL] - preCCR[ROLL] - 20);
 			else
 				RCValue[ROLL] = (ARR + CCR[ROLL] - preCCR[ROLL]) - 20;
-			if(RCValue[ROLL]>2000) RCValue[ROLL] = 2000;
-			else if(RCValue[ROLL]<1000) RCValue[ROLL] = 1000;
-			else if(RCValue[ROLL]>1500+VALUE_THRE) RCValue[ROLL] -=VALUE_THRE;
-			else if(RCValue[ROLL]<1500-VALUE_THRE) RCValue[ROLL] +=VALUE_THRE;
-			else RCValue[ROLL] = 1500;
+			RCValue[ROLL] = DEAD_BAND(RCValue[ROLL],1500,VALUE_THRE);
+			RCValue[ROLL] = BETWEEN(RCValue[ROLL],1000,2000);
+//			if(RCValue[ROLL]>2000) RCValue[ROLL] = 2000;
+//			else if(RCValue[ROLL]<1000) RCValue[ROLL] = 1000;
+//			else if(RCValue[ROLL]>1500+VALUE_THRE) RCValue[ROLL] -=VALUE_THRE;
+//			else if(RCValue[ROLL]<1500-VALUE_THRE) RCValue[ROLL] +=VALUE_THRE;
+//			else RCValue[ROLL] = 1500;
 			RCFlag[ROLL] = 0;
 		}
 	}
@@ -240,11 +244,13 @@ void MyTIM3_IRQHandler(void)
 				RCValue[PITCH] = (CCR[PITCH] - preCCR[PITCH]) - 20;
 			else
 				RCValue[PITCH] = (ARR + CCR[PITCH] - preCCR[PITCH]) - 20;
-			if(RCValue[PITCH]>2000) RCValue[PITCH] = 2000;
-			else if(RCValue[PITCH]<1000) RCValue[PITCH] = 1000;
-			else if(RCValue[PITCH]>1500+VALUE_THRE) RCValue[PITCH] -=VALUE_THRE;
-			else if(RCValue[PITCH]<1500-VALUE_THRE) RCValue[PITCH] +=VALUE_THRE;
-			else RCValue[PITCH] = 1500;
+			RCValue[PITCH] = DEAD_BAND(RCValue[PITCH],1500,VALUE_THRE);
+			RCValue[PITCH] = BETWEEN(RCValue[PITCH],1000,2000);
+//			if(RCValue[PITCH]>2000) RCValue[PITCH] = 2000;
+//			else if(RCValue[PITCH]<1000) RCValue[PITCH] = 1000;
+//			else if(RCValue[PITCH]>1500+VALUE_THRE) RCValue[PITCH] -=VALUE_THRE;
+//			else if(RCValue[PITCH]<1500-VALUE_THRE) RCValue[PITCH] +=VALUE_THRE;
+//			else RCValue[PITCH] = 1500;
 			RCFlag[PITCH] = 0;
 		}
 	}
@@ -263,11 +269,13 @@ void MyTIM3_IRQHandler(void)
 				RCValue[YAW] = (CCR[YAW] - preCCR[YAW]) - 0;
 			else
 				RCValue[YAW] = (ARR + CCR[YAW] - preCCR[YAW]) - 0;
-			if(RCValue[YAW]>2000) RCValue[YAW] = 2000;
-			else if(RCValue[YAW]<1000) RCValue[YAW] = 1000;
-			else if(RCValue[YAW]>1500+VALUE_THRE*2) RCValue[YAW] -=VALUE_THRE*2;
-			else if(RCValue[YAW]<1500-VALUE_THRE*2) RCValue[YAW] +=VALUE_THRE*2;
-			else RCValue[YAW] = 1500;
+			RCValue[YAW] = DEAD_BAND(RCValue[YAW],1500,VALUE_THRE);
+			RCValue[YAW] = BETWEEN(RCValue[YAW],1000,2000);
+//			if(RCValue[YAW]>2000) RCValue[YAW] = 2000;
+//			else if(RCValue[YAW]<1000) RCValue[YAW] = 1000;
+//			else if(RCValue[YAW]>1500+VALUE_THRE*2) RCValue[YAW] -=VALUE_THRE*2;
+//			else if(RCValue[YAW]<1500-VALUE_THRE*2) RCValue[YAW] +=VALUE_THRE*2;
+//			else RCValue[YAW] = 1500;
 			RCFlag[YAW] = 0;
 		}
 	}
@@ -310,7 +318,7 @@ void rt_thread_entry_receiver_test(void* parameter)
 	
 	while(1)
 	{
-		rt_thread_delay(100);
+		DELAY_MS(200);
 		rt_kprintf("%d\t%d\t%d\t%d\r\n",RCValue[PITCH],RCValue[ROLL],RCValue[YAW],RCValue[THROTTLE]);
 	}
 }
