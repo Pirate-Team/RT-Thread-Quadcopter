@@ -1,7 +1,6 @@
 #include "Nema_decode.h"
 #include "rtthread.h"
 
-
 void rt_thread_entry_getgpsdata(void* parameter){
 	    int32_t lat,log;  //经纬度数据
 		rt_device_t uart1_device = rt_device_find("uart1");
@@ -13,13 +12,11 @@ void rt_thread_entry_getgpsdata(void* parameter){
 		else
 		   rt_kprintf("uart fail\n");
 		
-		
 		GPS_GetData  gps_data(uart1_device); //初始化时传入设备引用
 		while(true){
-			
 			//此函数用来解析GPS发过来的数据，参数1是经度，参数2是纬度
-			gps_data.Get_Coor(log,lat);
-			rt_kprintf("the Latitude:%d%c  the Longitude:%d%c \n",lat,log);
+			gps_data.Get_Coor(&log,&lat);
+			rt_kprintf("the Longitude:%d  the latitude:%d\n",log,lat);
 			rt_thread_delay(1000);
 		}
 }
@@ -58,7 +55,7 @@ GPS_GPGGA  GPS_GetData::Nema_decode_gpgga()
 				switch(Get_DataType(str)){
 				case GPGGA:
 					Get_Gps_GPGGA();
-					break;
+					return Gpgga;
 				case GPGSA:
 					Get_Gps_GPGSA();
 					break;
@@ -97,7 +94,7 @@ inline char GPS_GetData::Get_next()
 	char ch;
 	while(0 == rt_device_read(uart_device,0,&ch,1))
 		rt_thread_delay(10);
-	return ch;	
+	return ch;
 }
 
 void GPS_GetData::Get_Gps_GPGSV(void)
@@ -126,10 +123,10 @@ void GPS_GetData::Get_Gps_GPZDA(void){
 
 }
 
-void GPS_GetData::Get_Coor(int32_t &lng,int32_t &lat){
+void GPS_GetData::Get_Coor(int32_t* lng,int32_t* lat){
 	Nema_decode_gpgga();
-	lng=Gpgga.Longitude;
-	lat=Gpgga.Latitude;	
+	*lng=Gpgga.Longitude;
+	*lat=Gpgga.Latitude;	
 }
 
 void GPS_GetData::Get_Gps_GPGGA(void){
@@ -184,8 +181,9 @@ void GPS_GetData::Get_Gps_GPGGA(void){
 	while((ch=Get_next())!=','){
 		strncat(temp,&ch,1);
 	}
+	
 	Gpgga.Longitude=GPS_coord_to_degrees(temp);
-
+	
 	//读经度半球 E?W
 	memset(temp,0,sizeof(temp));
 	ch=Get_next();
@@ -260,6 +258,8 @@ void GPS_GetData::Get_Gps_GPGGA(void){
 		strncat(temp,&ch,1);
 	}
 	Gpgga.Sum=atoi(temp);
+	//rt_kprintf("c:%d\n",Gpgga.Longitude);
+	return;
 }
 
 int  GPS_GetData::Get_DataType(char* data){
@@ -338,3 +338,4 @@ void GPS_GetData::Get_GPS_Direction(char &lng_dir,char &lat_dir){ //得到N/S 和 E
 	lat_dir=Gpgga.Latitude_Directon;
 	lng_dir=Gpgga.Longitude_Direction;
 }
+

@@ -21,7 +21,7 @@
 /* STM32F40x library definitions */
 #include <stm32f4xx.h>
 
-#define UART_RX_BUFFER_SIZE		64
+#define UART_RX_BUFFER_SIZE		1000
 #define UART_TX_DMA_NODE_SIZE	4
 
 /* data node for Tx Mode */
