@@ -75,7 +75,8 @@ class GPS_GetData{
 		rt_device_t uart_device;
 	
 	public:
-		GPS_GetData();
+		GPS_GetData(){}
+	    GPS_GetData(rt_device_t& Uart_device);
 		~GPS_GetData();
 		void Get_Gps_GPGGA(void);
 		void Get_Gps_GPGLL(void);
@@ -87,10 +88,11 @@ class GPS_GetData{
 		int  Get_DataType(char* data); 
 		inline	char Get_next(void);
 		int GPS_coord_to_degrees(char* s);
-		GPS_GPGGA  Nema_decode_gpgga(rt_device_t& Uart_device);
+		GPS_GPGGA  Nema_decode_gpgga();
 		void Get_Coor(int32_t &lng,int32_t &lat);
 		void Get_Altitude(int32_t &alt0);
 		void Get_Speed(int32_t &speed);
+		void Get_GPS_Direction(char &lng_dir,char &lat_dir); //µÃµ½N/S ºÍ E/W
 };
 
 void rt_thread_entry_getgpsdata(void* parameter);
