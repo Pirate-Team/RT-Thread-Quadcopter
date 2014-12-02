@@ -199,8 +199,8 @@ void rt_thread_entry_main(void* parameter)
 		{
 			txData.status.type = 'S';
 			
-			txData.status.gps[0] ++;
-			txData.status.gps[1] = 2;
+			txData.status.gps[0] = lng;
+			txData.status.gps[1] = lat;
 			
 			//½Ç¶È³Ë10£¬ÓÐ·ûºÅ
 			txData.status.att[0] = att[0] * 10;

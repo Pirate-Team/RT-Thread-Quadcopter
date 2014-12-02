@@ -19,6 +19,7 @@
 #define BETWEEN(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 #define DEAD_BAND(value,mid,ban) (((value)<(mid)-(ban))?((value)+(ban)):(((value)>(mid)+(ban))?((value)-(ban)):(mid)))
 #define POS 4
+//#define DYNAMIC_PID
 /*-----------------------------------
 	global
 -----------------------------------*/
@@ -30,7 +31,7 @@ struct ctrl_t
 	bool send,quadx,trace;
 };
 extern struct ctrl_t ctrl;
-
+extern int32_t lng,lat;
 extern "C" 
 {
 	extern int16_t targetX,targetY;
@@ -134,7 +135,7 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 		}
 		
 		/*yaw*/
-		if(RCValue[YAW] == 1500 && RCValue[THROTTLE]>1400)
+		if(RCValue[YAW] == 1500 && (RCValue[THROTTLE]>1400 || RCValue[HOLD]>1500))
 		{
 			err[YAW].cur= att[YAW] - heading;
 			if(err[YAW].cur>180) err[YAW].cur -= 360;
@@ -202,21 +203,24 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 			throttle = RCValue[THROTTLE];
 		}
 /*--------------------------------------------------------*/
-//		/*动态PID*/
-//		if(RCValue[THROTTLE]>1400)
-//		{
-//			#define K (2000.0f)
-//			float t = BETWEEN((RCValue[THROTTLE] - 1000) / K + 1 - 700 / K,0,1.1f);//油门为1700时t=1
-//			param.PID[PITCH].result *= t;
-//			param.PID[ROLL].result *=  t;
-//			param.PID[THROTTLE].result += BETWEEN((abs(param.PID[PITCH].result) + abs(param.PID[ROLL].result)) / 20,0,2);
-//		}
+#ifdef DYNAMIC_PID
+		/*动态PID*/
+		if(RCValue[THROTTLE]>1400)
+		{
+			#define K (4000.0f)
+			float t = BETWEEN((RCValue[THROTTLE] - 1000) / K + 1 - 700 / K,0,1.1111f);//油门为1700时t=1
+			param.PID[PITCH].result *= t;
+			param.PID[ROLL].result *=  t;
+			param.PID[THROTTLE].result += BETWEEN((abs(param.PID[PITCH].result) + abs(param.PID[ROLL].result)) / 30.0f,0,2);
+		}
+#endif
 /*--------------------------------------------------------*/		
 		/*落地任务*/
 		if(ctrl.quadx != true || RCValue[THROTTLE]<1050)
 		{
 			baro.setGround();
-			accZ = (accZ + sensorData.az) >> 1;
+			if(abs(att[PITCH]) < 1 && abs(att[ROLL]) < 1)
+				accZ = (accZ + sensorData.az) >> 1;
 		}
 /*--------------------------------------------------------*/
 		/*control motor*/
