@@ -29,7 +29,7 @@ public:
 	int16_t accXOffset,accYOffset,accZOffset;
 	int16_t gyroXOffset,gyroYOffset,gyroZOffset;
 	int16_t magXOffset,magYOffset,magZOffset;
-	int16_t reserve1,reserve2;
+	int16_t magYGain,magZGain;
 	uint16_t checkSum;
 };//120kb
 

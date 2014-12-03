@@ -275,7 +275,6 @@ void param_init(void)
 		led2.interval = 0;
 	else
 		led2.interval = 0xff;
-	param.magXOffset = param.magYOffset = param.magZOffset = 0;
 }
 
 void param_save(void)

@@ -17,6 +17,7 @@ HMC5883L::HMC5883L(void)
 	devAddr = HMC5883L_ADDRESS;
 	buffer = new uint8_t[6];
 	strcpy(name,HMC5883L_NAME);
+	magGain[0] = magGain[1] = magGain[2] = 1;
 }
 
 HMC5883L::~HMC5883L(void)
@@ -47,12 +48,11 @@ bool HMC5883L::initialize(void)
 	int16_t xyz[3] = {0,0,0};
 /*************calc gain*****************/	
 	if(!I2Cdev::writeByte(devAddr, HMC5883L_RA_CONFIG_A,
-        (HMC5883L_AVERAGING_2 << (HMC5883L_CRA_AVERAGE_BIT - HMC5883L_CRA_AVERAGE_LENGTH + 1)) |
+        (HMC5883L_AVERAGING_1 << (HMC5883L_CRA_AVERAGE_BIT - HMC5883L_CRA_AVERAGE_LENGTH + 1)) |
         (HMC5883L_RATE_15     << (HMC5883L_CRA_RATE_BIT - HMC5883L_CRA_RATE_LENGTH + 1)) |
         (HMC5883L_BIAS_POSITIVE << (HMC5883L_CRA_BIAS_BIT - HMC5883L_CRA_BIAS_LENGTH + 1)))) return false;
-	if(!I2Cdev::writeByte(devAddr, HMC5883L_RA_CONFIG_B, HMC5883L_GAIN_820 << (HMC5883L_CRB_GAIN_BIT - HMC5883L_CRB_GAIN_LENGTH + 1))) return false;
+	if(!I2Cdev::writeByte(devAddr, HMC5883L_RA_CONFIG_B, HMC5883L_GAIN_660 << (HMC5883L_CRB_GAIN_BIT - HMC5883L_CRB_GAIN_LENGTH + 1))) return false;
 	if(!I2Cdev::writeByte(devAddr, HMC5883L_RA_MODE, HMC5883L_MODE_SINGLE << (HMC5883L_MODEREG_BIT - HMC5883L_MODEREG_LENGTH + 1))) return false;
-	
 	DELAY_MS(100);
 	getHeadingRaw(&xyz[0],&xyz[1],&xyz[2]);
 	
@@ -77,11 +77,12 @@ bool HMC5883L::initialize(void)
 	}
 	//NAG
 	if(!I2Cdev::writeByte(devAddr, HMC5883L_RA_CONFIG_A,
-        (HMC5883L_AVERAGING_2 << (HMC5883L_CRA_AVERAGE_BIT - HMC5883L_CRA_AVERAGE_LENGTH + 1)) |
+        (HMC5883L_AVERAGING_1 << (HMC5883L_CRA_AVERAGE_BIT - HMC5883L_CRA_AVERAGE_LENGTH + 1)) |
         (HMC5883L_RATE_15     << (HMC5883L_CRA_RATE_BIT - HMC5883L_CRA_RATE_LENGTH + 1)) |
         (HMC5883L_BIAS_NEGATIVE << (HMC5883L_CRA_BIAS_BIT - HMC5883L_CRA_BIAS_LENGTH + 1)))) return false;
 	DELAY_MS(100);
 	getHeadingRaw(&xyz[0],&xyz[1],&xyz[2]);
+	
 	for (uint8_t i=0; i<10; i++)  //Collect 10 samples
 	{
 		I2Cdev::writeByte(devAddr, HMC5883L_RA_MODE, HMC5883L_MODE_SINGLE << (HMC5883L_MODEREG_BIT - HMC5883L_MODEREG_LENGTH + 1));
@@ -101,9 +102,9 @@ bool HMC5883L::initialize(void)
 		}
 	}
 	
-	magGain[0]=fabs(820.0*HMC58X3_X_SELF_TEST_GAUSS*2.0*10.0/xyz_total[0]);
-	magGain[1]=fabs(820.0*HMC58X3_Y_SELF_TEST_GAUSS*2.0*10.0/xyz_total[1]);
-	magGain[2]=fabs(820.0*HMC58X3_Z_SELF_TEST_GAUSS*2.0*10.0/xyz_total[2]);
+	magGain[0]=fabs(660.0*HMC58X3_X_SELF_TEST_GAUSS*2.0*10.0/xyz_total[0]);
+	magGain[1]=fabs(660.0*HMC58X3_Y_SELF_TEST_GAUSS*2.0*10.0/xyz_total[1]);
+	magGain[2]=fabs(660.0*HMC58X3_Z_SELF_TEST_GAUSS*2.0*10.0/xyz_total[2]);
 	
 	if (!bret)  //Something went wrong so get a best guess
 	{
@@ -116,7 +117,7 @@ bool HMC5883L::initialize(void)
         (HMC5883L_AVERAGING_8 << (HMC5883L_CRA_AVERAGE_BIT - HMC5883L_CRA_AVERAGE_LENGTH + 1)) |
         (HMC5883L_RATE_30     << (HMC5883L_CRA_RATE_BIT - HMC5883L_CRA_RATE_LENGTH + 1)) |
         (HMC5883L_BIAS_NORMAL << (HMC5883L_CRA_BIAS_BIT - HMC5883L_CRA_BIAS_LENGTH + 1)))) return false;
-	if(!I2Cdev::writeByte(devAddr, HMC5883L_RA_CONFIG_B, HMC5883L_GAIN_820 << (HMC5883L_CRB_GAIN_BIT - HMC5883L_CRB_GAIN_LENGTH + 1))) return false;
+	if(!I2Cdev::writeByte(devAddr, HMC5883L_RA_CONFIG_B, HMC5883L_GAIN_660 << (HMC5883L_CRB_GAIN_BIT - HMC5883L_CRB_GAIN_LENGTH + 1))) return false;
 	if(!I2Cdev::writeByte(devAddr, HMC5883L_RA_MODE, HMC5883L_MODE_CONTINUOUS << (HMC5883L_MODEREG_BIT - HMC5883L_MODEREG_LENGTH + 1))) return false;
 	return true;
 }
@@ -152,9 +153,13 @@ void HMC5883L::getHeadingRaw(int16_t *x, int16_t *y, int16_t *z)
 {
 	I2Cdev::readBytes(devAddr, HMC5883L_RA_DATAX_H, 6, buffer);
 //	I2Cdev::writeByte(devAddr, HMC5883L_RA_MODE, HMC5883L_MODE_SINGLE << (HMC5883L_MODEREG_BIT - HMC5883L_MODEREG_LENGTH + 1));
-	*x = ((((int16_t)buffer[0]) << 8) | buffer[1]) * magGain[0];
-	*y = ((((int16_t)buffer[4]) << 8) | buffer[5]) * magGain[1];
-	*z = ((((int16_t)buffer[2]) << 8) | buffer[3]) * magGain[2];
+	*x = ((((int16_t)buffer[0]) << 8) | buffer[1]);
+	*y = ((((int16_t)buffer[4]) << 8) | buffer[5]);
+	*z = ((((int16_t)buffer[2]) << 8) | buffer[3]);
+	
+	*x *= magGain[0];
+	*y *= magGain[1];
+	*z *= magGain[2];
 }
 
 //void HMC5883L::getHeadingCal(int16_t *x, int16_t *y, int16_t *z)
@@ -211,10 +216,17 @@ void HMC5883L::getHeadingCal(int16_t &x, int16_t &y, int16_t &z)
 {
 	if(I2Cdev::readBytes(devAddr, HMC5883L_RA_DATAX_H, 6, buffer))
 	{
-		int16_t xt = ((((int16_t)buffer[0]) << 8) | buffer[1]) * magGain[0] - param.magXOffset;
-		int16_t yt = ((((int16_t)buffer[4]) << 8) | buffer[5]) * magGain[1] - param.magYOffset;
-		int16_t zt = ((((int16_t)buffer[2]) << 8) | buffer[3]) * magGain[2] - param.magZOffset;
+		int16_t xt = ((((int16_t)buffer[0]) << 8) | buffer[1]);
+		int16_t yt = ((((int16_t)buffer[4]) << 8) | buffer[5]);
+		int16_t zt = ((((int16_t)buffer[2]) << 8) | buffer[3]);
+		
+		float yGain = param.magYGain / 10000.0f;
+		float zGain = param.magZGain / 10000.0f;
 
+		xt = xt * magGain[0] * 1.0f  - param.magXOffset;
+		yt = yt * magGain[1] * yGain - param.magYOffset;
+		zt = zt * magGain[2] * zGain - param.magZOffset;
+		
 		x = (((int32_t)x)*3 + (int32_t)xt*5) >> 3;
 		y = (((int32_t)y)*3 + (int32_t)yt*5) >> 3;
 		z = (((int32_t)z)*3 + (int32_t)zt*5) >> 3;
@@ -237,9 +249,14 @@ void HMC5883L::getHeadingCal(float *heading)
 
 void HMC5883L::setOffset(void)
 {
-#define CALI_TIME_S 20
-	uint32_t tick = rt_tick_get() + CALI_TIME_S * 500;
+#define CALI_TIME_S 30
+	uint32_t tick = rt_tick_get() + CALI_TIME_S * RT_TICK_PER_SECOND;
 	int16_t data[3],min[3],max[3];
+	DELAY_MS(50);
+	I2Cdev::writeByte(devAddr, HMC5883L_RA_CONFIG_A,
+        (HMC5883L_AVERAGING_8 << (HMC5883L_CRA_AVERAGE_BIT - HMC5883L_CRA_AVERAGE_LENGTH + 1)) |
+        (HMC5883L_RATE_75     << (HMC5883L_CRA_RATE_BIT - HMC5883L_CRA_RATE_LENGTH + 1)) |
+        (HMC5883L_BIAS_NORMAL << (HMC5883L_CRA_BIAS_BIT - HMC5883L_CRA_BIAS_LENGTH + 1)));
 	for(uint8_t i=0;i<3;i++)
 	{
 		min[i] = 30000;
@@ -253,9 +270,17 @@ void HMC5883L::setOffset(void)
 			if(data[i]<min[i]) min[i] = data[i];
 			if(data[i]>max[i]) max[i] = data[i];
 		}
-		DELAY_MS(20);
+		DELAY_MS(16);
 	}
-	param.magXOffset = (min[0] + max[0]) / 2;
-	param.magYOffset = (min[1] + max[1]) / 2;
-	param.magZOffset = (min[2] + max[2]) / 2;
+	param.magXOffset = (min[0] + max[0]) >> 1;
+	param.magYOffset = (min[1] + max[1]) >> 1;
+	param.magZOffset = (min[2] + max[2]) >> 1;
+	param.magYGain = ((max[0] - min[0])*10000)/(max[1] - min[1]);
+	param.magZGain = ((max[0] - min[0])*10000)/(max[2] - min[2]);
+	
+	DELAY_MS(50);
+	I2Cdev::writeByte(devAddr, HMC5883L_RA_CONFIG_A,
+        (HMC5883L_AVERAGING_8 << (HMC5883L_CRA_AVERAGE_BIT - HMC5883L_CRA_AVERAGE_LENGTH + 1)) |
+        (HMC5883L_RATE_30     << (HMC5883L_CRA_RATE_BIT - HMC5883L_CRA_RATE_LENGTH + 1)) |
+        (HMC5883L_BIAS_NORMAL << (HMC5883L_CRA_BIAS_BIT - HMC5883L_CRA_BIAS_LENGTH + 1)));
 }

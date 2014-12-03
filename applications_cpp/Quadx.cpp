@@ -69,10 +69,7 @@ void rt_thread_entry_quadx_get_attitude(void* parameter)
 		quat.MadgwickAHRSupdate((float)sensorData.gx/GYRO_SCALE,(float)sensorData.gy/GYRO_SCALE,(float)sensorData.gz/GYRO_SCALE,(float)sensorData.ax,(float)sensorData.ay,(float)sensorData.az,(float)sensorData.mx,(float)sensorData.my,(float)sensorData.mz);
 		//MadgwickAHRSupdateIMU((float)sensorData.gx/GYRO_SCALE,(float)sensorData.gy/GYRO_SCALE,(float)sensorData.gz/GYRO_SCALE,(float)sensorData.ax,(float)sensorData.ay,(float)sensorData.az);
 		
-		if(ctrl.quadx == true) 
-			DELAY_MS(4); 
-		else
-			DELAY_MS(10);
+		DELAY_MS(4); 
 	}
 }
 
