@@ -161,9 +161,9 @@ void MPU6050::getMotion6Cal(int16_t &ax, int16_t &ay, int16_t &az, int16_t &gx, 
 		ax = (((int32_t)ax)*3 + (int32_t)axt*5) >> 3;
 		ay = (((int32_t)ay)*3 + (int32_t)ayt*5) >> 3;
 		az = (((int32_t)az)*3 + (int32_t)azt*5) >> 3;
-		gx = (((int32_t)gx) + (int32_t)gxt*15) >> 4;
-		gy = (((int32_t)gy) + (int32_t)gyt*15) >> 4;
-		gz = (((int32_t)gz) + (int32_t)gzt*15) >> 4;
+		gx = (((int32_t)gx) + (int32_t)gxt*7) >> 3;
+		gy = (((int32_t)gy) + (int32_t)gyt*7) >> 3;
+		gz = (((int32_t)gz) + (int32_t)gzt*7) >> 3;
 	}
 	else
 	{
