@@ -14,7 +14,7 @@
 #include "I2Cdev.h"
 #include "Parameter.h"
 #include "Attitude.h"
-
+#include "Nema_decode.h"
 //#define TRACE_TEST
 
 struct ctrl_t
@@ -96,6 +96,12 @@ void rt_thread_entry_main(void* parameter)
 												1024,
 												10,
 												500);
+	rt_thread_t getgpadata_thread = rt_thread_create("gpsdata",
+												rt_thread_entry_getgpsdata,
+												RT_NULL,
+												1024,
+												10,
+												500);											
 
 /*************************************
 	start thread
@@ -105,7 +111,7 @@ void rt_thread_entry_main(void* parameter)
 	if(quadx_get_thread != RT_NULL) rt_thread_startup(quadx_get_thread);
 	if(quadx_control_thread != RT_NULL) rt_thread_startup(quadx_control_thread);
 //	if(trace_thread != RT_NULL) rt_thread_startup(trace_thread); 
-	
+	if(getgpadata_thread!=RT_NULL) rt_thread_startup(getgpadata_thread);
 	
 	//让出cpu，队尾等待调度
 	DELAY_MS(20);
