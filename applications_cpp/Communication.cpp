@@ -83,7 +83,7 @@ bool Communication::getData(void)
 void Communication::sendData(void)
 {
 	rt_kprintf("AT+CIPSEND=0,%d\n",TX_FRAME_SIZE);
-	DELAY_MS(40);
+	DELAY_MS(30);
 	txFrame.checkSum = 0;
 	for(uint8_t i=0;i<TX_DATA_SIZE;i++)
 		txFrame.checkSum += ((uint8_t*)&(txFrame.data))[i];

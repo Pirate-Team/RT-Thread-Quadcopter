@@ -220,7 +220,7 @@ void rt_thread_entry_main(void* parameter)
 			rt_mq_send(txQ,&txData,TX_DATA_SIZE);
 		}
 /***************send end****************/
-		DELAY_MS(150);
+		DELAY_MS(120);
 	}
 }
 
@@ -275,6 +275,7 @@ void param_init(void)
 		led2.interval = 0;
 	else
 		led2.interval = 0xff;
+	param.magXOffset = param.magYOffset = param.magZOffset = 0;
 }
 
 void param_save(void)

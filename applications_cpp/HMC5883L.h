@@ -85,6 +85,8 @@ public:
 	void getHeadingCal(float *heading);
 
 	void setOffset(void);
+private:
+	float magGain[3];
 };
 
 extern HMC5883L mag;
