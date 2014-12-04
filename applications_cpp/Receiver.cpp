@@ -160,7 +160,7 @@ void Receiver::getRCValue(int16_t* value)
 extern "C" void MyTIM3_IRQHandler(void);
 void MyTIM3_IRQHandler(void)
 {
-#define VALUE_THRE (25)
+#define VALUE_THRE (40)
 	//update
 	if(TIM_GetITStatus(TIM3,TIM_IT_Update) == SET)
 	{
@@ -266,9 +266,9 @@ void MyTIM3_IRQHandler(void)
 		{
 			CCR[YAW] = TIM_GetCapture4(TIM3);
 			if(CCR[YAW] > preCCR[YAW])
-				RCValue[YAW] = (CCR[YAW] - preCCR[YAW]) - 0;
+				RCValue[YAW] = (CCR[YAW] - preCCR[YAW]) - 20;
 			else
-				RCValue[YAW] = (ARR + CCR[YAW] - preCCR[YAW]) - 0;
+				RCValue[YAW] = (ARR + CCR[YAW] - preCCR[YAW]) - 20;
 			RCValue[YAW] = DEAD_BAND(RCValue[YAW],1500,VALUE_THRE);
 			RCValue[YAW] = BETWEEN(RCValue[YAW],1000,2000);
 //			if(RCValue[YAW]>2000) RCValue[YAW] = 2000;
