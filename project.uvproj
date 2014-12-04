@@ -361,7 +361,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER,STM32F401xx,ARM_MATH_CM4</Define>
               <Undefine></Undefine>
-              <IncludePath>.;..\..\components\finsh;..\..\include;..\..\libcpu\arm\common;..\..\libcpu\arm\cortex-m4;applications;drivers;.\Libraries\STM32F4xx_StdPeriph_Driver\inc;.\Libraries\CMSIS\Device\ST\STM32F4xx\Include;.\Libraries\CMSIS\Include;.\applications_cpp</IncludePath>
+              <IncludePath>.;..\..\components\finsh;..\..\include;..\..\libcpu\arm\common;..\..\libcpu\arm\cortex-m4;applications;drivers;.\Libraries\STM32F4xx_StdPeriph_Driver\inc;.\Libraries\CMSIS\Device\ST\STM32F4xx\Include;.\Libraries\CMSIS\Include;.\applications_cpp;.\nmea_decode\include</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -423,6 +423,56 @@
               <FileName>Trace.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\applications\Trace.c</FilePath>
+            </File>
+            <File>
+              <FileName>context.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\nmea_decode\src\context.c</FilePath>
+            </File>
+            <File>
+              <FileName>generate.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\nmea_decode\src\generate.c</FilePath>
+            </File>
+            <File>
+              <FileName>generator.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\nmea_decode\src\generator.c</FilePath>
+            </File>
+            <File>
+              <FileName>gmath.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\nmea_decode\src\gmath.c</FilePath>
+            </File>
+            <File>
+              <FileName>info.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\nmea_decode\src\info.c</FilePath>
+            </File>
+            <File>
+              <FileName>parse.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\nmea_decode\src\parse.c</FilePath>
+            </File>
+            <File>
+              <FileName>parser.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\nmea_decode\src\parser.c</FilePath>
+            </File>
+            <File>
+              <FileName>sentence.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\nmea_decode\src\sentence.c</FilePath>
+            </File>
+            <File>
+              <FileName>time.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\nmea_decode\src\time.c</FilePath>
+            </File>
+            <File>
+              <FileName>tok.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\nmea_decode\src\tok.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -508,6 +558,11 @@
               <FileName>Attitude.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>.\applications_cpp\Attitude.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>Nema_decode.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\applications_cpp\Nema_decode.cpp</FilePath>
             </File>
           </Files>
         </Group>

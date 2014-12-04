@@ -15,6 +15,7 @@
 #include "Parameter.h"
 #include "Attitude.h"
 #include "Nema_decode.h"
+
 //#define TRACE_TEST
 
 struct ctrl_t
@@ -99,9 +100,9 @@ void rt_thread_entry_main(void* parameter)
 	rt_thread_t getgpadata_thread = rt_thread_create("gpsdata",
 												rt_thread_entry_getgpsdata,
 												RT_NULL,
-												1024,
-												10,
-												500);											
+												4096,
+												9,
+												10);											
 
 /*************************************
 	start thread
