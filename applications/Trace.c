@@ -7,8 +7,8 @@
 
 
 extern uint8_t Ov7725_vsync;
-uint16_t Cam_data[180][200]; //70kb
-
+//uint16_t Cam_data[180][200]; //70kb
+uint16_t Cam_data[1][1]; //70kb
 TARGET_CONDI condition_blue  = {143 ,151 ,30  ,240 ,30  ,180 ,  10   , 10   ,   150  ,  120    }; //Blue
 TARGET_CONDI condition_green = {124 ,136 ,20  ,240 ,10  ,180 ,  24   , 24   ,   120  ,   60    }; //green
 TARGET_CONDI condition_yellow1 = {0x18,0x2c,0x16,0xe0,0x1a,0xef,  20   , 20   ,   100  ,   80    }; //yellow

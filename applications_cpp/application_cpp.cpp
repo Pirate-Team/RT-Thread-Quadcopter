@@ -91,12 +91,12 @@ void rt_thread_entry_main(void* parameter)
 												10);
 												
 	/*trace_thread*/
-	rt_thread_t trace_thread = rt_thread_create("trace",
-												rt_thread_entry_trace,
-												RT_NULL,
-												1024,
-												10,
-												500);
+//	rt_thread_t trace_thread = rt_thread_create("trace",
+//												rt_thread_entry_trace,
+//												RT_NULL,
+//												1024,
+//												10,
+//												500);
 	rt_thread_t getgpadata_thread = rt_thread_create("gpsdata",
 												rt_thread_entry_getgpsdata,
 												RT_NULL,
@@ -207,8 +207,8 @@ void rt_thread_entry_main(void* parameter)
 		{
 			txData.status.type = 'S';
 			
-			txData.status.gps[0] = lng;
-			txData.status.gps[1] = lat;
+			txData.status.gps[0] = att.longitude;
+			txData.status.gps[1] = att.latitude;
 			
 			//½Ç¶È³Ë10£¬ÓÐ·ûºÅ
 			txData.status.att[0] = att[0] * 10;

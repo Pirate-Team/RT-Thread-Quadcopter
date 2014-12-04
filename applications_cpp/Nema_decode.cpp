@@ -61,7 +61,7 @@ void rt_thread_entry_getgpsdata(void* parameter)
 //			sprintf(str,"\r\nº½Ïò£º%f ¶È", info.direction);
 //			rt_kprintf(str);
 
-			if(info.fix != 0)
+			if(info.fix == 2 || info.fix == 3)
 			{
 				char str[16];
 				sprintf(str,"%f",info.lon);
@@ -74,7 +74,9 @@ void rt_thread_entry_getgpsdata(void* parameter)
 				fixed = false;			
 			new_parse = 0;
 		}
-		DELAY_MS(100);
+		else
+			fixed = false;
+		DELAY_MS(200);
 	}
 }
 
