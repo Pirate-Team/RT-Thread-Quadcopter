@@ -26,12 +26,12 @@ struct ctrl_t ctrl = {0};
 
 int32_t lng = 0,lat = 0;
 
-extern "C" 
-{
-	extern int16_t targetX,targetY,targetH,targetW;
-	void rt_thread_entry_trace(void* parameter);
-	uint8_t ov_7725_init(void);
-}
+//extern "C" 
+//{
+//	extern int16_t targetX,targetY,targetH,targetW;
+//	void rt_thread_entry_trace(void* parameter);
+//	uint8_t ov_7725_init(void);
+//}
 
 void hardware_init(void);
 void param_init(void);
@@ -126,10 +126,14 @@ void rt_thread_entry_main(void* parameter)
 			led3.interval = 1000;
 		else
 			led3.interval = 500;
-		if(ctrl.trace == false)
+		if(fixed == false)
 			led1.interval = 1000;
 		else
-			led1.interval = 500;
+			led1.interval = 0;
+//		if(ctrl.trace == false)
+//			led1.interval = 1000;
+//		else
+//			led1.interval = 500;
 /***************recv begin****************/
 		if(rt_mq_recv(rxQ,&rxData,RX_DATA_SIZE,0) == RT_EOK)
 		{

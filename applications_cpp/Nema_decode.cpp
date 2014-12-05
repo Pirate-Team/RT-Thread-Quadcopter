@@ -13,6 +13,7 @@ void rt_thread_entry_getgpsdata(void* parameter)
 {
 	uint8_t buffer[512] = {0};
 	uint16_t len = 0;
+	uint32_t tick = rt_tick_get();
 	rt_device_t uart1_device = rt_device_find("uart1");
 
 	if(uart1_device!=RT_NULL)
@@ -71,12 +72,15 @@ void rt_thread_entry_getgpsdata(void* parameter)
 				fixed = true;
 			}
 			else
-				fixed = false;			
+				fixed = false;
+			
+			tick = rt_tick_get() + 1000;
 			new_parse = 0;
 		}
-		else
+		else if(tick < rt_tick_get())
 			fixed = false;
-		DELAY_MS(200);
+			
+		DELAY_MS(400);
 	}
 }
 

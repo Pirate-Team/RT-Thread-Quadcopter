@@ -269,7 +269,7 @@ void MPU6050::setOffset(void)
 		param.gyroYOffset = (param.gyroYOffset + gy) >> 1;
 		param.gyroZOffset = (param.gyroZOffset + gz) >> 1;
 		
-		DELAY_MS(2);
+		DELAY_MS(5);
 	}
 	param.accZOffset -= 2048;
 }

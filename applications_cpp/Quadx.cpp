@@ -31,10 +31,10 @@ struct ctrl_t
 };
 extern struct ctrl_t ctrl;
 extern int32_t lng,lat;
-extern "C" 
-{
-	extern int16_t targetX,targetY;
-}
+//extern "C" 
+//{
+//	extern int16_t targetX,targetY;
+//}
 
 /*-----------------------------------
 	thread
@@ -81,11 +81,12 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 		float cur,pre,sum;
 	}err[6]={0};
 	
+	int32_t lng = 0,lat = 0;
 	float heading = 0;
 	float alt = 0;
 	float vel = 0;
 	uint16_t throttle = 0;
-	int16_t accZ = 0;
+	int16_t accZ = 2048;
 	
 	DELAY_MS(20);	
 	while(1)
@@ -95,24 +96,33 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 		quat.toEuler(att[PITCH],att[ROLL],att[YAW]);
 		/*pitch&roll*/
 		//trace
-		if(ctrl.trace == true)
+//		if(ctrl.trace == true)
+		if(RCValue[HOLD] > 1500)
 		{
-			err[PITCH+POS].cur = BETWEEN(targetX,-16,16);
-			err[PITCH+POS].cur = DEAD_BAND(err[PITCH+POS].cur,0,2);
+			float _cos = arm_cos_f32(att.yaw / M_57_3);
+			float _sin = arm_sin_f32(att.yaw / M_57_3);
+			int32_t _lng = lng - att.longitude;
+			int32_t _lat = lat - att.latitude;
+			
+			err[PITCH+POS].cur = BETWEEN((_lat * _cos - _lng * _sin) / 100,-16,16);
+			err[PITCH+POS].cur = DEAD_BAND(err[PITCH+POS].cur,0,5);
 
 			param.PID[PITCH+POS].result =  param.PID[PITCH+POS].P * err[PITCH+POS].cur;
 			param.PID[PITCH+POS].result += param.PID[PITCH+POS].D * (err[PITCH+POS].cur-err[PITCH+POS].pre);
 			err[PITCH+POS].pre = err[PITCH+POS].cur;
 			
-			err[ROLL +POS].cur = BETWEEN(-targetY,-16,16);
-			err[ROLL +POS].cur = DEAD_BAND(err[ROLL+POS].cur,0,2);
+			err[ROLL +POS].cur = BETWEEN((_lng * _cos + _lat * _sin) / 100,-16,16);
+			err[ROLL +POS].cur = DEAD_BAND(err[ROLL+POS].cur,0,5);
 			
 			param.PID[ROLL +POS].result =  param.PID[ROLL +POS].P * err[ROLL+POS].cur;
 			param.PID[ROLL +POS].result += param.PID[ROLL +POS].D * (err[ROLL+POS].cur-err[ROLL+POS].pre);
 			err[ROLL +POS].pre = err[ROLL+POS].cur; 
 		}
 		else
+		{
+			lng = att.longitude; lat = att.latitude;
 			param.PID[PITCH+POS].result = param.PID[ROLL+POS].result = 0;
+		}
 		 
 		for(uint8_t i=0;i<2;i++)
 		{
