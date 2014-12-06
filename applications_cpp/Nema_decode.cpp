@@ -66,21 +66,21 @@ void rt_thread_entry_getgpsdata(void* parameter)
 			{
 				char str[16];
 				sprintf(str,"%f",info.lon);
-				att.longitude = GPS_coord_to_degrees(str);
+				att.longitude = ((int64_t)att.longitude + (int64_t)GPS_coord_to_degrees(str)*3) >> 2;
 				sprintf(str,"%f",info.lat);
-				att.latitude = GPS_coord_to_degrees(str);
+				att.latitude = ((int64_t)att.latitude + (int64_t)GPS_coord_to_degrees(str)*3) >> 2;
 				fixed = true;
 			}
 			else
 				fixed = false;
 			
-			tick = rt_tick_get() + 1000;
+			tick = rt_tick_get() + 1000;//2s
 			new_parse = 0;
 		}
 		else if(tick < rt_tick_get())
 			fixed = false;
 			
-		DELAY_MS(400);
+		DELAY_MS(200);
 	}
 }
 

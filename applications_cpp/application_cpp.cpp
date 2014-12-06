@@ -24,7 +24,7 @@ struct ctrl_t
 };
 struct ctrl_t ctrl = {0};
 
-int32_t lng = 0,lat = 0;
+extern int32_t lng,lat;
 
 //extern "C" 
 //{

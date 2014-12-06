@@ -14,7 +14,7 @@
 /*-----------------------------------
 	define
 -----------------------------------*/
-#define M_57_3 57.29577f
+#define M_57_3 57.295779f
 #define GYRO_SCALE 32.8f
 #define ACCEL_SCALE 2048.0f
 #define POS 4
@@ -42,7 +42,7 @@ extern int32_t lng,lat;
 void rt_thread_entry_quadx_get_attitude(void* parameter)
 {
 	uint8_t state = 0;
-	quat.sampleInterval = 0.0041f;
+	quat.sampleInterval = 0.0042f;
 	while(1)
 	{
 		/*getSensorData*/
@@ -73,7 +73,7 @@ void rt_thread_entry_quadx_get_attitude(void* parameter)
 	}
 }
 
-
+int32_t lng = 0,lat = 0;
 void rt_thread_entry_quadx_control_attitude(void* parameter)
 {
 	struct err_t
@@ -81,7 +81,6 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 		float cur,pre,sum;
 	}err[6]={0};
 	
-	int32_t lng = 0,lat = 0;
 	float heading = 0;
 	float alt = 0;
 	float vel = 0;
@@ -96,23 +95,22 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 		quat.toEuler(att[PITCH],att[ROLL],att[YAW]);
 		/*pitch&roll*/
 		//trace
-//		if(ctrl.trace == true)
-		if(RCValue[HOLD] > 1500)
+		if(RCValue[HOLD] > 1500 && RCValue[PITCH] == 1500 && RCValue[ROLL] == 1500)
 		{
 			float _cos = arm_cos_f32(att.yaw / M_57_3);
 			float _sin = arm_sin_f32(att.yaw / M_57_3);
 			int32_t _lng = lng - att.longitude;
 			int32_t _lat = lat - att.latitude;
 			
-			err[PITCH+POS].cur = BETWEEN((_lat * _cos - _lng * _sin) / 100,-16,16);
-			err[PITCH+POS].cur = DEAD_BAND(err[PITCH+POS].cur,0,5);
+			err[PITCH+POS].cur = DEAD_BAND(-(_lat * _cos - _lng * _sin) / 100,0,2);
+			err[PITCH+POS].cur = BETWEEN(err[PITCH+POS].cur,-16,16);
 
 			param.PID[PITCH+POS].result =  param.PID[PITCH+POS].P * err[PITCH+POS].cur;
 			param.PID[PITCH+POS].result += param.PID[PITCH+POS].D * (err[PITCH+POS].cur-err[PITCH+POS].pre);
 			err[PITCH+POS].pre = err[PITCH+POS].cur;
 			
-			err[ROLL +POS].cur = BETWEEN((_lng * _cos + _lat * _sin) / 100,-16,16);
-			err[ROLL +POS].cur = DEAD_BAND(err[ROLL+POS].cur,0,5);
+			err[ROLL +POS].cur = DEAD_BAND((_lng * _cos + _lat * _sin) / 100,0,2);
+			err[ROLL +POS].cur = BETWEEN(err[ROLL+POS].cur,-16,16);
 			
 			param.PID[ROLL +POS].result =  param.PID[ROLL +POS].P * err[ROLL+POS].cur;
 			param.PID[ROLL +POS].result += param.PID[ROLL +POS].D * (err[ROLL+POS].cur-err[ROLL+POS].pre);
@@ -123,7 +121,6 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 			lng = att.longitude; lat = att.latitude;
 			param.PID[PITCH+POS].result = param.PID[ROLL+POS].result = 0;
 		}
-		 
 		for(uint8_t i=0;i<2;i++)
 		{
 			//Ò£¿Ø×î¶à30¶È

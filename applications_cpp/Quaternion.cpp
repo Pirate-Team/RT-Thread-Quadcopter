@@ -2,7 +2,7 @@
 #include "arm_math.h"
 
 #define sampleFreq	170.0f		// sample frequency in Hz
-#define betaDef		0.1f		// 2 * proportional gain
+#define betaDef		0.2f		// 2 * proportional gain
 #define M_57_3 57.295779f
 #define INTERVAL 0.004f
 //---------------------------------------------------------------------------------------------------
