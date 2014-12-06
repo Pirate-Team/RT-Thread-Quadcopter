@@ -231,7 +231,7 @@ void rt_thread_entry_main(void* parameter)
 			rt_mq_send(txQ,&txData,TX_DATA_SIZE);
 		}
 /***************send end****************/
-		DELAY_MS(120);
+		DELAY_MS(150);
 	}
 }
 

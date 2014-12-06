@@ -106,6 +106,6 @@ void rt_thread_entry_communication(void* parameter)
 		{
 			com.sendData();
 		}
-		DELAY_MS(40);
+		DELAY_MS(50);
 	}
 }
