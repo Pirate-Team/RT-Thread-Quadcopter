@@ -55,7 +55,7 @@ void rt_thread_entry_trace(void* parameter)
 	{
 		if(Ov7725_vsync == 2)
 		{
-			FIFO_PREPARE;  			/*FIFO准备*/					
+			FIFO_PREPARE();  			/*FIFO准备*/					
 			ImagDisp(&Cam_data[0][0]);	/*采集并显示*/		
 			if(Trace(&condition_yellow,&result))
 			{

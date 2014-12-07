@@ -160,43 +160,39 @@
 #define DSPAuto   0xAC
 
 
-#define FIFO_OE_H()     GPIO_SetBits(GPIOB, GPIO_Pin_0)
-#define FIFO_OE_L()     GPIO_ResetBits(GPIOB,GPIO_Pin_0)	  /*拉低使FIFO输出使能 oe*/
+#define FIFO_OE_H()     GPIOB->BSRRL = GPIO_Pin_0;//GPIO_SetBits(GPIOB, GPIO_Pin_0)
+#define FIFO_OE_L()     GPIOB->BSRRH = GPIO_Pin_0;//GPIO_ResetBits(GPIOB,GPIO_Pin_0)	  /*拉低使FIFO输出使能 oe*/
 
-#define FIFO_WRST_H()   GPIO_SetBits(GPIOC, GPIO_Pin_10) /*拉高允许FIFO写(数据from摄像头)指针运动 */
-#define FIFO_WRST_L()   GPIO_ResetBits(GPIOC,GPIO_Pin_10)  /*拉低使FIFO写(数据from摄像头)指针复位*/
+#define FIFO_WRST_H()   GPIOC->BSRRL = GPIO_Pin_10//GPIO_SetBits(GPIOC, GPIO_Pin_10) /*拉高允许FIFO写(数据from摄像头)指针运动 */
+#define FIFO_WRST_L()   GPIOC->BSRRH = GPIO_Pin_10//GPIO_ResetBits(GPIOC,GPIO_Pin_10)  /*拉低使FIFO写(数据from摄像头)指针复位*/
 
-#define FIFO_RRST_H()   GPIO_SetBits(GPIOA, GPIO_Pin_4)   /*拉高允许FIFO读(数据从FIFO输出)指针运动 */
-#define FIFO_RRST_L()   GPIO_ResetBits(GPIOA,GPIO_Pin_4)  /*拉低使FIFO读(数据从FIFO输出)指针复位 */
+#define FIFO_RRST_H()   GPIOA->BSRRL = GPIO_Pin_4//GPIO_SetBits(GPIOA, GPIO_Pin_4)   /*拉高允许FIFO读(数据从FIFO输出)指针运动 */
+#define FIFO_RRST_L()   GPIOA->BSRRH = GPIO_Pin_4//GPIO_ResetBits(GPIOA,GPIO_Pin_4)  /*拉低使FIFO读(数据从FIFO输出)指针复位 */
 
-#define FIFO_RCLK_H()   GPIO_SetBits(GPIOA, GPIO_Pin_1) 
-#define FIFO_RCLK_L()   GPIO_ResetBits(GPIOA,GPIO_Pin_1) /*FIFO输出数据时钟*/
+#define FIFO_RCLK_H()   GPIOA->BSRRL = GPIO_Pin_1//GPIO_SetBits(GPIOA, GPIO_Pin_1) 
+#define FIFO_RCLK_L()   GPIOA->BSRRH = GPIO_Pin_1//GPIO_ResetBits(GPIOA,GPIO_Pin_1) /*FIFO输出数据时钟*/
 
-#define FIFO_WE_H()     GPIO_SetBits(GPIOC, GPIO_Pin_12)  /*拉高使FIFO写允许*/
-#define FIFO_WE_L()     GPIO_ResetBits(GPIOC,GPIO_Pin_12)
+#define FIFO_WE_H()     GPIOC->BSRRL = GPIO_Pin_12//GPIO_SetBits(GPIOC, GPIO_Pin_12)  /*拉高使FIFO写允许*/
+#define FIFO_WE_L()     GPIOC->BSRRH = GPIO_Pin_12//GPIO_ResetBits(GPIOC,GPIO_Pin_12)
 
 
-#define READ_FIFO_PIXEL(RGB565)   	do{\
-	                                  RGB565=0;\
+#define READ_FIFO_PIXEL(RGB565)   	  (RGB565)=0;\
 	                                  FIFO_RCLK_L();\
-	                                  RGB565 = (GPIOB->IDR) & 0xF000;\
-	                                  RGB565 |= (GPIOC->IDR <<8) & 0x0f00;\
+	                                  (RGB565) = (GPIOB->IDR) & 0xF000;\
+	                                  (RGB565) |= (GPIOC->IDR <<8) & 0x0f00;\
 	                                  FIFO_RCLK_H();\
                                       FIFO_RCLK_L();\
-	                                  RGB565 |= (GPIOB->IDR >>8) & 0x00F0;\
-									  RGB565 |= (GPIOC->IDR) & 0x000f;\
-	                                  FIFO_RCLK_H();\
-                                    }while(0)
+	                                  (RGB565) |= (GPIOB->IDR >>8) & 0x00F0;\
+									  (RGB565) |= (GPIOC->IDR) & 0x000f;\
+	                                  FIFO_RCLK_H()
 
 
-#define FIFO_PREPARE                do{\
-	                                  FIFO_RRST_L();\
+#define FIFO_PREPARE()                FIFO_RRST_L();\
 	                                  FIFO_RCLK_L();\
 	                                  FIFO_RCLK_H();\
 	                                  FIFO_RRST_H();\
 	                                  FIFO_RCLK_L();\
-	                                  FIFO_RCLK_H();\
-                                    }while(0)
+	                                  FIFO_RCLK_H()
 
 #define OV7725_ID       0x21
 

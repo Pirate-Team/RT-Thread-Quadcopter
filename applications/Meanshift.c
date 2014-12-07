@@ -20,11 +20,11 @@ static void ReadColor(unsigned int x,unsigned int y,COLOR_RGB *Rgb)
 {
 	unsigned short C16;
 
-	C16 = GUI_ReadBit16Point(x,y);
+	C16 = Cam_data[y][x];
 	
-	Rgb->red   =	 (unsigned char)((C16&0xf800)>>8);
-	Rgb->green =	 (unsigned char)((C16&0x07e0)>>3);
-	Rgb->blue  =     (unsigned char)((C16&0x001f)<<3);
+	Rgb->red   =	 (unsigned char)(((C16&0xf800)>>11) * 255) / 31;
+	Rgb->green =	 (unsigned char)(((C16&0x07e0)>>5)  * 255) / 63;
+	Rgb->blue  =     (unsigned char)(((C16&0x001f)>>0)  * 255) / 31;
 }
 
 
@@ -35,7 +35,7 @@ static void RGBtoHSL(const COLOR_RGB *Rgb, COLOR_HSL *Hsl)
     int h,s,l,maxVal,minVal,difVal;
 	int r  = Rgb->red;
 	int g  = Rgb->green;
-  int b  = Rgb->blue;
+	int b  = Rgb->blue;
 	
 	maxVal = max3v(r, g, b);
 	minVal = min3v(r, g, b);
@@ -70,7 +70,7 @@ static void RGBtoHSL(const COLOR_RGB *Rgb, COLOR_HSL *Hsl)
 		else if(l<=120)
 			s = (difVal)*240/(maxVal+minVal);
 		else
-			s = (difVal)*240/(480 - (maxVal+minVal));
+			s = (difVal)*240/(511 - (maxVal+minVal));//为什么不是480二十511
 	}
     Hsl->hue =        (unsigned char)(((h>240)? 240 : ((h<0)?0:h)));
     Hsl->saturation = (unsigned char)(((s>240)? 240 : ((s<0)?0:s)));

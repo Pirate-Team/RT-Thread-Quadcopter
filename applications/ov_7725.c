@@ -323,14 +323,14 @@ ErrorStatus Ov7725_Init(void)
 void ImagDisp(uint16_t*  Cam_data)
 {
 	uint16_t i, j;
-	uint16_t Camera_Data;
+//	uint16_t Camera_Data;
 	for(i = 0; i < 180; i++)
 	{
 		for(j = 0; j < 320; j++)
 		{
-			READ_FIFO_PIXEL(Camera_Data);		/* 从FIFO读出一个rgb565像素到Camera_Data变量 */
+			READ_FIFO_PIXEL(*Cam_data);		/* 从FIFO读出一个rgb565像素到Camera_Data变量 */
 			if((j>=60)&&(j<260))
-				 *(Cam_data++)=Camera_Data;
+				 Cam_data++;
 		}
 	}
 }
