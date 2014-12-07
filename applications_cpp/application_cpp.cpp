@@ -16,7 +16,7 @@
 #include "Attitude.h"
 #include "Nema_decode.h"
 
-//#define TRACE_TEST
+#define TRACE_TEST
 
 struct ctrl_t
 {
@@ -73,7 +73,7 @@ void rt_thread_entry_main(void* parameter)
 												rt_thread_entry_communication,
 												RT_NULL,
 												512,
-												9,
+												8,
 												10);
 	/*quadx_get_thread*/
 	rt_thread_t quadx_get_thread = rt_thread_create("quadx_get_attitude",
@@ -200,8 +200,8 @@ void rt_thread_entry_main(void* parameter)
 			}
 			else if(rxData.type == 'G')
 			{
-				lng = rxData.gps.lng;
-				lat = rxData.gps.lat;
+				lng = (lng + rxData.gps.lng) >> 1;
+				lat = (lat + rxData.gps.lat) >> 1;
 			}
 		}
 /***************recv end****************/

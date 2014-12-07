@@ -5,70 +5,53 @@
 #include "stdio.h"
 #include "Attitude.h"
 #include "ctype.h"
+#include "stm32f4xx.h"
 
+#define GPS_BUFFER_SIZE (400)
+#define GPS_BUFFER_SIZE_HALF (GPS_BUFFER_SIZE/2)
+
+volatile uint8_t GPS_TransferEnd = 0, GPS_HalfTransferEnd = 0;
+uint8_t gps_buffer[GPS_BUFFER_SIZE];
 bool fixed = false;
+
 int GPS_coord_to_degrees(char* s);
+void usart1_init(void);
 
 void rt_thread_entry_getgpsdata(void* parameter)
 {
-	uint8_t buffer[512] = {0};
-	uint16_t len = 0;
-	uint32_t tick = rt_tick_get();
-	rt_device_t uart1_device = rt_device_find("uart1");
-
-	if(uart1_device!=RT_NULL)
-	{
-		rt_device_open(uart1_device,RT_DEVICE_OFLAG_RDWR);
-//		rt_kprintf("usart1 suu\n");
-	}
-//	else
-//		rt_kprintf("uart fail\n");
-		
+	uint32_t tick = 0;
     nmeaINFO info;          //GPS解码后得到的信息
     nmeaPARSER parser;      //解码时使用的数据结构  
     uint8_t new_parse=0;    //是否有新的解码数据标志
 
-    /* 设置用于输出调试信息的函数 */
-//    nmea_property()->trace_func = &trace;
-//    nmea_property()->error_func = &error;
-
     /* 初始化GPS数据结构 */
     nmea_zero_INFO(&info);
     nmea_parser_init(&parser);
+	
+	usart1_init();
 
     while(1)
     {
-		len += rt_device_read(uart1_device,0,buffer+len,500-len);
-		if(len > 128)
+		if(GPS_HalfTransferEnd == 1)
 		{
-			new_parse = nmea_parse(&parser, (const char*)&buffer[0], len, &info);
-			len = 0;
+			new_parse = nmea_parse(&parser, (const char*)&gps_buffer[0], GPS_BUFFER_SIZE_HALF, &info);
+			GPS_HalfTransferEnd = 0;
 		}
+		else if(GPS_TransferEnd)
+		{
+			new_parse = nmea_parse(&parser, (const char*)&gps_buffer[GPS_BUFFER_SIZE_HALF], GPS_BUFFER_SIZE_HALF, &info);
+			GPS_TransferEnd = 0;	
+		}
+		
 		if(new_parse )                //有新的解码消息   
 		{    
-//			char str[100];
-
-//			/* 输出解码得到的信息 */
-//			sprintf(str,"\r\n时间%d,%d,%d,%d,%d,%d", info.utc.year+1900, info.utc.mon+1,info.utc.day,info.utc.hour,info.utc.min,info.utc.sec);
-//			rt_kprintf(str);
-//			sprintf(str,"\r\n纬度：%f,经度%f",info.lat,info.lon);
-//			rt_kprintf(str);
-//			sprintf(str,"\r\n正在使用的卫星：%d,可见卫星：%d",info.satinfo.inuse,info.satinfo.inview);
-//			rt_kprintf(str);
-//			sprintf(str,"\r\n海拔高度：%f 米 ", info.elv);
-//			rt_kprintf(str);
-//			sprintf(str,"\r\n速度：%f km/h ", info.speed);
-//			rt_kprintf(str);
-//			sprintf(str,"\r\n航向：%f 度", info.direction);
-//			rt_kprintf(str);
-
 			if(info.fix == 2 || info.fix == 3)
 			{
 				char str[16];
 				sprintf(str,"%f",info.lon);
-				att.longitude = ((int64_t)att.longitude + (int64_t)GPS_coord_to_degrees(str)*3) >> 2;
+				att.longitude = ((int64_t)att.longitude*3 + (int64_t)GPS_coord_to_degrees(str)) >> 2;
 				sprintf(str,"%f",info.lat);
-				att.latitude = ((int64_t)att.latitude + (int64_t)GPS_coord_to_degrees(str)*3) >> 2;
+				att.latitude = ((int64_t)att.latitude*3 + (int64_t)GPS_coord_to_degrees(str)) >> 2;
 				fixed = true;
 			}
 			else
@@ -78,7 +61,9 @@ void rt_thread_entry_getgpsdata(void* parameter)
 			new_parse = 0;
 		}
 		else if(tick < rt_tick_get())
+		{
 			fixed = false;
+		}
 			
 		DELAY_MS(200);
 	}
@@ -116,4 +101,76 @@ int GPS_coord_to_degrees(char* s) {
 		}
 	}
 	return deg * 10000000UL + (min * 1000000UL + frac_min*10UL) / 6;
+}
+
+void usart1_init(void)
+{
+	GPIO_InitTypeDef GPIO_InitStructure;
+	USART_InitTypeDef USART_InitStructure;	
+	DMA_InitTypeDef DMA_InitStructure;
+	NVIC_InitTypeDef NVIC_InitStructure;
+	
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA2, ENABLE);
+	
+	GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AF;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_UP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7;
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
+    GPIO_PinAFConfig(GPIOB, GPIO_PinSource7, GPIO_AF_USART1);
+	
+	USART_InitStructure.USART_BaudRate = 9600;
+	USART_InitStructure.USART_WordLength = USART_WordLength_8b;
+	USART_InitStructure.USART_StopBits = USART_StopBits_1;
+	USART_InitStructure.USART_Parity = USART_Parity_No;
+	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+	USART_InitStructure.USART_Mode = USART_Mode_Rx;
+	USART_Init(USART1, &USART_InitStructure);
+	
+	DMA_StructInit(&DMA_InitStructure);
+	DMA_InitStructure.DMA_Channel = DMA_Channel_4;
+	DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)(&USART1->DR);
+	DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)gps_buffer;
+	DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralToMemory;
+	DMA_InitStructure.DMA_BufferSize = (uint32_t)GPS_BUFFER_SIZE;
+	DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
+	DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
+	DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
+	DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
+	DMA_InitStructure.DMA_Mode = DMA_Mode_Circular;
+	DMA_InitStructure.DMA_Priority = DMA_Priority_High;
+	DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Disable;
+	DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_Single;
+	DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
+	DMA_DeInit(DMA2_Stream5);
+	DMA_Init(DMA2_Stream5, &DMA_InitStructure);
+	
+	NVIC_InitStructure.NVIC_IRQChannel = DMA2_Stream5_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
+	
+	DMA_ITConfig(DMA2_Stream5,DMA_IT_HT|DMA_IT_TC,ENABLE);
+	DMA_Cmd(DMA2_Stream5,ENABLE);
+	USART_DMACmd(USART1, USART_DMAReq_Rx, ENABLE);
+	USART_Cmd(USART1,ENABLE);
+}
+
+extern "C" void GPS_ProcessDMAIRQ(void);
+void GPS_ProcessDMAIRQ(void)
+{
+	if(DMA_GetITStatus(DMA2_Stream5,DMA_IT_HTIF5) )         /* DMA 半传输完成 */
+	{
+		GPS_HalfTransferEnd = 1;                //设置半传输完成标志位
+		DMA_ClearITPendingBit(DMA2_Stream5,DMA_IT_HTIF5);
+	}
+	else if(DMA_GetITStatus(DMA2_Stream5,DMA_IT_TCIF5))     /* DMA 传输完成 */
+	{
+		GPS_TransferEnd = 1;                    //设置传输完成标志位
+		DMA_ClearITPendingBit(DMA2_Stream5,DMA_IT_TCIF5);
+	}
 }

@@ -44,40 +44,43 @@ bool Communication::getData(void)
 	static GET_DATA_STATE state = NEED_AA;
 	static uint8_t length;
 	static uint8_t byte;
-	if(state == NEED_AA)
+	while(1)
 	{
-		if(rt_device_read(device, 0, &byte, 1) != 1) return false;
-		if(byte != 0xaa) return false;
-		state = NEED_BB;
-	}
-	if(state == NEED_BB)
-	{
-		if(rt_device_read(device, 0, &byte, 1) != 1) return false;
-		if(byte != 0xbb) 
+		if(state == NEED_AA)
 		{
-			state = NEED_AA;
-			return false;
+			if(rt_device_read(device, 0, &byte, 1) != 1) return false;
+			if(byte != 0xaa) continue;
+			state = NEED_BB;
 		}
-		length = 0;
-		state = NEED_DATA;
-	}
-	if(state == NEED_DATA)
-	{
-		length += rt_device_read(device, 0, ((uint8_t*)&(rxFrame.data)) + length, RX_FRAME_SIZE - 2 - length);
-		if(length != RX_FRAME_SIZE - 2) return false;
-		uint8_t checkSum = 0;
-		for(uint8_t i=0;i<RX_DATA_SIZE;i++)
-			checkSum += ((uint8_t*)&(rxFrame.data))[i];
-		if(checkSum != rxFrame.checkSum)
+		if(state == NEED_BB)
 		{
+			if(rt_device_read(device, 0, &byte, 1) != 1) return false;
+			if(byte != 0xbb) 
+			{
+				state = NEED_AA;
+				continue;
+			}
+			length = 0;
+			state = NEED_DATA;
+		}
+		if(state == NEED_DATA)
+		{
+			length += rt_device_read(device, 0, ((uint8_t*)&(rxFrame.data)) + length, RX_FRAME_SIZE - 2 - length);
+			if(length != RX_FRAME_SIZE - 2) return false;
+			uint8_t checkSum = 0;
+			for(uint8_t i=0;i<RX_DATA_SIZE;i++)
+				checkSum += ((uint8_t*)&(rxFrame.data))[i];
+			if(checkSum != rxFrame.checkSum)
+			{
+				state = NEED_AA;
+				continue;
+			}
 			state = NEED_AA;
-			return false;
+			return true;
 		}
 		state = NEED_AA;
-		return true;
+		return false;
 	}
-	state = NEED_AA;
-	return false;
 }
 
 void Communication::sendData(void)

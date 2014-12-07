@@ -12,7 +12,7 @@
 #define RT_THREAD_PRIORITY_MAX	32
 
 /* Tick per Second */
-#define RT_TICK_PER_SECOND	500
+#define RT_TICK_PER_SECOND	250
 
 /* SECTION: RT_DEBUG */
 /* Thread Debug */

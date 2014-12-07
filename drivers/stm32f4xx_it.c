@@ -247,6 +247,14 @@ void EXTI2_IRQHandler(void)
     }    
 	rt_interrupt_leave();
 }
+
+void DMA2_Stream5_IRQHandler(void)
+{
+	void GPS_ProcessDMAIRQ(void);
+	rt_interrupt_enter();
+	GPS_ProcessDMAIRQ();
+	rt_interrupt_leave();
+}
 /**
   * @}
   */
