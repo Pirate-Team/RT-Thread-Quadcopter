@@ -1,11 +1,11 @@
 #ifndef EASY_TRACER_H
 #define EASY_TRACER_H
-#include "ov_7725.h"
+#include "head.h"
 
 #define IMG_X 0	  //图片x坐标
 #define IMG_Y 0	  //图片y坐标
-#define IMG_W 200 //图片宽度
-#define IMG_H 180 //图片高度
+#define IMG_W 320 //图片宽度
+#define IMG_H 240 //图片高度
 
 #define ALLOW_FAIL_PER 2 //容错率，没1<<ALLOW_FAIL_PER个点允许出现一个错误点，容错率越大越容易识别，但错误率越大
 #define ITERATE_NUM    10 //迭代次数，迭代次数越多识别越精确，但计算量越大
@@ -44,7 +44,7 @@ typedef struct{
 }TARGET_CONDI;//判定为的目标条件
 
 typedef struct{
-	 uint16_t  x;//目标的x坐标
+	 uint16_t x;//目标的x坐标
 	 uint16_t y;//目标的y坐标
 	 uint16_t w;//目标的宽度
 	 uint16_t h;//目标的高度
@@ -79,4 +79,8 @@ typedef enum{
 //返回1识别成功，返回1识别失败
 int Trace(const TARGET_CONDI *Condition,RESULT *Resu);
 uint16_t  GUI_ReadBit16Point(unsigned int x,unsigned int y);
+
+void RGBtoHSL(const COLOR_RGB *Rgb, COLOR_HSL *Hsl);
+void ReadColor(unsigned int x,unsigned int y,COLOR_RGB *Rgb);
+int ColorMatch(const COLOR_HSL *Hsl,const TARGET_CONDI *Condition);
 #endif

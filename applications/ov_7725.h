@@ -3,6 +3,7 @@
 	   
 #include "stm32f4xx.h"
 #include "stm32f4xx_conf.h"
+#include "Meanshift.h"
 
 /* ¼Ä´æÆ÷ºê¶¨Òå */
 #define GAIN      0x00
@@ -199,7 +200,7 @@
 void Ov7725_GPIO_Config(void);
 ErrorStatus Ov7725_Init(void);
 void VSYNC_Init(void);
-void ImagDisp(uint16_t*  Cam_data);
+void ImagDisp(uint8_t*  Cam_data,TARGET_CONDI* Condition);
 void Set_15fps(void);
 void set_25fps(void);
 void set_30fps(void);
