@@ -7,7 +7,7 @@
 #include "ctype.h"
 #include "stm32f4xx.h"
 
-#define GPS_BUFFER_SIZE (400)
+#define GPS_BUFFER_SIZE (320)
 #define GPS_BUFFER_SIZE_HALF (GPS_BUFFER_SIZE/2)
 
 volatile uint8_t GPS_TransferEnd = 0, GPS_HalfTransferEnd = 0;
