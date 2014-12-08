@@ -127,13 +127,14 @@ void rt_thread_entry_main(void* parameter)
 		else
 			led3.interval = 500;
 		if(fixed == false)
-			led1.interval = 1000;
-		else
 			led1.interval = 0;
-//		if(ctrl.trace == false)
-//			led1.interval = 1000;
-//		else
-//			led1.interval = 500;
+		else
+		{
+			if(ctrl.trace == false)
+				led1.interval = 1000;
+			else
+				led1.interval = 500;
+		}
 /***************recv begin****************/
 		if(rt_mq_recv(rxQ,&rxData,RX_DATA_SIZE,0) == RT_EOK)
 		{
@@ -223,12 +224,12 @@ void rt_thread_entry_main(void* parameter)
 			
 			rt_memcpy(txData.status.motor,motorValue,8);//电机不乘，无符号,直接拷贝
 			
-			txData.status.target[0] = 1;//targetX;//目标位置，不做变换
-			txData.status.target[1] = 2;//targetY;
-			txData.status.target[2] = 3;//targetH;//目标长宽，不做变换
-			txData.status.target[3] = 4;//targetW;
+			txData.status.target[0] = targetX;//目标位置，不做变换
+			txData.status.target[1] = targetY;
+			txData.status.target[2] = targetH;//目标长宽，不做变换
+			txData.status.target[3] = targetW;
 			
-//			rt_mq_send(txQ,&txData,TX_DATA_SIZE);
+			rt_mq_send(txQ,&txData,TX_DATA_SIZE);
 		}
 /***************send end****************/
 		DELAY_MS(150);
@@ -275,9 +276,6 @@ void hardware_init(void)
 		DELAY_MS(700);
 	}
 #endif
-	
-//	if(!ov_7725_init())
-//		led1.interval = 0;
 }
 
 void param_init(void)
