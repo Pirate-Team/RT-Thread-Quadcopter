@@ -18,7 +18,7 @@
 #define GYRO_SCALE 32.8f
 #define ACCEL_SCALE 2048.0f
 #define POS 4
-//#define DYNAMIC_PID
+#define DYNAMIC_PID
 /*-----------------------------------
 	global
 -----------------------------------*/
@@ -208,13 +208,13 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 /*--------------------------------------------------------*/
 #ifdef DYNAMIC_PID
 		/*动态PID*/
-		if(RCValue[THROTTLE]>1400)
+		if(RCValue[THROTTLE]>1400 || RCValue[HOLD] > 1500)
 		{
 			#define K (4000.0f)
 			float t = BETWEEN((RCValue[THROTTLE] - 1000) / K + 1 - 700 / K,0,1.1111f);//油门为1700时t=1
 			param.PID[PITCH].result *= t;
 			param.PID[ROLL].result *=  t;
-			param.PID[THROTTLE].result += BETWEEN((abs(param.PID[PITCH].result) + abs(param.PID[ROLL].result)) / 30.0f,0,2);
+			param.PID[THROTTLE].result += BETWEEN((abs(param.PID[PITCH].result) + abs(param.PID[ROLL].result)) / 20.0f,0,5);
 		}
 #endif
 /*--------------------------------------------------------*/		
