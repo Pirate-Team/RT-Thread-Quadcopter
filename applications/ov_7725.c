@@ -1,9 +1,16 @@
 #include "ov_7725.h"
 #include "Sccb.h"
 #include "Usart.h"
+#include "Meanshift.h"
 
 
-
+extern TARGET_CONDI condition_blue;
+extern TARGET_CONDI condition_green;
+extern TARGET_CONDI condition_yellow1;
+extern TARGET_CONDI condition_white;
+extern TARGET_CONDI condition_red;
+extern TARGET_CONDI condition_yellow;
+extern TARGET_CONDI condition_darkBlue;
 typedef struct Reg
 {
 	uint8_t Address;			       /*寄存器地址*/
@@ -320,18 +327,78 @@ ErrorStatus Ov7725_Init(void)
  *|                   |
  * -------------------
  */
-void ImagDisp(uint16_t*  Cam_data)
+#define min3v(v1, v2, v3)   ((v1)>(v2)? ((v2)>(v3)?(v3):(v2)):((v1)>(v3)?(v3):(v1)))
+#define max3v(v1, v2, v3)   ((v1)<(v2)? ((v2)<(v3)?(v3):(v2)):((v1)<(v3)?(v3):(v1)))
+
+void ImagDisp(uint8_t*  Cam_data,TARGET_CONDI* Condition)
 {
-	uint16_t i, j;
-//	uint16_t Camera_Data;
-	for(i = 0; i < 180; i++)
-	{
-		for(j = 0; j < 320; j++)
-		{
-			READ_FIFO_PIXEL(*Cam_data);		/* 从FIFO读出一个rgb565像素到Camera_Data变量 */
-			if((j>=60)&&(j<260))
-				 Cam_data++;
-		}
+	uint32_t i;
+	int16_t r;
+	int16_t g;
+	int16_t b;
+	uint16_t Camera_Data;
+	COLOR_HSL Hsl;
+	int16_t h,s,l,maxVal,minVal,difVal;
+	
+	i=76800;
+	while(i--){
+			READ_FIFO_PIXEL(Camera_Data);		/* 从FIFO读出一个rgb565像素到Camera_Data变量 */
+			//读取单个像素点数据进行判定，符合判定条件的在相应数组内置1，不符合的置0，并将跳转到下一个像素点处理
+			r  = (unsigned char)((Camera_Data&0xf800)>>8);
+			g  = (unsigned char)((Camera_Data&0x07e0)>>3);
+			b  = (unsigned char)((Camera_Data&0x001f)<<3);
+		
+			maxVal = max3v(r, g, b);
+			minVal = min3v(r, g, b);
+			if(maxVal == minVal)//若r=g=b
+			{
+				*(Cam_data++)=0;
+				continue;
+			}
+			else
+			{
+				difVal = maxVal-minVal;
+				//计算色调
+				if(maxVal==r)
+				{
+					if(g>=b)
+						h = 40*(g-b)/(difVal);
+					else
+						h = 40*(g-b)/(difVal) + 240;
+				}
+				else if(maxVal==g)
+					h = 40*(b-r)/(difVal) + 80;
+				else if(maxVal==b)
+					h = 40*(r-g)/(difVal) + 160;
+				
+				Hsl.hue = (unsigned char)(((h>240)? 240 : ((h<0)?0:h)));
+				if(Hsl.hue > Condition->H_MAX || Hsl.hue < Condition->H_MIN)
+				{
+					*(Cam_data++)=0;
+					continue;
+				}
+				//计算亮度
+				l = (maxVal+minVal)*240/255/2;
+				Hsl.luminance  = (unsigned char)(((l>240)? 240 : ((l<0)?0:l)));
+			
+				if(Hsl.luminance > Condition->L_MAX||Hsl.luminance <	Condition->L_MIN){
+					*(Cam_data++)=0;
+					continue;
+				}
+				//计算饱和度
+				if(l == 0)
+					s = 0;
+				else if(l<=120)
+					s = (difVal)*240/(maxVal+minVal);
+				else
+					s = (difVal)*240/(511 - (maxVal+minVal));//为什么不是480二十511
+				Hsl.saturation = (unsigned char)(((s>240)? 240 : ((s<0)?0:s)));
+				if(Hsl.saturation < Condition->S_MIN || Hsl.saturation > Condition->S_MAX){
+				    *(Cam_data++)=0;
+					continue;
+				}
+			  *(Cam_data++)=1;
+			}	
 	}
 }
 

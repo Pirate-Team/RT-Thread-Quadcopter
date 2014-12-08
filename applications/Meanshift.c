@@ -4,7 +4,7 @@
 #define min3v(v1, v2, v3)   ((v1)>(v2)? ((v2)>(v3)?(v3):(v2)):((v1)>(v3)?(v3):(v1)))
 #define max3v(v1, v2, v3)   ((v1)<(v2)? ((v2)<(v3)?(v3):(v2)):((v1)<(v3)?(v3):(v1)))
 
-extern uint16_t Cam_data[180][200];
+extern uint8_t Cam_data[240][320];
 
 uint16_t  GUI_ReadBit16Point(unsigned int x,unsigned int y){
 	     if((x<200)&&(y<180))
@@ -16,21 +16,24 @@ uint16_t  GUI_ReadBit16Point(unsigned int x,unsigned int y){
 
 //读取RBG格式颜色，唯一需要移植的函数
 //extern unsigned short GUI_ReadBit16Point(unsigned short x,unsigned short y);
-static void ReadColor(unsigned int x,unsigned int y,COLOR_RGB *Rgb)
+void ReadColor(unsigned int x,unsigned int y,COLOR_RGB *Rgb)
 {
 	unsigned short C16;
 
 	C16 = Cam_data[y][x];
 	
-	Rgb->red   =	 (unsigned char)(((C16&0xf800)>>11) * 255) / 31;
-	Rgb->green =	 (unsigned char)(((C16&0x07e0)>>5)  * 255) / 63;
-	Rgb->blue  =     (unsigned char)(((C16&0x001f)>>0)  * 255) / 31;
+//	Rgb->red   =	 (unsigned char)(((C16&0xf800)>>11) * 255) / 31;
+//	Rgb->green =	 (unsigned char)(((C16&0x07e0)>>5)  * 255) / 63;
+//	Rgb->blue  =     (unsigned char)(((C16&0x001f)>>0)  * 255) / 31;
+	Rgb->red   =	 (unsigned char)((C16&0xf800)>>8);
+	Rgb->green =	 (unsigned char)((C16&0x07e0)>>3);
+	Rgb->blue  =     (unsigned char)((C16&0x001f)<<3);
 }
 
 
 
 //RGB转HSL
-static void RGBtoHSL(const COLOR_RGB *Rgb, COLOR_HSL *Hsl)
+void RGBtoHSL(const COLOR_RGB *Rgb, COLOR_HSL *Hsl)
 {
     int h,s,l,maxVal,minVal,difVal;
 	int r  = Rgb->red;
@@ -78,7 +81,7 @@ static void RGBtoHSL(const COLOR_RGB *Rgb, COLOR_HSL *Hsl)
 }
 
 //匹配颜色
-static int ColorMatch(const COLOR_HSL *Hsl,const TARGET_CONDI *Condition)
+int ColorMatch(const COLOR_HSL *Hsl,const TARGET_CONDI *Condition)
 {
 	if( 
 		Hsl->hue		>=	Condition->H_MIN &&
@@ -97,9 +100,9 @@ static int ColorMatch(const COLOR_HSL *Hsl,const TARGET_CONDI *Condition)
 static int SearchCentre(unsigned int *x,unsigned int *y,const TARGET_CONDI *Condition,const SEARCH_AREA *Area)
 {
 	unsigned int SpaceX,SpaceY,i,j,k,FailCount=0;
-	COLOR_RGB Rgb;
-	COLOR_HSL Hsl;
-	
+	//COLOR_RGB Rgb;
+//	COLOR_HSL Hsl;
+	uint8_t temp;
 	SpaceX = Condition->WIDTH_MIN/3;
 	SpaceY = Condition->HIGHT_MIN/3;
 
@@ -111,12 +114,13 @@ static int SearchCentre(unsigned int *x,unsigned int *y,const TARGET_CONDI *Cond
 			for(k=0;k<SpaceX+SpaceY;k++)
 			{
 				if(k<SpaceX)
-					ReadColor(j+k,i+SpaceY/2,&Rgb);
+					temp = Cam_data[i+SpaceY/2][j+k];//ReadColor(j+k,i+SpaceY/2,&Rgb);
 				else
-					ReadColor(j+SpaceX/2,i+(k-SpaceX),&Rgb);
-				RGBtoHSL(&Rgb,&Hsl);
+					temp = Cam_data[i+(k-SpaceX)][j+SpaceX/2];//ReadColor(j+SpaceX/2,i+(k-SpaceX),&Rgb);
+				//RGBtoHSL(&Rgb,&Hsl);
 				
-				if(!ColorMatch(&Hsl,Condition))
+				//if(!ColorMatch(&Hsl,Condition))
+				if(temp == 0)
 					FailCount++;
 				if(FailCount>((SpaceX+SpaceY)>>ALLOW_FAIL_PER))
 					break;
@@ -136,14 +140,15 @@ static int SearchCentre(unsigned int *x,unsigned int *y,const TARGET_CONDI *Cond
 static int Corrode(unsigned int oldx,unsigned int oldy,const TARGET_CONDI *Condition,RESULT *Resu)
 {
 	unsigned int Xmin,Xmax,Ymin,Ymax,i,FailCount=0;
-	COLOR_RGB Rgb;
-	COLOR_HSL Hsl;
-	
+	//COLOR_RGB Rgb;
+//	COLOR_HSL Hsl;
+	uint8_t  temp;
 	for(i=oldx;i>IMG_X;i--)
 	{
-		ReadColor(i,oldy,&Rgb);
-		RGBtoHSL(&Rgb,&Hsl);
-		if(!ColorMatch(&Hsl,Condition))
+		temp = Cam_data[oldy][i];//ReadColor(i,oldy,&Rgb);
+		//RGBtoHSL(&Rgb,&Hsl);
+		//if(!ColorMatch(&Hsl,Condition))
+		if(temp==0)
 			FailCount++;
 		if(FailCount>(((Condition->WIDTH_MIN+Condition->WIDTH_MAX)>>2)>>ALLOW_FAIL_PER))
 			break;	
@@ -153,9 +158,10 @@ static int Corrode(unsigned int oldx,unsigned int oldy,const TARGET_CONDI *Condi
 	
 	for(i=oldx;i<IMG_X+IMG_W;i++)
 	{
-		ReadColor(i,oldy,&Rgb);
-		RGBtoHSL(&Rgb,&Hsl);
-		if(!ColorMatch(&Hsl,Condition))
+		temp = Cam_data[oldy][i];//ReadColor(i,oldy,&Rgb);
+		//RGBtoHSL(&Rgb,&Hsl);
+		//if(!ColorMatch(&Hsl,Condition))
+		if(temp==0)
 			FailCount++;
 		if(FailCount>(((Condition->WIDTH_MIN+Condition->WIDTH_MAX)>>2)>>ALLOW_FAIL_PER))
 			break;	
@@ -165,9 +171,10 @@ static int Corrode(unsigned int oldx,unsigned int oldy,const TARGET_CONDI *Condi
 	
 	for(i=oldy;i>IMG_Y;i--)
 	{
-		ReadColor(oldx,i,&Rgb);
-		RGBtoHSL(&Rgb,&Hsl);
-		if(!ColorMatch(&Hsl,Condition))
+		temp = Cam_data[i][oldx];//ReadColor(oldx,i,&Rgb);
+		//RGBtoHSL(&Rgb,&Hsl);
+		//if(!ColorMatch(&Hsl,Condition))
+		if(temp==0)
 			FailCount++;
 		if(FailCount>(((Condition->HIGHT_MIN+Condition->HIGHT_MAX)>>2)>>ALLOW_FAIL_PER))
 			break;	
@@ -177,9 +184,10 @@ static int Corrode(unsigned int oldx,unsigned int oldy,const TARGET_CONDI *Condi
 	
 	for(i=oldy;i<IMG_Y+IMG_H;i++)
 	{
-		ReadColor(oldx,i,&Rgb);
-		RGBtoHSL(&Rgb,&Hsl);
-		if(!ColorMatch(&Hsl,Condition))
+		temp = Cam_data[i][oldx];//ReadColor(oldx,i,&Rgb);
+		//RGBtoHSL(&Rgb,&Hsl);
+		//if(!ColorMatch(&Hsl,Condition))
+		if(temp==0)
 			FailCount++;
 		if(FailCount>(((Condition->HIGHT_MIN+Condition->HIGHT_MAX)>>2)>>ALLOW_FAIL_PER))
 			break;	

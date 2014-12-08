@@ -26,12 +26,12 @@ struct ctrl_t ctrl = {0};
 
 extern int32_t lng,lat;
 
-//extern "C" 
-//{
-//	extern int16_t targetX,targetY,targetH,targetW;
-//	void rt_thread_entry_trace(void* parameter);
-//	uint8_t ov_7725_init(void);
-//}
+extern "C" 
+{
+	extern int16_t targetX,targetY,targetH,targetW;
+	void rt_thread_entry_trace(void* parameter);
+	uint8_t ov_7725_init(void);
+}
 
 void hardware_init(void);
 void param_init(void);
@@ -91,12 +91,12 @@ void rt_thread_entry_main(void* parameter)
 												10);
 												
 	/*trace_thread*/
-//	rt_thread_t trace_thread = rt_thread_create("trace",
-//												rt_thread_entry_trace,
-//												RT_NULL,
-//												1024,
-//												10,
-//												500);
+	rt_thread_t trace_thread = rt_thread_create("trace",
+												rt_thread_entry_trace,
+												RT_NULL,
+												1024,
+												10,
+												500);
 	rt_thread_t getgpadata_thread = rt_thread_create("gpsdata",
 												rt_thread_entry_getgpsdata,
 												RT_NULL,
@@ -111,7 +111,7 @@ void rt_thread_entry_main(void* parameter)
 	if(communication_thread != RT_NULL) rt_thread_startup(communication_thread);
 	if(quadx_get_thread != RT_NULL) rt_thread_startup(quadx_get_thread);
 	if(quadx_control_thread != RT_NULL) rt_thread_startup(quadx_control_thread);
-//	if(trace_thread != RT_NULL) rt_thread_startup(trace_thread); 
+	if(trace_thread != RT_NULL) rt_thread_startup(trace_thread); 
 	if(getgpadata_thread!=RT_NULL) rt_thread_startup(getgpadata_thread);
 	
 	//让出cpu，队尾等待调度
@@ -228,7 +228,7 @@ void rt_thread_entry_main(void* parameter)
 			txData.status.target[2] = 3;//targetH;//目标长宽，不做变换
 			txData.status.target[3] = 4;//targetW;
 			
-			rt_mq_send(txQ,&txData,TX_DATA_SIZE);
+//			rt_mq_send(txQ,&txData,TX_DATA_SIZE);
 		}
 /***************send end****************/
 		DELAY_MS(150);
