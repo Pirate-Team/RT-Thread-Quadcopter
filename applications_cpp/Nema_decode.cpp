@@ -28,6 +28,7 @@ void rt_thread_entry_getgpsdata(void* parameter)
     nmea_zero_INFO(&info);
     nmea_parser_init(&parser);
 	
+	DELAY_MS(1000);
 	usart1_init();
 
     while(1)

@@ -372,7 +372,7 @@ void ImagDisp(uint8_t*  Cam_data,TARGET_CONDI* Condition)
 					h = 40*(r-g)/(difVal) + 160;
 				
 				Hsl.hue = (unsigned char)(((h>240)? 240 : ((h<0)?0:h)));
-				if(Hsl.hue > Condition->H_MAX || Hsl.hue < Condition->H_MIN)
+				if(Hsl.hue > Condition->H_MAX && Hsl.hue < Condition->H_MIN)
 				{
 					*(Cam_data++)=0;
 					continue;

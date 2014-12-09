@@ -42,7 +42,7 @@ extern "C"
 void rt_thread_entry_quadx_get_attitude(void* parameter)
 {
 	uint8_t state = 0;
-	quat.sampleInterval = 0.0042f;
+	quat.sampleInterval = 0.0041f;
 	while(1)
 	{
 		/*getSensorData*/
@@ -56,6 +56,7 @@ void rt_thread_entry_quadx_get_attitude(void* parameter)
 		{
 			baro.getTemperature();
 			baro.ConvertPressure();
+			mag.getHeadingCal(sensorData.mx,sensorData.my,sensorData.mz);
 		}
 		else if(state == 2)
 		{
@@ -97,14 +98,14 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 		//trace
 		if(ctrl.trace == true)
 		{			
-			err[PITCH+POS].cur = DEAD_BAND(targetX,0,2);
+			err[PITCH+POS].cur = DEAD_BAND(targetY,0,2);
 			err[PITCH+POS].cur = BETWEEN(err[PITCH+POS].cur,-16,16);
 
 			param.PID[PITCH+POS].result =  param.PID[PITCH+POS].P * err[PITCH+POS].cur;
 			param.PID[PITCH+POS].result += param.PID[PITCH+POS].D * (err[PITCH+POS].cur-err[PITCH+POS].pre);
 			err[PITCH+POS].pre = err[PITCH+POS].cur;
 			
-			err[ROLL +POS].cur = DEAD_BAND(targetY,0,2);
+			err[ROLL +POS].cur = DEAD_BAND(targetX,0,2);
 			err[ROLL +POS].cur = BETWEEN(err[ROLL+POS].cur,-16,16);
 			
 			param.PID[ROLL +POS].result =  param.PID[ROLL +POS].P * err[ROLL+POS].cur;
