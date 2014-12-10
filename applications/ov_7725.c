@@ -344,10 +344,37 @@ void ImagDisp(uint8_t*  Cam_data,TARGET_CONDI* Condition)
 	while(i--){
 			READ_FIFO_PIXEL(Camera_Data);		/* 从FIFO读出一个rgb565像素到Camera_Data变量 */
 			//读取单个像素点数据进行判定，符合判定条件的在相应数组内置1，不符合的置0，并将跳转到下一个像素点处理
-			r  = (unsigned char)((Camera_Data&0xf800)>>8);
-			g  = (unsigned char)((Camera_Data&0x07e0)>>3);
-			b  = (unsigned char)((Camera_Data&0x001f)<<3);
-		
+			asm(
+				"MOV R5,%0\n"
+				"AND R5,#0xf800\n"
+				"MOV R5,ROR#8\n"
+				"MOV %0,R5\n"
+				:"=r"(r)
+				:"r"(Camera_Data)
+				:"r5"
+				);
+			asm(
+				"MOV R5,%0\n"
+				"AND R5,#0x07e0\n"
+				"MOV R5,ROR#3\n"
+				"MOV %0,R5\n"
+				:"=r"(g)
+				:"r"(Camera_Data)
+				:"r5"
+				);
+			asm(
+				"MOV R5,%0\n"
+				"AND R5,#0x00lf\n"
+				"MOV R5,ROL#3\n"
+				"MOV %0,R5\n"
+				:"=r"(g)
+				:"r"(Camera_Data)
+				:"r5"
+				);
+//			r  = (unsigned char)((Camera_Data&0xf800)>>8);
+//			g  = (unsigned char)((Camera_Data&0x07e0)>>3);
+//			b  = (unsigned char)((Camera_Data&0x001f)<<3);
+//		
 			maxVal = max3v(r, g, b);
 			minVal = min3v(r, g, b);
 			if(maxVal == minVal)//若r=g=b
