@@ -98,14 +98,14 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 		//trace
 		if(ctrl.trace == true)
 		{			
-			err[PITCH+POS].cur = DEAD_BAND(targetY,0,2);
+			err[PITCH+POS].cur = DEAD_BAND(targetY,0,1);
 			err[PITCH+POS].cur = BETWEEN(err[PITCH+POS].cur,-16,16);
 
 			param.PID[PITCH+POS].result =  param.PID[PITCH+POS].P * err[PITCH+POS].cur;
 			param.PID[PITCH+POS].result += param.PID[PITCH+POS].D * (err[PITCH+POS].cur-err[PITCH+POS].pre);
 			err[PITCH+POS].pre = err[PITCH+POS].cur;
 			
-			err[ROLL +POS].cur = DEAD_BAND(targetX,0,2);
+			err[ROLL +POS].cur = DEAD_BAND(targetX,0,1);
 			err[ROLL +POS].cur = BETWEEN(err[ROLL+POS].cur,-16,16);
 			
 			param.PID[ROLL +POS].result =  param.PID[ROLL +POS].P * err[ROLL+POS].cur;

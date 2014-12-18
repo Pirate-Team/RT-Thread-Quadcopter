@@ -228,7 +228,7 @@ int Trace(const TARGET_CONDI *Condition,RESULT *Resu)
 			Area.Y_Start= IMG_Y		;
 			Area.Y_End  = IMG_Y+IMG_H;
 
-			if(SearchCentre(&x0,&y0,Condition,&Area))	
+			if(!SearchCentre(&x0,&y0,Condition,&Area))	
 			{
 				flag=0;
 				return 0;
