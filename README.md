@@ -12,5 +12,5 @@ http://v.youku.com/v_show/id_XODE2MDI0NTI0.html
 
 ##### System
 
-https://github.com/RT-Thread/rt-thread
+https://github.com/RT-Thread/rt-thread/tree/stable-v1.2.x
 > Place this project into the system's bsp folder
