@@ -5,7 +5,7 @@
 #include "string.h"
 #include "Parameter.h"
 
-MPU6050 accelgyro;
+MPU6050* const MPU6050::instance = new MPU6050;
 
 MPU6050::MPU6050()
 {

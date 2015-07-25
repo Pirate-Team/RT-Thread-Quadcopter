@@ -46,23 +46,23 @@ void rt_thread_entry_quadx_get_attitude(void* parameter)
 	while(1)
 	{
 		/*getSensorData*/
-		accelgyro.getMotion6Cal(sensorData.ax, sensorData.ay, sensorData.az, sensorData.gx, sensorData.gy, sensorData.gz);
+		MPU6050::getInstance()->getMotion6Cal(sensorData.ax, sensorData.ay, sensorData.az, sensorData.gx, sensorData.gy, sensorData.gz);
 		if(state == 0)
 		{
-			mag.getHeadingCal(sensorData.mx,sensorData.my,sensorData.mz);
+			HMC5883L::getInstance()->getHeadingCal(sensorData.mx,sensorData.my,sensorData.mz);
 			state = 10;
 		}
 		else if(state == 5)
 		{
-			baro.getTemperature();
-			baro.ConvertPressure();
-			mag.getHeadingCal(sensorData.mx,sensorData.my,sensorData.mz);
+			MS5611::getInstance()->getTemperature();
+			MS5611::getInstance()->ConvertPressure();
+			HMC5883L::getInstance()->getHeadingCal(sensorData.mx,sensorData.my,sensorData.mz);
 		}
 		else if(state == 2)
 		{
-			baro.getPressure();	
-			baro.ConvertTemperature();
-			baro.getAltitude(att[THROTTLE]);
+			MS5611::getInstance()->getPressure();	
+			MS5611::getInstance()->ConvertTemperature();
+			MS5611::getInstance()->getAltitude(att[THROTTLE]);
 		}
 		state--;
 		/*calculate attitude*/
@@ -241,7 +241,7 @@ void rt_thread_entry_quadx_control_attitude(void* parameter)
 		/*ÂäµØÈÎÎñ*/
 		if(ctrl.quadx != true || RCValue[THROTTLE]<1050)
 		{
-			baro.setGround();
+			MS5611::getInstance()->setGround();
 			if(abs(att[PITCH]) < 1 && abs(att[ROLL]) < 1)
 				accZ = (accZ + sensorData.az) >> 1;
 		}

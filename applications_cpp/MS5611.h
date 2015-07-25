@@ -29,7 +29,10 @@
 class MS5611:public Sensor
 {
 public:
-	MS5611();
+	static MS5611* getInstance()
+	{
+		return instance;
+	}
 	virtual ~MS5611();
 
 	virtual bool initialize(void);
@@ -51,8 +54,9 @@ private:
 	uint16_t C[6];
 	int32_t dT;
 	int32_t temperature,pressure,groundPress;
+	static MS5611* const instance;
+	MS5611();
 };
 
-extern MS5611 baro;
 
 #endif

@@ -360,8 +360,11 @@
 class MPU6050:public Sensor
 {
 public:
-	
-	MPU6050(void);
+	static MPU6050* getInstance()
+	{
+		return instance;
+	}
+
 	virtual ~MPU6050(void);
 
 	virtual bool initialize(void);
@@ -394,8 +397,9 @@ public:
 //	uint32_t getExternalSensorDWord(int position);
 
 	void setOffset(void);
+private:
+	static MPU6050* const instance;
+	MPU6050(void);
 };
-
-extern MPU6050 accelgyro;
 
 #endif

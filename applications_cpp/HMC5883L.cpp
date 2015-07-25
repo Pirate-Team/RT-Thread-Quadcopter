@@ -10,7 +10,7 @@
 #define HMC58X3_Y_SELF_TEST_GAUSS (+1.16)   //!< Y axis level when bias current is applied.
 #define HMC58X3_Z_SELF_TEST_GAUSS (+1.08)                       //!< Y axis level when bias current is applied.
 
-HMC5883L mag;
+HMC5883L* const HMC5883L::instance = new HMC5883L;
 
 HMC5883L::HMC5883L(void)
 {

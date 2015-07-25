@@ -189,13 +189,13 @@ void rt_thread_entry_main(void* parameter)
 					{
 						led3.interval = 100;
 						DELAY_MS(2000);
-						accelgyro.setOffset();
+						MPU6050::getInstance()->setOffset();
 					}
 					if(rxData.ctrl.mag != 0)
 					{
 						led3.interval = 100;
 						DELAY_MS(2000);
-						mag.setOffset();
+						HMC5883L::getInstance()->setOffset();
 					}
 				}
 			}
@@ -258,19 +258,19 @@ void hardware_init(void)
 	Motor::initialize();
 	
 #ifndef TRACE_TEST
-	while(!accelgyro.initialize())
+	while(!MPU6050::getInstance()->initialize())
 	{
 		led2.toggle();
 		DELAY_MS(100);
 	}
 	
-	while(!mag.initialize())
+	while(!HMC5883L::getInstance()->initialize())
 	{
 		led2.toggle();
 		DELAY_MS(400);
 	}
 	
-	while(!baro.initialize())
+	while(!MS5611::getInstance()->initialize())
 	{
 		led2.toggle();
 		DELAY_MS(700);

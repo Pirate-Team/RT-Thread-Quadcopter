@@ -72,7 +72,10 @@
 class HMC5883L:public Sensor
 {
 public:
-	HMC5883L(void);
+	static HMC5883L* getInstance()
+	{
+		return instance;
+	}
 	virtual ~HMC5883L(void);
 
 	virtual bool initialize(void);
@@ -87,8 +90,9 @@ public:
 	void setOffset(void);
 private:
 	float magGain[3];
+	static HMC5883L* const instance;
+	HMC5883L(void);
 };
 
-extern HMC5883L mag;
 
 #endif

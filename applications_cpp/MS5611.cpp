@@ -14,7 +14,7 @@
 #define C5 32431
 #define C6 27811
 
-MS5611 baro;
+MS5611* const MS5611::instance = new MS5611;
 
 MS5611::MS5611(void)
 {
